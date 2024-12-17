@@ -3,12 +3,12 @@ using Lexy.Poc.Core.Parser;
 
 namespace Lexy.Poc.Core.Language
 {
-    public class ScenarioTable : IToken
+    public class ScenarioTable : IComponent
     {
         public TableHeaders Headers { get; private set; }
         public IList<TableRow> Rows { get; } = new List<TableRow>();
 
-        public IToken Parse(Line line)
+        public IComponent Parse(Line line, Components components)
         {
             if (line.IsEmpty()) return this;
 

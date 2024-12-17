@@ -21,17 +21,18 @@ namespace Lexy.Poc
                 throw new InvalidOperationException("Only 1 token expected. Actual: " + typeSystem.Count);
             }
 
-            var function = typeSystem.Tokens[0] as Function;
+            var first = typeSystem.First();
+            var function = first as Function;
             if (function == null)
             {
-                throw new InvalidOperationException("Token not a function. Actual: " + typeSystem.Tokens[0].GetType());
+                throw new InvalidOperationException("Token not a function. Actual: " + first?.GetType());
             }
             function.FailedException.ShouldBeNull();
 
             return function;
         }
 
-        public static TypeSystem ParseFunctionCode(this LexyParser parser, string code)
+        public static Components ParseFunctionCode(this LexyParser parser, string code)
         {
             var codeLines = code.Split(Environment.NewLine);
             var lines = codeLines
@@ -44,10 +45,11 @@ namespace Lexy.Poc
                 throw new InvalidOperationException("Only 1 token expected. Actual: " + typeSystem.Count);
             }
 
-            var function = typeSystem.Tokens[0] as Function;
+            var first = typeSystem.First();
+            var function = first as Function;
             if (function == null)
             {
-                throw new InvalidOperationException("Token not a function. Actual: " + typeSystem.Tokens[0].GetType());
+                throw new InvalidOperationException("Token not a function. Actual: " + first?.GetType());
             }
             function.FailedException.ShouldBeNull();
 

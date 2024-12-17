@@ -1,47 +1,48 @@
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace Lexy.Poc.Core.Language
 {
-    public class TypeSystem
+    public class Components
     {
-        public IList<IToken> Tokens { get; }
+        private IList<IComponent> values = new Collection<IComponent>();
 
-        public int Count => Tokens.Count;
+        public int Count => values.Count;
 
-        public TypeSystem(IList<IToken> tokens)
-        {
-            Tokens = tokens;
-        }
 
         public bool ContainsEnum(string enumName)
         {
-            return Tokens
+            return values
                 .OfType<EnumDefinition>()
                 .Any(definition => definition.Name.Value == enumName);
         }
 
         public Function GetFunction(string name)
         {
-            return Tokens
+            return values
                 .OfType<Function>()
                 .FirstOrDefault(function => function.Name.Value == name);
         }
 
         public Function GetSingleFunction()
         {
-            return Tokens
+            return values
                 .OfType<Function>()
                 .SingleOrDefault();
         }
 
-        public IEnumerable<Scenario> GetScenarios() => Tokens.OfType<Scenario>();
+        public IEnumerable<Scenario> GetScenarios() => values.OfType<Scenario>();
 
-        public IRootToken GetEnum(string name)
+        public IRootComponent GetEnum(string name)
         {
-            return Tokens
+            return values
                 .OfType<EnumDefinition>()
                 .FirstOrDefault(enumDefinition => enumDefinition.Name.Value == name);
         }
+
+        public void Add(IComponent component) => values.Add(component);
+
+        public IComponent First() => values.FirstOrDefault();
     }
 }

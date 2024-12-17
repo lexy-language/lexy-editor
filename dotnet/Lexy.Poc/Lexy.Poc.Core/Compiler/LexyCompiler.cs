@@ -29,23 +29,23 @@ namespace Lexy.Poc.Core.Compiler
 
     public class LexyCompiler
     {
-        public ExecutionEnvironment Compile(TypeSystem typeSystem, Function function)
+        public ExecutionEnvironment Compile(Components components, Function function)
         {
-            if (typeSystem == null) throw new ArgumentNullException(nameof(typeSystem));
+            if (components == null) throw new ArgumentNullException(nameof(components));
             if (function == null) throw new ArgumentNullException(nameof(function));
 
             var environment = new ExecutionEnvironment();
             var context = new LexyCompilerContext(environment);
 
-            var generateNodes = new List<IRootToken> { function };
-            generateNodes.AddRange(function.GetDependencies(typeSystem));
+            var generateNodes = new List<IRootComponent> { function };
+            generateNodes.AddRange(function.GetDependencies(components));
             
             var codeWriter = new StringBuilder();
 
             foreach (var generateNode in generateNodes)
             {
                 var writer = GetWriter(generateNode);
-                var generatedType = writer.CreateCode(generateNode, typeSystem);
+                var generatedType = writer.CreateCode(generateNode, components);
 
                 codeWriter.Append(generatedType.Code);
                 environment.AddType(generatedType);
@@ -89,9 +89,9 @@ namespace Lexy.Poc.Core.Compiler
             return environment;
         }
 
-        private static IRootTokenWriter GetWriter(IRootToken rootToken)
+        private static IRootTokenWriter GetWriter(IRootComponent rootComponent)
         {
-            switch (rootToken)
+            switch (rootComponent)
             {
                 case Function _:
                     return new FunctionWriter();
@@ -101,7 +101,7 @@ namespace Lexy.Poc.Core.Compiler
                     return null;
             }
 
-            throw new InvalidOperationException("No writer defined: " + rootToken.GetType());
+            throw new InvalidOperationException("No writer defined: " + rootComponent.GetType());
         }
 
         private string FormatCompilationErrors(ImmutableArray<Diagnostic> emitResult)
@@ -125,21 +125,21 @@ namespace Lexy.Poc.Core.Compiler
         {
             foreach (var generatedClass in generatedTypes)
             {
-                if (generatedClass.Token is Function)
+                if (generatedClass.Component is Function)
                 {
                     var instance = assembly.CreateInstance(generatedClass.FullClassName);
                     var executable = new ExecutableFunction(instance);
 
-                    executables.Add(generatedClass.Token.TokenName, executable);
+                    executables.Add(generatedClass.Component.TokenName, executable);
                 }
-                else if (generatedClass.Token is EnumDefinition)
+                else if (generatedClass.Component is EnumDefinition)
                 {
                     var enumType = assembly.GetType(generatedClass.FullClassName);
-                    enums.Add(generatedClass.Token.TokenName, enumType);
+                    enums.Add(generatedClass.Component.TokenName, enumType);
                 }
                 else
                 {
-                    throw new InvalidOperationException("Unknown generated type: " + generatedClass.Token.GetType());
+                    throw new InvalidOperationException("Unknown generated type: " + generatedClass.Component.GetType());
                 }
             }
         }
@@ -167,6 +167,6 @@ namespace Lexy.Poc.Core.Compiler
 
     internal interface IRootTokenWriter
     {
-        GeneratedClass CreateCode(IRootToken generateNode, TypeSystem typeSystem);
+        GeneratedClass CreateCode(IRootComponent generateNode, Components components);
     }
 }

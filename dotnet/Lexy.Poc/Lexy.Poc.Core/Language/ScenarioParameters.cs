@@ -4,11 +4,11 @@ using Lexy.Poc.Core.Parser;
 
 namespace Lexy.Poc.Core.Language
 {
-    public class ScenarioParameters : IToken
+    public class ScenarioParameters : IComponent
     {
         public IList<AssignmentDefinition> Assignments { get; } = new List<AssignmentDefinition>();
 
-        public IToken Parse(Line line)
+        public IComponent Parse(Line line, Components components)
         {
             var assignment = AssignmentDefinition.Parse(line);
             Assignments.Add(assignment);

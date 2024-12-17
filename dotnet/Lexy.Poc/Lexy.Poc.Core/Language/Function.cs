@@ -5,8 +5,11 @@ using Lexy.Poc.Core.Parser;
 
 namespace Lexy.Poc.Core.Language
 {
-    public class Function : RootToken
+    public class Function : RootComponent
     {
+        private static readonly LambdaComparer<IRootComponent> componentComparer =
+            new LambdaComparer<IRootComponent>((token1, token2) => token1.TokenName == token2.TokenName);
+
         public Comments Comments { get; } = new Comments();
         public FunctionName Name { get; } = new FunctionName();
         public FunctionParameters Parameters { get; } = new FunctionParameters();
@@ -25,7 +28,7 @@ namespace Lexy.Poc.Core.Language
             return new Function(name.Parameter);
         }
 
-        public override IToken Parse(Line line)
+        public override IComponent Parse(Line line, Components components)
         {
             var name = line.FirstTokenName();
             return name switch
@@ -39,21 +42,21 @@ namespace Lexy.Poc.Core.Language
             };
         }
 
-        public IEnumerable<IRootToken> GetDependencies(TypeSystem typeSystem)
+        public IEnumerable<IRootComponent> GetDependencies(Components components)
         {
-            var result = new List<IRootToken>();
-            AddEnumTypes(typeSystem, Parameters.Variables, result);
-            AddEnumTypes(typeSystem, Result.Variables, result);
-            return result.Distinct(new LambdaComparer<IRootToken>((token1, token2) => token1.TokenName == token2.TokenName));
+            var result = new List<IRootComponent>();
+            AddEnumTypes(components, Parameters.Variables, result);
+            AddEnumTypes(components, Result.Variables, result);
+            return result.Distinct(componentComparer);
         }
 
-        private static void AddEnumTypes(TypeSystem typeSystem, IList<VariableDefinition> variableDefinitions, List<IRootToken> result)
+        private static void AddEnumTypes(Components components, IList<VariableDefinition> variableDefinitions, List<IRootComponent> result)
         {
             foreach (var parameter in variableDefinitions)
             {
                 if (!TypeNames.Exists(parameter.Type))
                 {
-                    var dependency = typeSystem.GetEnum(parameter.Type);
+                    var dependency = components.GetEnum(parameter.Type);
                     if (dependency == null)
                     {
                         throw new InvalidOperationException("Type or enum not found: " + parameter.Type);

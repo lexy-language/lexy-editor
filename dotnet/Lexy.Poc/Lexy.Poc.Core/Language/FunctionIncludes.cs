@@ -4,11 +4,11 @@ using Lexy.Poc.Core.Parser;
 
 namespace Lexy.Poc.Core.Language
 {
-    public class FunctionIncludes : IToken
+    public class FunctionIncludes : IComponent
     {
         public IList<FunctionInclude> Definitions { get; } = new List<FunctionInclude>();
 
-        public IToken Parse(Line line)
+        public IComponent Parse(Line line, Components components)
         {
             if (line.IsEmpty()) return this;
 

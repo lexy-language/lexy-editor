@@ -3,7 +3,7 @@ using Lexy.Poc.Core.Parser;
 
 namespace Lexy.Poc.Core.Language
 {
-    public class EnumDefinition : RootToken
+    public class EnumDefinition : RootComponent
     {
         public Comments Comments { get; } = new Comments();
         public EnumName Name { get; } = new EnumName();
@@ -21,13 +21,13 @@ namespace Lexy.Poc.Core.Language
             return new EnumDefinition(name.Parameter);
         }
 
-        public override IToken Parse(Line line)
+        public override IComponent Parse(Line line, Components components)
         {
             if (line.IsEmpty()) return this;
 
             if (line.IsComment())
             {
-                Comments.Parse(line);
+                Comments.Parse(line, components);
             }
             else
             {

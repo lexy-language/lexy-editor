@@ -3,7 +3,7 @@ using Lexy.Poc.Core.Parser;
 
 namespace Lexy.Poc.Core.Language
 {
-    public class Scenario : RootToken
+    public class Scenario : RootComponent
     {
         public Comments Comments { get; } = new Comments();
         public ScenarioName Name { get; } = new ScenarioName();
@@ -25,17 +25,17 @@ namespace Lexy.Poc.Core.Language
             return new Scenario(name.Parameter);
         }
 
-        public override IToken Parse(Line line)
+        public override IComponent Parse(Line line, Components components)
         {
             var name = line.FirstTokenName();
             return name switch
             {
-                TokenNames.Function => FunctionName.Parse(line),
+                TokenNames.Function => FunctionName.Parse(line, components),
                 TokenNames.Parameters => Parameters,
                 TokenNames.Result => Result,
                 TokenNames.Table => Table,
                 TokenNames.Comment => Comments,
-                TokenNames.ExpectError => ExpectError.Parse(line),
+                TokenNames.ExpectError => ExpectError.Parse(line, components),
                 _ => throw new InvalidOperationException($"Invalid token '{name}'. {line}")
             };
         }

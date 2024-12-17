@@ -3,7 +3,7 @@ using Lexy.Poc.Core.Parser;
 
 namespace Lexy.Poc.Core.Language
 {
-    public class Table : RootToken
+    public class Table : RootComponent
     {
         public TableName Name { get; } = new TableName();
         public Comments Comments { get; } = new Comments();
@@ -21,11 +21,11 @@ namespace Lexy.Poc.Core.Language
             return new Table(name.Parameter);
         }
 
-        public override IToken Parse(Line line)
+        public override IComponent Parse(Line line, Components components)
         {
             if (line.IsComment())
             {
-                Comments.Parse(line);
+                Comments.Parse(line, components);
             }
             else if (Headers == null)
             {

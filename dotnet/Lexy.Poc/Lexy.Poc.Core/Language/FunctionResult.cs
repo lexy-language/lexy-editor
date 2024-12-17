@@ -5,11 +5,11 @@ using Lexy.Poc.Core.Parser;
 
 namespace Lexy.Poc.Core.Language
 {
-    public class FunctionResult : IToken
+    public class FunctionResult : IComponent
     {
         public IList<VariableDefinition> Variables { get; } = new List<VariableDefinition>();
 
-        public IToken Parse(Line line)
+        public IComponent Parse(Line line, Components components)
         {
             var variableDefinition = VariableDefinition.Parse(line);
             if (variableDefinition.Default != null)

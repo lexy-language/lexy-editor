@@ -8,7 +8,7 @@ namespace Lexy.Poc.Core.Parser
 {
     public class LexyParser
     {
-        public TypeSystem ParseFile(string fileName)
+        public Components ParseFile(string fileName)
         {
             var code = File.ReadAllLines(fileName);
             var lines = code.Select((line, index) => new Line(index, line, code));
@@ -16,16 +16,17 @@ namespace Lexy.Poc.Core.Parser
             return Parse(lines);
         }
 
-        public TypeSystem Parse(IEnumerable<Line> lines)
+        public Components Parse(IEnumerable<Line> lines)
         {
             if (lines == null) throw new ArgumentNullException(nameof(lines));
 
-            var tokens = new List<IToken>();
+            var components = new Components();
             var currentIndent = 0;
 
-            Stack<IToken> tokenStack = new Stack<IToken>();
-            IRootToken root = null;
-            IToken current = null;
+            IRootComponent root = null;
+            IComponent currentComponent = null;
+
+            var componentStack = new Stack<IComponent>();
             var failed = false;
 
             foreach (var line in lines)
@@ -34,38 +35,40 @@ namespace Lexy.Poc.Core.Parser
                 if (indent == 0 && !line.IsComment() && !line.IsEmpty())
                 {
                     root = GetToken(line);
-                    current = root;
-                    tokens.Add(current);
-                    failed = false;
-                    tokenStack.Clear();
+                    components.Add(root);
+
+                    currentComponent = root;
                     currentIndent = indent;
+
+                    failed = false;
+                    componentStack.Clear();
                 }
                 else if (!failed)
                 {
                     if (line.IsComment() || line.IsEmpty())
                     {
-                        current?.Parse(line);
+                        currentComponent?.Parse(line, components);
                     }
                     else
                     {
-                        if (current == null)
+                        if (currentComponent == null)
                         {
                             throw new InvalidOperationException($"Invalid syntax: {line};");
                         }
 
                         try
                         {
-                            if (current is RootToken && indent < currentIndent
-                             || !(current is RootToken) && indent <= currentIndent)
+                            if (currentComponent is RootComponent && indent < currentIndent
+                             || !(currentComponent is RootComponent) && indent <= currentIndent)
                             {
-                                current = tokenStack.Pop();
+                                currentComponent = componentStack.Pop();
                             }
 
-                            var newToken = current.Parse(line);
-                            if (newToken != current)
+                            var component = currentComponent.Parse(line, components);
+                            if (component != currentComponent)
                             {
-                                tokenStack.Push(current);
-                                current = newToken;
+                                componentStack.Push(currentComponent);
+                                currentComponent = component;
                             }
 
                             currentIndent = indent;
@@ -74,7 +77,7 @@ namespace Lexy.Poc.Core.Parser
                         {
                             Console.Write("Parse token failed: " + exception);
 
-                            tokenStack.Clear();
+                            componentStack.Clear();
                             root.Fail(exception);
                             failed = true;
                         }
@@ -82,25 +85,21 @@ namespace Lexy.Poc.Core.Parser
                 }
             }
 
-            return new TypeSystem(tokens);
+            return components;
         }
 
-        private IRootToken GetToken(Line line)
+        private IRootComponent GetToken(Line line)
         {
             var tokenName = TokenName.Parse(line);
 
-            switch (tokenName.Name)
+            return tokenName.Name switch
             {
-                case TokenNames.Function:
-                    return Function.Parse(tokenName);
-                case TokenNames.Enum:
-                    return EnumDefinition.Parse(tokenName);
-                case TokenNames.Scenario:
-                    return Scenario.Parse(tokenName);
-                case TokenNames.Table:
-                    return Table.Parse(tokenName);
-            }
-            throw new InvalidOperationException($"Unknown keyword: {tokenName.Name}");
+                TokenNames.Function => Function.Parse(tokenName),
+                TokenNames.Enum => EnumDefinition.Parse(tokenName),
+                TokenNames.Scenario => Scenario.Parse(tokenName),
+                TokenNames.Table => Table.Parse(tokenName),
+                _ => throw new InvalidOperationException($"Unknown keyword: {tokenName.Name}")
+            };
         }
     }
 

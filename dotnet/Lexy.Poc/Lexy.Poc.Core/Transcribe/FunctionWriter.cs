@@ -12,9 +12,9 @@ namespace Lexy.Poc.Core.Parser
     public class FunctionWriter : IRootTokenWriter
     {
 
-        public GeneratedClass CreateCode(IRootToken token, TypeSystem typeSystem)
+        public GeneratedClass CreateCode(IRootComponent component, Components components)
         {
-            if (!(token is Function function))
+            if (!(component is Function function))
             {
                 throw new InvalidOperationException("Root token not Function");
             }
@@ -27,8 +27,8 @@ namespace Lexy.Poc.Core.Parser
 
             classWriter.OpenScope($"public class {name}");
 
-            WriteParameters(function, classWriter, typeSystem);
-            WriteResult(function, classWriter, typeSystem);
+            WriteParameters(function, classWriter, components);
+            WriteResult(function, classWriter, components);
             WriteRunMethod(function, classWriter);
 
             classWriter.CloseScope();
@@ -37,14 +37,14 @@ namespace Lexy.Poc.Core.Parser
             return new GeneratedClass(function, WriterCode.Namespace, name, classWriter.ToString());
         }
 
-        private void WriteParameters(Function function, ClassWriter stringWriter, TypeSystem typeSystem)
+        private void WriteParameters(Function function, ClassWriter stringWriter, Components components)
         {
-            WriteVariables(stringWriter, function.Parameters.Variables, typeSystem);
+            WriteVariables(stringWriter, function.Parameters.Variables, components);
         }
 
-        private void WriteResult(Function function, ClassWriter stringWriter, TypeSystem typeSystem)
+        private void WriteResult(Function function, ClassWriter stringWriter, Components components)
         {
-            WriteVariables(stringWriter, function.Result.Variables, typeSystem);
+            WriteVariables(stringWriter, function.Result.Variables, components);
             WriteResultMethod(stringWriter, function.Result.Variables);
         }
 
@@ -62,20 +62,20 @@ namespace Lexy.Poc.Core.Parser
             stringWriter.CloseScope();
         }
 
-        private void WriteVariables(ClassWriter stringWriter, IList<VariableDefinition> variables, TypeSystem typeSystem)
+        private void WriteVariables(ClassWriter stringWriter, IList<VariableDefinition> variables, Components components)
         {
             foreach (var variable in variables)
             {
-                stringWriter.WriteLineStart($"public {MapType(variable.Type, typeSystem)} {variable.Name}");
+                stringWriter.WriteLineStart($"public {MapType(variable.Type, components)} {variable.Name}");
                 if (variable.Default != null) stringWriter.Write($" = {variable.Default}");
                 stringWriter.Write(";");
                 stringWriter.EndLine();
             }
         }
 
-        private string MapType(string variableType, TypeSystem typeSystem)
+        private string MapType(string variableType, Components components)
         {
-            if (typeSystem.ContainsEnum(variableType))
+            if (components.ContainsEnum(variableType))
             {
                 return variableType;
             }
@@ -108,9 +108,9 @@ namespace Lexy.Poc.Core.Parser
 
     public class EnumWriter : IRootTokenWriter
     {
-        public GeneratedClass CreateCode(IRootToken token, TypeSystem typeSystem)
+        public GeneratedClass CreateCode(IRootComponent component, Components components)
         {
-            if (!(token is EnumDefinition enumDefinition))
+            if (!(component is EnumDefinition enumDefinition))
             {
                 throw new InvalidOperationException("Root token not Function");
             }
@@ -121,7 +121,7 @@ namespace Lexy.Poc.Core.Parser
             classWriter.OpenScope($"namespace {WriterCode.Namespace}");
             classWriter.OpenScope($"public enum {name}");
 
-            WriteValues(enumDefinition, classWriter, typeSystem);
+            WriteValues(enumDefinition, classWriter, components);
 
             classWriter.CloseScope();
             classWriter.CloseScope();
@@ -130,7 +130,7 @@ namespace Lexy.Poc.Core.Parser
 
         }
 
-        private void WriteValues(EnumDefinition enumDefinition, ClassWriter classWriter, TypeSystem typeSystem)
+        private void WriteValues(EnumDefinition enumDefinition, ClassWriter classWriter, Components components)
         {
             foreach (var value in enumDefinition.Assignments)
             {

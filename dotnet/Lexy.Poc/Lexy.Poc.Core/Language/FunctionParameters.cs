@@ -3,11 +3,11 @@ using Lexy.Poc.Core.Parser;
 
 namespace Lexy.Poc.Core.Language
 {
-    public class FunctionParameters : IToken
+    public class FunctionParameters : IComponent
     {
         public IList<VariableDefinition> Variables { get; } = new List<VariableDefinition>();
 
-        public IToken Parse(Line line)
+        public IComponent Parse(Line line, Components components)
         {
             if (line.IsEmpty()) return this;
 

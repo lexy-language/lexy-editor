@@ -90,23 +90,23 @@ namespace Lexy.Poc.Core.Specifications
     {
         private readonly Scenario scenario;
         private readonly Function function;
-        private readonly TypeSystem typeSystem;
+        private readonly Components components;
 
-        private SpecificationRunner(TypeSystem typeSystem, Scenario scenario, Function function)
+        private SpecificationRunner(Components components, Scenario scenario, Function function)
         {
-            this.typeSystem = typeSystem;
+            this.components = components;
             this.scenario = scenario;
             this.function = function;
         }
 
-        public static SpecificationRunner Create(Scenario scenario, TypeSystem typeSystem)
+        public static SpecificationRunner Create(Scenario scenario, Components components)
         {
             if (scenario == null) throw new ArgumentNullException(nameof(scenario));
-            if (typeSystem == null) throw new ArgumentNullException(nameof(typeSystem));
+            if (components == null) throw new ArgumentNullException(nameof(components));
 
-            var function = typeSystem.GetFunction(scenario.FunctionName.Value);
+            var function = components.GetFunction(scenario.FunctionName.Value);
 
-            return new SpecificationRunner(typeSystem, scenario, function);
+            return new SpecificationRunner(components, scenario, function);
         }
 
         public void Run(SpecificationRunnerContext context)
@@ -141,7 +141,7 @@ namespace Lexy.Poc.Core.Specifications
 
 
             var compiler = new LexyCompiler();
-            var environment = compiler.Compile(typeSystem, function);
+            var environment = compiler.Compile(components, function);
             var executable = environment.GetFunction(function);
             var values = GetValues(scenario.Parameters, function.Parameters, environment);
             var result = executable.Run(values);
