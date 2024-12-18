@@ -5,12 +5,28 @@ namespace Lexy.Poc.Core.Language
 {
     public class FunctionCode : IComponent
     {
-        public IList<string> Lines { get; } = new List<string>();
+        public IList<Expression> Lines { get; } = new List<Expression>();
 
-        public IComponent Parse(ParserContext parserContext)
+        public IComponent Parse(ParserContext context)
         {
-            var line = parserContext.CurrentLine;
-            Lines.Add(line.TrimmedContent);
+            if (context.CurrentLine.IsComment())
+            {
+                return this;
+            }
+            if (context.CurrentLine.IsEmpty())
+            {
+                return this;
+            }
+
+            var valid = context.ValidateTokens<FunctionCode>()
+                .CountMinimum(1)
+                .IsValid;
+
+            if (!valid) return null;
+
+            var expression = Expression.Parse(context.CurrentLine.TokensFrom(0));
+
+            Lines.Add(expression);
             return this;
         }
     }

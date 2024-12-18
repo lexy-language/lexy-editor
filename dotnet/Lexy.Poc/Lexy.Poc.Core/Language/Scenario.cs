@@ -13,7 +13,7 @@ namespace Lexy.Poc.Core.Language
         public ScenarioExpectError ExpectError { get; } = new ScenarioExpectError();
         public ScenarioTable Table { get; } = new ScenarioTable();
 
-        public override string TokenName => Name.Value;
+        public override string Keyword => Name.Value;
 
         private Scenario(string name)
         {
@@ -25,9 +25,9 @@ namespace Lexy.Poc.Core.Language
             return new Scenario(name.Parameter);
         }
 
-        public override IComponent Parse(ParserContext parserContext)
+        public override IComponent Parse(ParserContext context)
         {
-            var line = parserContext.CurrentLine;
+            var line = context.CurrentLine;
             if (line.IsTokenType<CommentToken>(0))
             {
                 return Comments;
@@ -36,19 +36,26 @@ namespace Lexy.Poc.Core.Language
             var name = line.TokenValue(0);
             if (!line.IsTokenType<KeywordToken>(0))
             {
-                throw new InvalidOperationException($"Invalid token type '{name}': {line.TokenType<KeywordToken>(0)} {line}");
+                context.Fail($"Invalid token '{name}'. Keyword expected.");
+                return null;
             }
 
             return name switch
             {
-                TokenNames.Function => FunctionName.Parse(parserContext),
-                TokenNames.Parameters => Parameters,
-                TokenNames.Results => Results,
-                TokenNames.Table => Table,
-                TokenNames.Comment => Comments,
-                TokenNames.ExpectError => ExpectError.Parse(parserContext),
-                _ => throw new InvalidOperationException($"Invalid token '{name}'. {line}")
+                TokenValues.Function => FunctionName.Parse(context),
+                TokenValues.Parameters => Parameters,
+                TokenValues.Results => Results,
+                TokenValues.Table => Table,
+                TokenValues.Comment => Comments,
+                TokenValues.ExpectError => ExpectError.Parse(context),
+                _ => InvalidToken(context, name)
             };
+        }
+
+        private IComponent InvalidToken(ParserContext parserContext, string name)
+        {
+            parserContext.Fail($"Invalid token '{name}'.");
+            return null;
         }
     }
 }

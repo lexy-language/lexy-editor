@@ -9,7 +9,7 @@ namespace Lexy.Poc.Core.Language
         public Comments Comments { get; } = new Comments();
         public TableHeaders Headers { get; private set; }
         public IList<TableRow> Rows { get; } = new List<TableRow>();
-        public override string TokenName => Name.Value;
+        public override string Keyword => Name.Value;
 
         private Table(string name)
         {
@@ -21,12 +21,12 @@ namespace Lexy.Poc.Core.Language
             return new Table(name.Parameter);
         }
 
-        public override IComponent Parse(ParserContext parserContext)
+        public override IComponent Parse(ParserContext context)
         {
-            var line = parserContext.CurrentLine;
+            var line = context.CurrentLine;
             if (line.IsComment())
             {
-                Comments.Parse(parserContext);
+                Comments.Parse(context);
             }
             else if (Headers == null)
             {

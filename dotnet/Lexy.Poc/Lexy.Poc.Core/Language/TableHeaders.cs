@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Lexy.Poc.Core.Parser;
@@ -15,12 +16,13 @@ namespace Lexy.Poc.Core.Language
 
         public static TableHeaders Parse(Line line)
         {
-            var headers = line.TrimmedContent.Trim(TokenNames.TableSeparator)
-                .Split(TokenNames.TableSeparator)
+            throw new NotSupportedException();
+            /* var headers = line.TrimmedContent.Trim(TokenValues.TableSeparator)
+                .Split(TokenValues.TableSeparator)
                 .Select(value => TableHeader.Parse(value, line))
                 .ToArray();
 
-            return new TableHeaders(headers);
+            return new TableHeaders(headers); */
         }
     }
 }

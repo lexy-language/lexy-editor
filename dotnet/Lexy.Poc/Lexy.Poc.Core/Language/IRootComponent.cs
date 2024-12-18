@@ -4,7 +4,9 @@ namespace Lexy.Poc.Core.Language
 {
     public interface IRootComponent : IComponent
     {
-        string TokenName { get; }
+        public bool HasErrors { get; }
+        string Keyword { get; }
+
         void Fail(string exception);
     }
 }

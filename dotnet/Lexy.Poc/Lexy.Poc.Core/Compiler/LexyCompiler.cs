@@ -53,7 +53,6 @@ namespace Lexy.Poc.Core.Compiler
 
             var code = codeWriter.ToString();
             context.Logger.LogDebug("Compile code: " + code);
-            Console.WriteLine("Compile code: " + code);
 
             var syntaxTree = CSharpSyntaxTree.ParseText(code);
 
@@ -130,12 +129,12 @@ namespace Lexy.Poc.Core.Compiler
                     var instance = assembly.CreateInstance(generatedClass.FullClassName);
                     var executable = new ExecutableFunction(instance);
 
-                    executables.Add(generatedClass.Component.TokenName, executable);
+                    executables.Add(generatedClass.Component.Keyword, executable);
                 }
                 else if (generatedClass.Component is EnumDefinition)
                 {
                     var enumType = assembly.GetType(generatedClass.FullClassName);
-                    enums.Add(generatedClass.Component.TokenName, enumType);
+                    enums.Add(generatedClass.Component.Keyword, enumType);
                 }
                 else
                 {
@@ -151,7 +150,7 @@ namespace Lexy.Poc.Core.Compiler
 
         public ExecutableFunction GetFunction(Function function)
         {
-            return executables[function.TokenName];
+            return executables[function.Keyword];
         }
 
         public bool ContainsEnum(string type)

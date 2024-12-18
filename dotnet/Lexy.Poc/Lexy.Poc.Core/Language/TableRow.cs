@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Lexy.Poc.Core.Parser;
@@ -15,13 +16,14 @@ namespace Lexy.Poc.Core.Language
 
         public static TableRow Parse(Line line)
         {
-            var values = line.TrimmedContent
-                .Trim(TokenNames.TableSeparator)
-                .Split(TokenNames.TableSeparator)
+            throw new NotSupportedException();
+            /* var values = line.TrimmedContent
+                .Trim(TokenValues.TableSeparator)
+                .Split(TokenValues.TableSeparator)
                 .Select(part => part.Trim())
                 .ToArray();
 
-            return new TableRow(values);
+            return new TableRow(values);*/
         }
     }
 }

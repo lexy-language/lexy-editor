@@ -8,21 +8,42 @@ namespace Lexy.Poc.Core.Language
         public string Value { get; }
         public string Name { get; }
 
-        public AssignmentDefinition(string name, string value)
+        public AssignmentDefinition(string name, Expression value)
         {
-            Value = value;
+            Value = value.Value;
             Name = name;
         }
 
-        public static AssignmentDefinition Parse(Line line)
+        public static AssignmentDefinition Parse(ParserContext context)
         {
-            var parts = line.Content.Trim().Split("=");
-            if (parts.Length == 2)
+            var valid = context.ValidateTokens<AssignmentDefinition>()
+                .CountMinimum(3)
+                .StringLiteral(0)
+                .AssignmentOperator(1)
+                .IsValid;
+
+            if (!valid) return null;
+
+            var line = context.CurrentLine;
+            var name = line.TokenValue(0);
+            var value = Expression.Parse(line.TokensFrom(2));
+            return value != null ? new AssignmentDefinition(name, value) : null;
+        }
+    }
+
+    public class Expression
+    {
+        public string Value { get; private set; }
+
+        public static Expression Parse(Token[] tokens)
+        {
+            var expression = new Expression();
+            foreach (var token in tokens)
             {
-                return new AssignmentDefinition(parts[0].Trim(), parts[1].Trim());
+                expression.Value += token.Value;
             }
 
-            throw new InvalidOperationException("Invalid assignment definition on line: " + line);
+            return expression;
         }
     }
 }

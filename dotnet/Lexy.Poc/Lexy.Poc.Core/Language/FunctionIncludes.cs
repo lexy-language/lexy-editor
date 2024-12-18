@@ -8,19 +8,14 @@ namespace Lexy.Poc.Core.Language
     {
         public IList<FunctionInclude> Definitions { get; } = new List<FunctionInclude>();
 
-        public IComponent Parse(ParserContext parserContext)
+        public IComponent Parse(ParserContext context)
         {
-            var line = parserContext.CurrentLine;
+            var line = context.CurrentLine;
             if (line.IsEmpty()) return this;
 
-            var definition = FunctionInclude.Parse(line);
+            var definition = FunctionInclude.Parse(context);
             Definitions.Add(definition);
             return this;
-        }
-
-        public bool Contains(string type)
-        {
-            return Definitions.Any(definition => definition.Name == type);
         }
     }
 }

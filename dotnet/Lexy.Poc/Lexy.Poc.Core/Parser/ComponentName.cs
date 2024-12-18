@@ -1,5 +1,3 @@
-using System;
-using System.Linq;
 
 namespace Lexy.Poc.Core.Parser
 {
@@ -16,17 +14,13 @@ namespace Lexy.Poc.Core.Parser
 
         public static ComponentName Parse(Line line, ParserContext context)
         {
-            var tokens = line.Tokens;
+            var valid = context.ValidateTokens<ComponentName>()
+                .Count(2)
+                .Keyword(0)
+                .StringLiteral(1)
+                .IsValid;
 
-            if (!context.ValidateTokens(validator => validator
-                    .Count(2)
-                    .Type<KeywordToken>(0)
-                    .Type<LiteralToken>(1)))
-            {
-                return null;
-            }
-
-            return new ComponentName(tokens[0].Value, tokens[1].Value);
+            return !valid ? null : new ComponentName(line.TokenValue(0), line.TokenValue(1));
         }
     }
 }

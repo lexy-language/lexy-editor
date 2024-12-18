@@ -19,22 +19,22 @@ namespace Lexy.Poc.Core.Parser
                 throw new InvalidOperationException("Root token not Function");
             }
 
-            var classWriter = new ClassWriter();
+            var writer = new ClassWriter();
 
-            classWriter.OpenScope($"namespace {WriterCode.Namespace}");
+            writer.OpenScope($"namespace {WriterCode.Namespace}");
 
             var name = function.Name.ClassName();
 
-            classWriter.OpenScope($"public class {name}");
+            writer.OpenScope($"public class {name}");
 
-            WriteParameters(function, classWriter, components);
-            WriteResult(function, classWriter, components);
-            WriteRunMethod(function, classWriter);
+            WriteParameters(function, writer, components);
+            WriteResult(function, writer, components);
+            WriteRunMethod(function, writer);
 
-            classWriter.CloseScope();
-            classWriter.CloseScope();
+            writer.CloseScope();
+            writer.CloseScope();
 
-            return new GeneratedClass(function, WriterCode.Namespace, name, classWriter.ToString());
+            return new GeneratedClass(function, WriterCode.Namespace, name, writer.ToString());
         }
 
         private void WriteParameters(Function function, ClassWriter stringWriter, Components components)
@@ -69,7 +69,7 @@ namespace Lexy.Poc.Core.Parser
             foreach (var variable in variables)
             {
                 stringWriter.WriteLineStart($"public {MapType(variable.Type, components)} {variable.Name}");
-                if (variable.Default != null) stringWriter.Write($" = {variable.Default}");
+                if (variable.Default != null) stringWriter.Write($" = {variable.Default.Value}");
                 stringWriter.Write(";");
                 stringWriter.EndLine();
             }
@@ -92,19 +92,19 @@ namespace Lexy.Poc.Core.Parser
             };
         }
 
-        private void WriteRunMethod(Function function, ClassWriter stringWriter)
+        private void WriteRunMethod(Function function, ClassWriter writer)
         {
-            stringWriter.OpenScope("public void __Run()");
+            writer.OpenScope("public void __Run()");
 
             foreach (var line in function.Code.Lines)
             {
-                if (!string.IsNullOrWhiteSpace( line))
+                if (!string.IsNullOrWhiteSpace(line.Value))
                 {
-                    stringWriter.WriteLine($"{line};");
+                    writer.WriteLine($"{line.Value};");
                 }
             }
 
-            stringWriter.CloseScope();
+            writer.CloseScope();
         }
     }
 
@@ -117,18 +117,18 @@ namespace Lexy.Poc.Core.Parser
                 throw new InvalidOperationException("Root token not Function");
             }
 
-            var classWriter = new ClassWriter();
+            var writer = new ClassWriter();
             var name = enumDefinition.Name.Value;
 
-            classWriter.OpenScope($"namespace {WriterCode.Namespace}");
-            classWriter.OpenScope($"public enum {name}");
+            writer.OpenScope($"namespace {WriterCode.Namespace}");
+            writer.OpenScope($"public enum {name}");
 
-            WriteValues(enumDefinition, classWriter, components);
+            WriteValues(enumDefinition, writer, components);
 
-            classWriter.CloseScope();
-            classWriter.CloseScope();
+            writer.CloseScope();
+            writer.CloseScope();
 
-            return new GeneratedClass(enumDefinition, WriterCode.Namespace, name, classWriter.ToString());
+            return new GeneratedClass(enumDefinition, WriterCode.Namespace, name, writer.ToString());
 
         }
 

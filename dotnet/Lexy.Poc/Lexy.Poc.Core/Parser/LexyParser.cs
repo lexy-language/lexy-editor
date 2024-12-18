@@ -8,41 +8,45 @@ namespace Lexy.Poc.Core.Parser
 {
     public class LexyParser
     {
-        public Components ParseFile(string fileName)
+        public ParserContext ParseFile(string fileName, bool throwException = true)
         {
             var code = File.ReadAllLines(fileName);
 
-            return Parse(code);
+            return Parse(code, throwException);
         }
 
-        public Components Parse(string[] code)
+        public ParserContext Parse(string[] code, bool throwException = true)
         {
             if (code == null) throw new ArgumentNullException(nameof(code));
 
-            var context = new ParserContext();
-            var components = new Components();
+            var lines = code.Select((line, index) => new Line(index, line, code)).ToArray();
+            var context = new ParserContext(lines);
             var currentIndent = 0;
 
-            IRootComponent root = null;
             IComponent currentComponent = null;
 
             var componentStack = new Stack<IComponent>();
-            var lines = code.Select((line, index) => new Line(index, line, code));
 
             foreach (var line in lines)
             {
-                context.ProcessLine(line);
+                if (!context.ProcessLine(line))
+                {
+                    continue;
+                }
 
                 var indent = line.Indent();
                 if (indent == 0 && !line.IsComment() && !line.IsEmpty())
                 {
-                    root = GetToken(line, context);
-                    components.Add(root);
+                    var root = GetToken(line, context);
+                    if (root == null) continue;
+
+                    context.ProcessComponent(root);
 
                     currentComponent = root;
                     currentIndent = indent;
 
                     componentStack.Clear();
+
                     continue;
                 }
 
@@ -54,7 +58,7 @@ namespace Lexy.Poc.Core.Parser
 
                 if (currentComponent == null)
                 {
-                    context.Fail("Unexpected line: " + line.Content);
+                    context.Fail($"Unexpected line: {line}");
                     continue;
                 }
 
@@ -63,23 +67,21 @@ namespace Lexy.Poc.Core.Parser
                     currentComponent = componentStack.Pop();
                 }
 
-                try
+                var component = currentComponent.Parse(context);
+                if (component != currentComponent)
                 {
-                    var component = currentComponent.Parse(context);
-                    if (component != currentComponent)
-                    {
-                        componentStack.Push(currentComponent);
-                        currentComponent = component;
-                        currentIndent = indent;
-                    }
-                }
-                catch (Exception e)
-                {
-                    currentComponent = null;
+                    componentStack.Push(currentComponent);
+                    currentComponent = component;
+                    currentIndent = indent;
                 }
             }
 
-            return components;
+            if (throwException && context.HasErrors())
+            {
+                throw new InvalidOperationException($"Parsing failed: {context.FormatMessages()}");
+            }
+
+            return context;
         }
 
         private IRootComponent GetToken(Line line, ParserContext context)
@@ -89,12 +91,19 @@ namespace Lexy.Poc.Core.Parser
             return tokenName?.Name switch
             {
                 null => null,
-                TokenNames.FunctionComponent => Function.Parse(tokenName),
-                TokenNames.EnumComponent => EnumDefinition.Parse(tokenName),
-                TokenNames.ScenarioComponent => Scenario.Parse(tokenName),
-                TokenNames.TableComponent => Table.Parse(tokenName),
-                _ => throw new InvalidOperationException($"Unknown keyword: {tokenName.Name}")
+                TokenValues.FunctionComponent => Function.Parse(tokenName),
+                TokenValues.EnumComponent => EnumDefinition.Parse(tokenName),
+                TokenValues.ScenarioComponent => Scenario.Parse(tokenName),
+                TokenValues.TableComponent => Table.Parse(tokenName),
+                _ => InvalidComponent(tokenName, context)
             };
+        }
+
+        private IRootComponent InvalidComponent(ComponentName tokenName, ParserContext context)
+        {
+            var message = $"Unknown keyword: {tokenName.Name}";
+            context.Fail(message);
+            return null;
         }
     }
 }

@@ -9,7 +9,7 @@ namespace Lexy.Poc.Core.Language
         public EnumName Name { get; } = new EnumName();
 
         public IList<AssignmentDefinition> Assignments { get; } = new List<AssignmentDefinition>();
-        public override string TokenName => Name.Value;
+        public override string Keyword => Name.Value;
 
         private EnumDefinition(string name)
         {
@@ -21,18 +21,18 @@ namespace Lexy.Poc.Core.Language
             return new EnumDefinition(name.Parameter);
         }
 
-        public override IComponent Parse(ParserContext parserContext)
+        public override IComponent Parse(ParserContext context)
         {
-            var line = parserContext.CurrentLine;
+            var line = context.CurrentLine;
             if (line.IsEmpty()) return this;
 
             if (line.IsComment())
             {
-                Comments.Parse(parserContext);
+                Comments.Parse(context);
             }
             else
             {
-                var assignment = AssignmentDefinition.Parse(line);
+                var assignment = AssignmentDefinition.Parse(context);
                 Assignments.Add(assignment);
             }
             return this;

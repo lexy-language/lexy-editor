@@ -14,15 +14,20 @@ namespace Lexy.Poc.Core.Language
             Name = name;
         }
 
-        public static FunctionInclude Parse(Line line)
+        public static FunctionInclude Parse(ParserContext context)
         {
-            var parts = line.Content.Trim().Split(" ");
-            if (parts.Length == 2)
-            {
-                return new FunctionInclude(parts[1], parts[0]);
-            }
+            var valid = context.ValidateTokens<FunctionInclude>()
+                .Count(2)
+                .StringLiteral(0)
+                .StringLiteral(1)
+                .IsValid;
 
-            throw new InvalidOperationException("Function Include definition on line: " + line);
+            if (!valid) return null;
+
+            var name = context.CurrentLine.TokenValue(1);
+            var type = context.CurrentLine.TokenValue(0);
+
+            return new FunctionInclude(name, type);
         }
     }
 }

@@ -8,10 +8,9 @@ namespace Lexy.Poc.Core.Language
     {
         public IList<AssignmentDefinition> Assignments { get; } = new List<AssignmentDefinition>();
 
-        public IComponent Parse(ParserContext parserContext)
+        public IComponent Parse(ParserContext context)
         {
-            var line = parserContext.CurrentLine;
-            var assignment = AssignmentDefinition.Parse(line);
+            var assignment = AssignmentDefinition.Parse(context);
             Assignments.Add(assignment);
             return this;
         }

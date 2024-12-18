@@ -9,14 +9,14 @@ namespace Lexy.Poc.Core.Language
     {
         public IList<VariableDefinition> Variables { get; } = new List<VariableDefinition>();
 
-        public IComponent Parse(ParserContext parserContext)
+        public IComponent Parse(ParserContext context)
         {
-            var line = parserContext.CurrentLine;
+            var line = context.CurrentLine;
 
-            var variableDefinition = VariableDefinition.Parse(line);
+            var variableDefinition = VariableDefinition.Parse(context);
             if (variableDefinition.Default != null)
             {
-                parserContext.Fail(
+                context.Fail(
                     $"Result variable {variableDefinition.Name} should not have a default value. (Line:{line})");
                 return null;
             }

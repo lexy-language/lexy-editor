@@ -6,21 +6,21 @@ namespace Lexy.Poc.Core.Parser
     {
         private static readonly IList<string> values = new List<string>
         {
-            TokenNames.FunctionComponent,
-            TokenNames.EnumComponent,
-            TokenNames.TableComponent,
-            TokenNames.ScenarioComponent,
+            TokenValues.FunctionComponent,
+            TokenValues.EnumComponent,
+            TokenValues.TableComponent,
+            TokenValues.ScenarioComponent,
 
-            TokenNames.Function,
-            TokenNames.Table,
+            TokenValues.Function,
+            TokenValues.Table,
 
-            TokenNames.Include,
-            TokenNames.Parameters,
-            TokenNames.Results,
-            TokenNames.Code,
-            TokenNames.ExpectError,
+            TokenValues.Include,
+            TokenValues.Parameters,
+            TokenValues.Results,
+            TokenValues.Code,
+            TokenValues.ExpectError,
 
-            TokenNames.Comment,
+            TokenValues.Comment,
         };
 
         public static bool Contains(string keyword) => values.Contains(keyword);

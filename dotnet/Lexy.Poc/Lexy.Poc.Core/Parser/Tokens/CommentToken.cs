@@ -1,7 +1,7 @@
 
 namespace Lexy.Poc.Core.Parser
 {
-    public class CommentToken : Token
+    public class CommentToken : ParsableToken
     {
         public CommentToken(char value) : base(value)
         {
@@ -10,12 +10,12 @@ namespace Lexy.Poc.Core.Parser
         public override ParseTokenResult Parse(char value, ParserContext parserContext)
         {
             AppendValue(value);
-            return new ParseTokenResult(TokenStatus.InProgress);
+            return ParseTokenResult.InProgress();
         }
 
         public override ParseTokenResult Finalize(ParserContext parserContext)
         {
-            return new ParseTokenResult(TokenStatus.Finished);
+            return ParseTokenResult.Finished(true);
         }
     }
 }

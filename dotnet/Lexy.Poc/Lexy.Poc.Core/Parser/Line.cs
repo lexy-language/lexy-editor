@@ -1,6 +1,5 @@
 using System;
-using System.IO;
-using System.Linq;
+using System.Text;
 
 namespace Lexy.Poc.Core.Parser
 {
@@ -9,8 +8,9 @@ namespace Lexy.Poc.Core.Parser
         private readonly string[] code;
 
         public int Index { get; }
-        public string Content { get; }
-        public string TrimmedContent { get; }
+
+        internal string Content { get; }
+        private string TrimmedContent { get; }
 
         internal Token[] Tokens { get; private set; }
 
@@ -60,34 +60,20 @@ namespace Lexy.Poc.Core.Parser
 
         public override string ToString()
         {
-            var formattedCode = new StringWriter();
-
-            code.Select((line, index) => $"{index + 1}: {line}")
-                .ForEach(formattedCode.WriteLine);
-
-            return $"Line {Index + 1}: '{Content}'{Environment.NewLine}Code:{Environment.NewLine}{formattedCode}";
+            return $"Line {Index + 1}: {Content}";
         }
 
-        public bool IsComment() => Content.StartsWith("#");
+        public bool IsComment()
+        {
+            return Tokens.Length == 1 && Tokens[0] is CommentToken;
+        }
 
         public bool IsEmpty() => Content.Length == 0;
 
-        /*
-        public string FirstTokenName()
+        internal bool Tokenize(ITokenizer tokenizer, ParserContext parserContext)
         {
-            var indexOfSpace = TrimmedContent.IndexOf(" ", StringComparison.Ordinal);
-            return indexOfSpace == -1 ? TrimmedContent : TrimmedContent[..indexOfSpace].Trim();
-        }
-
-        public string Parameter()
-        {
-            var indexOfSpace = TrimmedContent.IndexOf(" ", StringComparison.Ordinal);
-            return indexOfSpace == -1 ? string.Empty : TrimmedContent[(indexOfSpace + 1)..].Trim();
-        }*/
-
-        internal void Tokenize(ITokenizer tokenizer, ParserContext parserContext)
-        {
-            Tokens = tokenizer.Tokenize(this, parserContext);
+            Tokens = tokenizer.Tokenize(this, parserContext, out bool errors);
+            return !errors;
         }
 
         public string TokenValue(int index)
@@ -95,14 +81,34 @@ namespace Lexy.Poc.Core.Parser
             return index >= 0 && index <= Tokens.Length - 1 ? Tokens[index].Value : null;
         }
 
+        public Token[] TokensFrom(int index)
+        {
+            return Tokens[index..];
+        }
+
+        public string TokenValuesFrom(int startIndex)
+        {
+            var valueBuilder = new StringBuilder();
+            for (int index = startIndex; index < Tokens.Length; index++)
+            {
+                valueBuilder.Append(Tokens[index].Value);
+            }
+            return valueBuilder.ToString();
+        }
+
         public bool IsTokenType<T>(int index)
         {
             return index >= 0 && index <= Tokens.Length - 1 && Tokens[index].GetType() == typeof(T);
         }
 
-        public Type TokenType<T>(int index)
+        public Type TokenAsType<T>(int index)
         {
             return index >= 0 && index <= Tokens.Length - 1 ? Tokens[index].GetType() : null;
+        }
+
+        public T Token<T>(int index) where T : Token
+        {
+            return (T) Tokens[index];
         }
     }
 }

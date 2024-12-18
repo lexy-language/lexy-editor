@@ -8,7 +8,7 @@ namespace Lexy.Poc.Core.Language
     public class Function : RootComponent
     {
         private static readonly LambdaComparer<IRootComponent> componentComparer =
-            new LambdaComparer<IRootComponent>((token1, token2) => token1.TokenName == token2.TokenName);
+            new LambdaComparer<IRootComponent>((token1, token2) => token1.Keyword == token2.Keyword);
 
         public Comments Comments { get; } = new Comments();
         public FunctionName Name { get; } = new FunctionName();
@@ -16,7 +16,7 @@ namespace Lexy.Poc.Core.Language
         public FunctionResults Results { get; } = new FunctionResults();
         public FunctionCode Code { get; } = new FunctionCode();
         public FunctionIncludes Include { get; } = new FunctionIncludes();
-        public override string TokenName => Name.Value;
+        public override string Keyword => Name.Value;
 
         private Function(string name)
         {
@@ -28,9 +28,9 @@ namespace Lexy.Poc.Core.Language
             return new Function(name.Parameter);
         }
 
-        public override IComponent Parse(ParserContext parserContext)
+        public override IComponent Parse(ParserContext context)
         {
-            var line = parserContext.CurrentLine;
+            var line = context.CurrentLine;
             if (line.IsTokenType<CommentToken>(0))
             {
                 return Comments;
@@ -39,33 +39,23 @@ namespace Lexy.Poc.Core.Language
             var name = line.TokenValue(0);
             if (!line.IsTokenType<KeywordToken>(0))
             {
-                return InvalidTokenType("name", line, parserContext);
+                return InvalidToken(name, line, context);
             }
 
             return name switch
             {
-                TokenNames.Parameters => Parameters,
-                TokenNames.Results => Results,
-                TokenNames.Code => Code,
-                TokenNames.Include => Include,
-                 _ => InvalidToken(name, line, parserContext)
+                TokenValues.Parameters => Parameters,
+                TokenValues.Results => Results,
+                TokenValues.Code => Code,
+                TokenValues.Include => Include,
+                 _ => InvalidToken(name, line, context)
             };
-        }
-
-        private IComponent InvalidTokenType(string name, Line line, ParserContext parserContext)
-        {
-            var message = $"Invalid token type '{name}': {line.TokenType<KeywordToken>(0)} {line}";
-            Fail(message);
-            parserContext.Fail(message);
-            throw new InvalidOperationException(message);
         }
 
         private IComponent InvalidToken(string name, Line line, ParserContext parserContext)
         {
-            var message = $"Invalid token '{name}'. {line}";
-            Fail(message);
-            parserContext.Fail(message);
-            throw new InvalidOperationException(message);
+            parserContext.Fail($"Invalid token '{name}'. {line}");
+            return null;
         }
 
         public IEnumerable<IRootComponent> GetDependencies(Components components)
@@ -80,7 +70,7 @@ namespace Lexy.Poc.Core.Language
         {
             foreach (var parameter in variableDefinitions)
             {
-                if (!TypeNames.Exists(parameter.Type))
+                if (!TypeNames.Contains(parameter.Type))
                 {
                     var dependency = components.GetEnum(parameter.Type);
                     if (dependency == null)

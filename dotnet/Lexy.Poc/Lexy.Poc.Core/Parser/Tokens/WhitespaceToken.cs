@@ -1,6 +1,6 @@
 namespace Lexy.Poc.Core.Parser
 {
-    internal class WhitespaceToken : Token
+    internal class WhitespaceToken : ParsableToken
     {
         public WhitespaceToken(char value) : base(value)
         {
@@ -8,16 +8,14 @@ namespace Lexy.Poc.Core.Parser
 
         public override ParseTokenResult Parse(char value, ParserContext parserContext)
         {
-            var status = !char.IsWhiteSpace(value)
-                ? TokenStatus.Finished
-                : TokenStatus.InProgress;
-
-            return new ParseTokenResult(status);
+            return !char.IsWhiteSpace(value)
+                ? ParseTokenResult.Finished(false)
+                : ParseTokenResult.InProgress();
         }
 
         public override ParseTokenResult Finalize(ParserContext parserContext)
         {
-            return new ParseTokenResult(TokenStatus.Finished);
+            return ParseTokenResult.Finished(true);
         }
     }
 }

@@ -1,6 +1,6 @@
 namespace Lexy.Poc.Core.Parser
 {
-    internal class TokenNames
+    internal class TokenValues
     {
         public const string FunctionComponent = "Function:";
         public const string EnumComponent = "Enum:";
@@ -18,6 +18,19 @@ namespace Lexy.Poc.Core.Parser
 
         public const string Comment = "#";
         public const char CommentChar = '#';
+
         public const char TableSeparator = '|';
+        public const char Quote = '\"';
+        public const char Assignment = '=';
+
+        public const char DecimalSeparator = '.';
+        public const char DateTimeStarter = 'd';
+
+        public const string BooleanTrue = "true";
+        public const string BooleanFalse = "false";
+
+        public const char Slash = '/';
+        public const char Colon = ':';
+        public const char Space = ' ';
     }
 }

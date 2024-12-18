@@ -4,16 +4,26 @@ namespace Lexy.Poc.Core.Parser
 {
     public abstract class Token
     {
-        private StringBuilder valueBuilder;
+        public abstract string Value { get; }
+    }
 
-        public string Value => valueBuilder.ToString();
+    public abstract class ParsableToken : Token
+    {
+        private readonly StringBuilder valueBuilder;
 
-        protected Token(char value)
+        public override string Value => valueBuilder.ToString();
+
+        protected ParsableToken()
+        {
+            valueBuilder = new StringBuilder();
+        }
+
+        protected ParsableToken(char value)
         {
             valueBuilder = new StringBuilder(value.ToString());
         }
 
-        protected Token(string value)
+        protected ParsableToken(string value)
         {
             valueBuilder = new StringBuilder(value);
         }

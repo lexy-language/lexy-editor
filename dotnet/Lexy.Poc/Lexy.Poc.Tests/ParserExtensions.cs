@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using Lexy.Poc.Core.Language;
 using Lexy.Poc.Core.Parser;
 using Shouldly;
@@ -11,21 +10,20 @@ namespace Lexy.Poc
         public static Function ParseFunction(this LexyParser parser, string code)
         {
             var codeLines = code.Split(Environment.NewLine);
+            var context = parser.Parse(codeLines, true);
+            var components = context.Components;
 
-            var typeSystem = parser.Parse(codeLines);
-
-            if (typeSystem.Count != 1)
+            if (components.Count != 1)
             {
-                throw new InvalidOperationException("Only 1 token expected. Actual: " + typeSystem.Count);
+                throw new InvalidOperationException("Only 1 component expected. Actual: " + components.Count);
             }
 
-            var first = typeSystem.First();
+            var first = components.First();
             var function = first as Function;
             if (function == null)
             {
-                throw new InvalidOperationException("Token not a function. Actual: " + first?.GetType());
+                throw new InvalidOperationException("Component not a function. Actual: " + first?.GetType());
             }
-            function.FailedMessages.ShouldBeEmpty();
 
             return function;
         }
@@ -33,22 +31,22 @@ namespace Lexy.Poc
         public static Components ParseFunctionCode(this LexyParser parser, string code)
         {
             var codeLines = code.Split(Environment.NewLine);
-            var typeSystem = parser.Parse(codeLines);
+            var context = parser.Parse(codeLines, true);
+            var components = context.Components;
 
-            if (typeSystem.Count != 1)
+            if (components.Count != 1)
             {
-                throw new InvalidOperationException("Only 1 token expected. Actual: " + typeSystem.Count);
+                throw new InvalidOperationException("Only 1 token expected. Actual: " + components.Count);
             }
 
-            var first = typeSystem.First();
+            var first = components.First();
             var function = first as Function;
             if (function == null)
             {
                 throw new InvalidOperationException("Token not a function. Actual: " + first?.GetType());
             }
-            function.FailedMessages.ShouldBeEmpty();
 
-            return typeSystem;
+            return components;
         }
     }
 }

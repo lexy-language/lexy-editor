@@ -1,92 +1,95 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using Lexy.Poc.Core.Language;
 
 namespace Lexy.Poc.Core.Parser
 {
     public class ParserContext
     {
-        private IList<string> failedMessages = new List<string>();
+        private readonly IList<string> messages = new List<string>();
         private readonly ITokenizer tokenizer = new Tokenizer();
 
-
-        public void Fail(string message)
-        {
-            failedMessages.Add($"{CurrentLine?.Index}: {message}");
-        }
+        private int failedMessages = 0;
+        private IRootComponent currentComponent;
 
         internal Line CurrentLine { get; private set; }
 
-        public string LastError()
+        public Components Components { get; } = new Components();
+
+        public Line[] Code { get; }
+
+        public bool HasErrors() => failedMessages > 0;
+
+        public ParserContext(Line[] code)
         {
-            return failedMessages.LastOrDefault();
+            Code = code;
         }
 
-        public void ProcessLine(Line line)
+        public void Log(string message)
+        {
+            messages.Add($"{CurrentLine?.Index}: {message}");
+        }
+
+        public void Fail(string message)
+        {
+            failedMessages++;
+            messages.Add($"{CurrentLine?.Index}: ERROR - {message}");
+            currentComponent?.Fail(message);
+        }
+
+        public void ProcessComponent(IRootComponent component)
+        {
+            if (component == null) throw new ArgumentNullException(nameof(component));
+
+            Components.Add(component);
+            currentComponent = component;
+        }
+
+        public bool ProcessLine(Line line)
         {
             CurrentLine = line ?? throw new ArgumentNullException(nameof(line));
-            CurrentLine.Tokenize(tokenizer, this);
+            Log(line.ToString());
+
+            var success = CurrentLine.Tokenize(tokenizer, this);
+            var tokenNames = string.Join(" ", CurrentLine.Tokens.Select(token => token.GetType().Name).ToArray());
+
+            Log("Tokens: " + tokenNames);
+
+            return success;
         }
 
-        public bool ValidateTokens(Action<TokenValidator> tokenValidator)
+        public TokenValidator ValidateTokens<T>()
         {
-            var validator = new TokenValidator(this);
-            tokenValidator(validator);
-            return validator.Success;
+            Log("Parse: " + typeof(T).Name);
+            return new TokenValidator(this);
         }
 
-        public string ErrorMessages()
+        public TokenValidator ValidateTokens(string name)
         {
-            return string.Join(Environment.NewLine, failedMessages);
-        }
-    }
-
-    public class TokenValidator
-    {
-        private readonly ParserContext parserContext;
-        private readonly Token[] tokens;
-
-        public bool Success { get; private set; }
-
-        public TokenValidator(ParserContext parserContext)
-        {
-            this.parserContext = parserContext;
-            tokens = parserContext.CurrentLine.Tokens;
-            Success = true;
+            Log("Parse: " + name);
+            return new TokenValidator(this);
         }
 
-        public TokenValidator Count(int count)
+        public bool HasErrorMessage(string expectedError)
         {
-            if (tokens.Length != count)
+            return failedMessages > 0;
+        }
+
+        public string FormatMessages()
+        {
+            return string.Join(Environment.NewLine, messages) + Environment.NewLine + FormatCode();
+        }
+
+        private string FormatCode()
+        {
+            var builder = new StringBuilder();
+            foreach (var line in Code)
             {
-                parserContext.Fail($"Invalid number of tokens '{tokens.Length}', should be '{count}'.");
-                Success = false;
+                builder.AppendLine(line.ToString());
             }
-
-            return this;
-        }
-
-        public TokenValidator Type<T>(int index)
-        {
-            var token = tokens[index];
-            var type = token.GetType();
-            if (type != typeof(T))
-            {
-                parserContext.Fail($"Invalid token type. Expected: '{typeof(T).Name}' Actual: '{type.Name}'");
-                Success = false;
-            }
-            return this;
-        }
-
-        public TokenValidator Value(int index, string expectedValue)
-        {
-            var token = tokens[index];
-            if (token.Value != expectedValue)
-            {
-                parserContext.Fail($"Invalid token value. Expected: '{expectedValue}' Actual: '{token.Value}'");
-                Success = false;
-            }
-            return this;
+            return builder.ToString();
         }
     }
 }
