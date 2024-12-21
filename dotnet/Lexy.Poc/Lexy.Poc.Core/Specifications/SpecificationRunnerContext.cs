@@ -2,12 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Lexy.Poc.Core.Language;
+using Microsoft.Extensions.Logging;
 
 namespace Lexy.Poc.Core.Specifications
 {
     public class SpecificationRunnerContext : ISpecificationRunnerContext, IDisposable
     {
         private readonly List<ISpecificationFileRunner> fileRunners = new List<ISpecificationFileRunner>();
+
+        private readonly ILogger<SpecificationRunnerContext> logger;
 
         public IList<string> DebugMessages { get; } = new List<string>();
         public IList<string> Messages { get; } = new List<string>();
@@ -16,30 +19,45 @@ namespace Lexy.Poc.Core.Specifications
 
         public IReadOnlyCollection<ISpecificationFileRunner> FileRunners => fileRunners;
 
+        public SpecificationRunnerContext(ILogger<SpecificationRunnerContext> logger)
+        {
+            this.logger = logger;
+        }
+
         public void Fail(Scenario scenario, string message)
         {
             Failed++;
-            Messages.Add($"- FAILED  - {scenario.Name}: " + message);
+
+            var log = $"- FAILED  - {scenario.Name}: {message}";
+
+            Messages.Add(log);
+            logger.LogError(log);
         }
 
         public void LogGlobal(string message)
         {
-            Messages.Add($"{message}");
+            Messages.Add(  Environment.NewLine + message + Environment.NewLine);
+            logger.LogInformation(message);
         }
 
         public void Log(string message)
         {
-            Messages.Add($"  {message}");
+            var log = $"  {message}";
+            Messages.Add(log);
+            logger.LogInformation(log);
         }
 
         public void Success(Scenario scenario)
         {
-            Messages.Add($"- SUCCESS - {scenario.Name}");
+            var log = $"- SUCCESS - {scenario.Name}";
+            Messages.Add(log);
+            logger.LogInformation(log);
         }
 
         public void LogDebug(string message)
         {
             DebugMessages.Add(message);
+            logger.LogDebug(message);
         }
 
         public void Add(ISpecificationFileRunner fileRunner)
@@ -67,6 +85,5 @@ namespace Lexy.Poc.Core.Specifications
             return FileRunners.Select(fileRunner => fileRunner.CountScenarioRunners())
                 .Aggregate((value, total) => value + total);
         }
-
     }
 }

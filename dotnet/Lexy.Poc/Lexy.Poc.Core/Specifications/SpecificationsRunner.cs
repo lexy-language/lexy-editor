@@ -30,7 +30,7 @@ namespace Lexy.Poc.Core.Specifications
 
             runners.ForEach(runner => runner.Run());
 
-            context.LogGlobal($"{Environment.NewLine}Specifications succeed: {countScenarios - context.Failed} / {countScenarios}");
+            context.LogGlobal($"Specifications succeed: {countScenarios - context.Failed} / {countScenarios}");
 
             foreach (var message in context.Messages)
             {

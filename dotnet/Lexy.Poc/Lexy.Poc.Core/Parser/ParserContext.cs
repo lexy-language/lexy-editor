@@ -29,33 +29,39 @@ namespace Lexy.Poc.Core.Parser
         {
             if (component == null) throw new ArgumentNullException(nameof(component));
 
-            Components.Add(component);
+            Components.AddIfNew(component);
+
             currentComponent = component;
+        }
+
+        public void SetCurrentComponent(IRootComponent component)
+        {
+            currentComponent = component ?? throw new ArgumentNullException(nameof(component));
         }
 
         public bool ProcessLine()
         {
             var line = sourceCodeDocument.NextLine();
-            logger.Log(line.ToString(), currentComponent?.ComponentName);
+            logger.Log(line.ToString());
 
             var success = CurrentLine.Tokenize(tokenizer, this);
             var tokenNames = string.Join(" ", CurrentLine.Tokens.Select(token => token.GetType().Name).ToArray());
 
-            logger.Log("  Tokens: " + tokenNames, currentComponent?.ComponentName);
+            logger.Log("  Tokens: " + tokenNames);
 
             return success;
         }
 
         public TokenValidator ValidateTokens<T>()
         {
-            logger.Log("  Parse: " + typeof(T).Name, currentComponent?.ComponentName);
-            return new TokenValidator(this);
+            logger.Log("  Parse: " + typeof(T).Name);
+            return new TokenValidator(typeof(T).Name, this);
         }
 
         public TokenValidator ValidateTokens(string name)
         {
-            logger.Log("  Parse: " + name, currentComponent?.ComponentName);
-            return new TokenValidator(this);
+            logger.Log("  Parse: " + name);
+            return new TokenValidator(name, this);
         }
     }
 }

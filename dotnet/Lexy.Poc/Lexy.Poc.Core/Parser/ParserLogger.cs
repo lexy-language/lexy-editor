@@ -11,13 +11,13 @@ namespace Lexy.Poc.Core.Parser
     {
         private class LogEntry
         {
-            public string ComponentName { get; }
+            public IComponent Component { get; }
             public bool IsError { get; }
             public string Message { get; }
 
-            public LogEntry(string componentName, bool isError, string message)
+            public LogEntry(IComponent component, bool isError, string message)
             {
-                ComponentName = componentName;
+                Component = component;
                 IsError = isError;
                 Message = message;
             }
@@ -38,21 +38,21 @@ namespace Lexy.Poc.Core.Parser
             this.sourceCodeDocument = sourceCodeDocument ?? throw new ArgumentNullException(nameof(sourceCodeDocument));
         }
 
-        public void Log(string message, string componentName)
+        public void Log(string message, IComponent component)
         {
             var item = $"{sourceCodeDocument.CurrentLine?.Index + 1}: {message}";
 
             logger.LogDebug(item);
-            logEntries.Add(new LogEntry(componentName, false, item));
+            logEntries.Add(new LogEntry(component, false, item));
         }
 
-        public void Fail(string message, string componentName)
+        public void Fail(string message, IComponent component)
         {
             failedMessages++;
             var item = $"{sourceCodeDocument.CurrentLine?.Index + 1}: ERROR - {message}";
 
             logger.LogError(item);
-            logEntries.Add(new LogEntry(componentName, true, item));
+            logEntries.Add(new LogEntry(component, true, item));
         }
 
         public bool HasErrorMessage(string expectedError)
@@ -70,12 +70,12 @@ namespace Lexy.Poc.Core.Parser
         {
             if (component == null) throw new ArgumentNullException(nameof(component));
 
-            return logEntries.Any(message => message.IsError && message.ComponentName == component.ComponentName);
+            return logEntries.Any(message => message.IsError && message.Component == component);
         }
 
         public string[] ComponentFailedMessages(IRootComponent component)
         {
-            return logEntries.Where(entry => entry.IsError && entry.ComponentName == component.ComponentName)
+            return logEntries.Where(entry => entry.IsError && entry.Component == component)
                 .Select(entry => entry.Message)
                 .ToArray();
         }

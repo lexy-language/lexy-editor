@@ -9,7 +9,7 @@ namespace Lexy.Poc.Parser
         [Test]
         public void TestValidScenarioKeyword()
         {
-            var code = @"Scenario: TestScenario";
+            const string code = @"Scenario: TestScenario";
 
             var parser = GetService<ILexyParser>();
             var scenario = parser.ParseScenario(code);
@@ -20,7 +20,7 @@ namespace Lexy.Poc.Parser
         [Test]
         public void TestValidScenario()
         {
-            var code = @"Scenario: TestScenario
+            const string code = @"Scenario: TestScenario
   Function TestScenarioFunction
   Parameters
     Value = 123
@@ -43,7 +43,7 @@ namespace Lexy.Poc.Parser
         [Test]
         public void TestInvalidScenario()
         {
-            var code = @"Scenario: TestScenario
+            const string code = @"Scenario: TestScenario
   Functtion TestScenarioFunction
   Parameters
     Value = 123
@@ -64,7 +64,7 @@ namespace Lexy.Poc.Parser
         [Test]
         public void TestInvalidNumberValueScenario()
         {
-            var code = @"Scenario: TestScenario
+            const string code = @"Scenario: TestScenario
   Function TestScenarioFunction
   Parameters
     Value = 12d3
@@ -78,8 +78,104 @@ namespace Lexy.Poc.Parser
             context.Logger.ComponentHasErrors(scenario).ShouldBeTrue();
 
             var errors = context.Logger.ComponentFailedMessages(scenario);
-            errors.Length.ShouldBe(1);
+            errors.Length.ShouldBe(1, context.Logger.FormatMessages());
             errors[0].ShouldBe("4: ERROR - Invalid token at 14: Invalid number token character: d");
+        }
+
+        [Test]
+        public void TestScenarioWithInlineFunction()
+        {
+            const string code = @"Scenario: ValidNumberIntAsParameter
+  Function: ValidNumberIntAsParameterFunction
+    Parameters
+      number Value1 = 123
+      number Value2 = 456
+    Results
+      number Result1
+      number Result2
+    Code
+      Result1 = Value1
+      Result2 = Value2
+  Parameters
+    Value1 = 987
+    Value2 = 654
+  Results
+    Result1 = 123
+    Result2 = 456";
+
+            var parser = GetService<ILexyParser>();
+            var scenario = parser.ParseScenario(code);
+
+            scenario.Name.Value.ShouldBe("ValidNumberIntAsParameter");
+            scenario.Function.ShouldNotBeNull();
+            scenario.Function.Parameters.Variables.Count.ShouldBe(2);
+            scenario.Function.Parameters.Variables[0].Name.ShouldBe("Value1");
+            scenario.Function.Parameters.Variables[0].Type.ShouldBe("number");
+            scenario.Function.Parameters.Variables[0].Default.ToString().ShouldBe("123");
+            scenario.Function.Parameters.Variables[1].Name.ShouldBe("Value2");
+            scenario.Function.Parameters.Variables[1].Type.ShouldBe("number");
+            scenario.Function.Parameters.Variables[1].Default.ToString().ShouldBe("456");
+            scenario.Function.Results.Variables.Count.ShouldBe(2);
+            scenario.Function.Results.Variables[0].Name.ShouldBe("Result1");
+            scenario.Function.Results.Variables[0].Type.ShouldBe("number");
+            scenario.Function.Results.Variables[0].Default.ShouldBeNull();
+            scenario.Function.Results.Variables[1].Name.ShouldBe("Result2");
+            scenario.Function.Results.Variables[1].Type.ShouldBe("number");
+            scenario.Function.Results.Variables[1].Default.ShouldBeNull();
+            scenario.Function.Code.Lines.Count.ShouldBe(2);
+            scenario.Function.Code.Lines[0].ToString().ShouldBe("Result1=Value1");
+            scenario.Function.Code.Lines[1].ToString().ShouldBe("Result2=Value2");
+
+            scenario.Parameters.Assignments.Count.ShouldBe(2);
+            scenario.Parameters.Assignments[0].Name.ShouldBe("Value1");
+            scenario.Parameters.Assignments[0].Expression.ToString().ShouldBe("987");
+            scenario.Parameters.Assignments[1].Name.ShouldBe("Value2");
+            scenario.Parameters.Assignments[1].Expression.ToString().ShouldBe("654");
+
+            scenario.Results.Assignments.Count.ShouldBe(2);
+            scenario.Results.Assignments[0].Name.ShouldBe("Result1");
+            scenario.Results.Assignments[0].Expression.ToString().ShouldBe("123");
+            scenario.Results.Assignments[1].Name.ShouldBe("Result2");
+            scenario.Results.Assignments[1].Expression.ToString().ShouldBe("456");
+        }
+
+        [Test]
+        public void TestScenarioWithEmptyParametersAndResults()
+        {
+            const string code = @"Scenario: ValidateScenarioKeywords
+# Validate Scenario keywords
+  Function ValidateFunctionKeywords
+  Parameters
+  Results";
+            var parser = GetService<ILexyParser>();
+            var scenario = parser.ParseScenario(code);
+
+            scenario.FunctionName.Value.ShouldBe("ValidateFunctionKeywords");
+            scenario.Parameters.Assignments.Count.ShouldBe(0);
+            scenario.Results.Assignments.Count.ShouldBe(0);
+        }
+
+        [Test]
+        public void TestValidScenarioWithInvalidInlineFunction()
+        {
+            const string code = @"Scenario: InvalidNumberEndsWithLetter
+  Function: InvalidNumberEndsWithLetterFunction
+    Results
+      number Result
+    Code
+      Result = 123A
+  ExpectError ""Invalid token at 18: Invalid number token character: A""";
+
+            var parser = GetService<ILexyParser>();
+            var scenario = parser.ParseScenario(code);
+
+            var logger = GetService<IParserLogger>();
+
+            logger.ComponentHasErrors(scenario).ShouldBeFalse();
+            logger.ComponentHasErrors(scenario.Function).ShouldBeTrue();
+
+            scenario.Function.ShouldNotBeNull();
+            scenario.ExpectError.ShouldNotBeNull();
         }
     }
 }

@@ -52,7 +52,9 @@ namespace Lexy.Poc.Core.Specifications
 
         public void Run()
         {
-            runnerContext.LogGlobal($"{Environment.NewLine}Filename: {fileName}{Environment.NewLine}");
+            if (scenarioRunners.Count == 0) return;
+
+            runnerContext.LogGlobal($"Filename: {fileName}");
 
             foreach (var scenario in scenarioRunners)
             {

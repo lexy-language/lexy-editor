@@ -22,5 +22,7 @@ namespace Lexy.Poc.Core.Parser
 
             return !valid ? null : new ComponentName(line.TokenValue(0), line.TokenValue(1));
         }
+
+        public override string ToString() => $"{Name} {Parameter}";
     }
 }

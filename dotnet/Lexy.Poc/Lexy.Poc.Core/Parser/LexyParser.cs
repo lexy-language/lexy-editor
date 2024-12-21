@@ -39,11 +39,13 @@ namespace Lexy.Poc.Core.Parser
             {
                 if (!context.ProcessLine())
                 {
+                    currentIndent = sourceCodeDocument.CurrentLine.Indent();
                     continue;
                 }
 
                 var line = sourceCodeDocument.CurrentLine;
                 var indent = line.Indent();
+
                 if (indent == 0 && !line.IsComment() && !line.IsEmpty())
                 {
                     var root = GetToken(line, context);
@@ -54,7 +56,7 @@ namespace Lexy.Poc.Core.Parser
                     currentComponent = root;
                     currentIndent = indent;
 
-                    componentStack.Clear();
+                    componentStack.Push(currentComponent);
 
                     continue;
                 }
@@ -67,11 +69,12 @@ namespace Lexy.Poc.Core.Parser
 
                 if (currentComponent == null)
                 {
-                    context.Logger.Fail(null, $"Unexpected line: {line}");
+                    context.Logger.Fail( $"Unexpected line: {line}");
                     continue;
                 }
 
-                if (indent <= currentIndent)
+                var indentDifference = currentIndent - indent;
+                for (var stackWalkBack = 0; stackWalkBack < indentDifference; stackWalkBack++)
                 {
                     currentComponent = componentStack.Pop();
                 }
@@ -81,6 +84,10 @@ namespace Lexy.Poc.Core.Parser
                 {
                     componentStack.Push(currentComponent);
                     currentComponent = component;
+                    currentIndent = indent + 1;
+                }
+                else
+                {
                     currentIndent = indent;
                 }
             }

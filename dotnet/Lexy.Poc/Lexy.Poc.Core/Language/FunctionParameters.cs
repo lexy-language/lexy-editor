@@ -9,12 +9,11 @@ namespace Lexy.Poc.Core.Language
 
         public IComponent Parse(IParserContext context)
         {
-            var line = context.CurrentLine;
-
-            if (line.IsEmpty()) return this;
-
             var variableDefinition = VariableDefinition.Parse(context);
-            Variables.Add(variableDefinition);
+            if (variableDefinition != null)
+            {
+                Variables.Add(variableDefinition);
+            }
             return this;
         }
     }

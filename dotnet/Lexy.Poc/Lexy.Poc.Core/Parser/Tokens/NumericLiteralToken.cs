@@ -80,5 +80,7 @@ namespace Lexy.Poc.Core.Parser
             numberValue = decimal.Parse(base.Value, CultureInfo.InvariantCulture);
             return ParseTokenResult.Finished(false);
         }
+
+        public override string ToString() => Value;
     }
 }

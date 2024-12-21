@@ -11,13 +11,16 @@ namespace Lexy.Poc.Core.Language
 
         public IComponent Parse(IParserContext context)
         {
-            var line = context.CurrentLine;
-
             var variableDefinition = VariableDefinition.Parse(context);
-            if (variableDefinition?.Default != null)
+            if (variableDefinition == null)
+            {
+                return this;
+            }
+
+            if (variableDefinition.Default != null)
             {
                 context.Logger.Fail(
-                    $"Result variable {variableDefinition.Name} should not have a default value. (Line:{line})", context.CurrentComponent?.ComponentName);
+                    $"Result variable '{variableDefinition.Name}' should not have a default value.", context.CurrentComponent);
                 return null;
             }
             Variables.Add(variableDefinition);

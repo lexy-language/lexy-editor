@@ -48,7 +48,7 @@ namespace Lexy.Poc.Core.Specifications
             this.parserLogger = parserLogger ?? throw new ArgumentNullException(nameof(parserLogger));
             this.serviceScope = serviceScope ?? throw new ArgumentNullException(nameof(serviceScope));
 
-            function = components.GetFunction(scenario.FunctionName.Value);
+            function = scenario.Function ?? components.GetFunction(scenario.FunctionName.Value);
         }
 
         public static IScenarioRunner Create(string fileName, Scenario scenario,
@@ -127,7 +127,7 @@ namespace Lexy.Poc.Core.Specifications
         {
             if (parserLogger.ComponentHasErrors(function))
             {
-                @ValidateFunctionErrors(context);
+                ValidateFunctionErrors(context);
                 return true;
             }
 

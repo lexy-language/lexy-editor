@@ -12,6 +12,7 @@ namespace Lexy.Poc.Core.Parser
         IRootComponent CurrentComponent { get; }
 
         void ProcessComponent(IRootComponent component);
+        void SetCurrentComponent(IRootComponent component);
 
         bool ProcessLine();
 

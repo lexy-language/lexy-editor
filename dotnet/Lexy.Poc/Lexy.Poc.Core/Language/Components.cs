@@ -7,11 +7,11 @@ namespace Lexy.Poc.Core.Language
 {
     public class Components
     {
-        private IList<IRootComponent> values = new Collection<IRootComponent>();
+        private readonly IList<IRootComponent> values = new Collection<IRootComponent>();
 
         public int Count => values.Count;
 
-        public bool ContainsEnum(string enumName)
+        private bool ContainsEnum(string enumName)
         {
             return values
                 .OfType<EnumDefinition>()
@@ -54,7 +54,13 @@ namespace Lexy.Poc.Core.Language
                 .FirstOrDefault(enumDefinition => enumDefinition.Name.Value == name);
         }
 
-        public void Add(IRootComponent component) => values.Add(component);
+        public void AddIfNew(IRootComponent component)
+        {
+            if (!values.Contains(component))
+            {
+                values.Add(component);
+            }
+        }
 
         public IComponent First() => values.FirstOrDefault();
 
