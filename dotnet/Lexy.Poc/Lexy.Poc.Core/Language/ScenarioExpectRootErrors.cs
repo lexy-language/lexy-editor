@@ -1,11 +1,15 @@
+using System.Collections.Generic;
 using Lexy.Poc.Core.Parser;
 
 namespace Lexy.Poc.Core.Language
 {
-    public class ScenarioExpectError : IComponent
+    public class ScenarioExpectRootErrors : IComponent
     {
-        public string Message { get; private set; }
-        public bool HasValue => Message != null;
+        private readonly IList<string> messages = new List<string>();
+
+        public IEnumerable<string> Messages => messages;
+
+        public bool HasValues => messages.Count > 0;
 
         public IComponent Parse(IParserContext context)
         {
@@ -14,14 +18,13 @@ namespace Lexy.Poc.Core.Language
             if (line.IsEmpty()) return this;
 
             var valid = context.ValidateTokens<ScenarioExpectError>()
-                .Count(2)
-                .Keyword(0)
-                .QuotedString(1)
+                .Count(1)
+                .QuotedString(0)
                 .IsValid;
 
             if (!valid) return this;
 
-            Message = line.TokenValuesFrom(1);
+            messages.Add(line.TokenValuesFrom(0));
             return this;
         }
     }

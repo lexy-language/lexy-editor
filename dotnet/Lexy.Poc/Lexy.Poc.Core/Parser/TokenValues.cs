@@ -15,6 +15,7 @@ namespace Lexy.Poc.Core.Parser
         public const string Results = "Results";
         public const string Code = "Code";
         public const string ExpectError = "ExpectError";
+        public const string ExpectRootErrors = "ExpectRootErrors";
 
         public const string Comment = "#";
         public const char CommentChar = '#';

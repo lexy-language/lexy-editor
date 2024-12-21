@@ -9,6 +9,7 @@ namespace Lexy.Poc.Core.Parser
         void Fail(string message, IComponent component = null);
 
         bool HasErrors();
+        bool HasRootErrors();
 
         bool HasErrorMessage(string expectedError);
 

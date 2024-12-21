@@ -19,6 +19,7 @@ namespace Lexy.Poc.Core.Parser
             TokenValues.Results,
             TokenValues.Code,
             TokenValues.ExpectError,
+            TokenValues.ExpectRootErrors,
 
             TokenValues.Comment,
         };

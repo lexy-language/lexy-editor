@@ -13,8 +13,10 @@ namespace Lexy.Poc.Core.Language
 
         public ScenarioParameters Parameters { get; } = new ScenarioParameters();
         public ScenarioResults Results { get; } = new ScenarioResults();
-        public ScenarioExpectError ExpectError { get; } = new ScenarioExpectError();
         public ScenarioTable Table { get; } = new ScenarioTable();
+
+        public ScenarioExpectError ExpectError { get; } = new ScenarioExpectError();
+        public ScenarioExpectRootErrors ExpectRootErrors { get; } = new ScenarioExpectRootErrors();
 
         public override string ComponentName => Name.Value;
 
@@ -52,6 +54,7 @@ namespace Lexy.Poc.Core.Language
                 TokenValues.Table => ResetRootComponent(context, Table),
                 TokenValues.Comment => ResetRootComponent(context, Comments),
                 TokenValues.ExpectError => ResetRootComponent(context, ExpectError.Parse(context)),
+                TokenValues.ExpectRootErrors => ResetRootComponent(context, ExpectRootErrors),
                 _ => InvalidToken(context, name)
             };
         }

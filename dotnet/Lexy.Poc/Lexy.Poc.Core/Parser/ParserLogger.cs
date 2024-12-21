@@ -31,6 +31,7 @@ namespace Lexy.Poc.Core.Parser
         private int failedMessages = 0;
 
         public bool HasErrors() => failedMessages > 0;
+        public bool HasRootErrors() => logEntries.Any(entry => entry.IsError && entry.Component == null);
 
         public ParserLogger(ILogger<ParserContext> logger, ISourceCodeDocument sourceCodeDocument)
         {
@@ -98,16 +99,6 @@ namespace Lexy.Poc.Core.Parser
             {
                 throw new InvalidOperationException($"Parsing failed: {FormatMessages()}");
             }
-        }
-
-        private string FormatCode()
-        {
-            var builder = new StringBuilder();
-            foreach (var line in sourceCodeDocument.Code)
-            {
-                builder.AppendLine(line.ToString());
-            }
-            return builder.ToString();
         }
     }
 }

@@ -24,6 +24,7 @@ namespace Lexy.Poc.Core.Specifications
         private IServiceScope serviceScope;
 
         public bool Failed { get; private set; }
+        public Scenario Scenario => scenario;
 
         public ScenarioRunner(ILexyCompiler lexyCompiler)
         {
@@ -74,7 +75,7 @@ namespace Lexy.Poc.Core.Specifications
                 return;
             }
 
-            if (function == null)
+            if (function == null && !scenario.ExpectRootErrors.HasValues)
             {
                 Fail($"  Function not found: {scenario.FunctionName}");
                 return;
@@ -131,36 +132,57 @@ namespace Lexy.Poc.Core.Specifications
 
         private bool ValidateFunctionErrors(ISpecificationRunnerContext context)
         {
-            var failedMessages = scenario.ExpectError.Root
-                ? parserLogger.FailedRootMessages()
-                : parserLogger.ComponentFailedMessages(function);
+            if (scenario.ExpectRootErrors.HasValues)
+            {
+                return ValidateRootErrors(context);
+            }
+            var failedMessages = parserLogger.ComponentFailedMessages(function);
 
             if (failedMessages.Length > 0 && !scenario.ExpectError.HasValue)
             {
-                Fail("Exception occured: " + Format(failedMessages));
-                context.Fail(scenario, "Exception occured: " + Format(failedMessages));
+                Fail("Exception occured: " + failedMessages.Format());
+                context.Fail(scenario, "Exception occured: " + failedMessages.Format());
                 return false;
             }
 
             if (!scenario.ExpectError.HasValue) return true;
 
-            foreach (var message in failedMessages)
+            if (failedMessages.Any(message => message.Contains(scenario.ExpectError.Message)))
             {
-                if (!message.Contains(scenario.ExpectError.Message))
-                {
-                    Fail($"Wrong exception {Environment.NewLine}  Expected: {scenario.ExpectError.Message}{Environment.NewLine}  Actual: {message}");
-                    return false;
-                }
+                context.Success(scenario);
+                return false;
             }
 
-            context.Success(scenario);
-
+            Fail($"Wrong exception {Environment.NewLine}  Expected: {scenario.ExpectError.Message}{Environment.NewLine}  Actual: {failedMessages.Format()}");
             return false;
         }
 
-        private string Format(IEnumerable<string> functionFailedMessages)
+        private bool ValidateRootErrors(ISpecificationRunnerContext specificationRunnerContext)
         {
-            return string.Join(Environment.NewLine, functionFailedMessages);
+            var failedMessages = parserLogger.FailedRootMessages().ToList();
+
+            var failed = false;
+            foreach (var rootMessage in scenario.ExpectRootErrors.Messages)
+            {
+                var failedMessage = failedMessages.Find(message => message.Contains(rootMessage));
+                if (failedMessage != null)
+                {
+                    failedMessages.Remove(failedMessage);
+                }
+                else
+                {
+                    failed = true;
+                }
+            }
+
+            if (!failedMessages.Any() && !failed)
+            {
+                context.Success(scenario);
+                return false; // don't compile and run rest of scenario
+            }
+
+            Fail($"Wrong exception {Environment.NewLine}  Expected: {scenario.ExpectRootErrors.Messages.Format()}{Environment.NewLine}  Actual: {parserLogger.FailedRootMessages().Format()}");
+            return false;
         }
 
         private IDictionary<string, object> GetValues(ScenarioParameters scenarioParameters,

@@ -14,5 +14,14 @@ namespace Lexy.Poc.Specifications
             var runner = ServiceProvider.GetRequiredService<ISpecificationsRunner>();
             runner.RunAll("../../../../../../laws/Specifications");
         }
+
+        [Test]
+        public void AllSpecificFile()
+        {
+            LoggingConfiguration.LogFileNames();
+
+            var runner = ServiceProvider.GetRequiredService<ISpecificationsRunner>();
+            runner.Run("../../../../../../laws/Specifications/Language/00001-DuplicatedNames.lexy");
+        }
     }
 }

@@ -16,6 +16,34 @@ namespace Lexy.Poc.Core.Specifications
             this.context = context;
         }
 
+
+        public void Run(string file)
+        {
+            CreateFileRunner(file);
+
+            var runners = context.FileRunners;
+            var countScenarios = context.CountScenarios();
+            Console.WriteLine($"Specifications found: {countScenarios}");
+            if (runners.Count == 0)
+            {
+                throw new InvalidOperationException($"No specifications found");
+            }
+
+            runners.ForEach(runner => runner.Run());
+
+            context.LogGlobal($"Specifications succeed: {countScenarios - context.Failed} / {countScenarios}");
+
+            foreach (var message in context.Messages)
+            {
+                Console.WriteLine(message);
+            }
+
+            if (context.Failed > 0)
+            {
+                Failed(context);
+            }
+        }
+
         public void RunAll(string folder)
         {
             GetRunners(folder);
@@ -69,12 +97,17 @@ namespace Lexy.Poc.Core.Specifications
 
             files
                 .OrderBy(name => name)
-                .Select(fileName => SpecificationFileRunner.Create(fileName, serviceProvider, context))
-                .ForEach(context.Add);
+                .ForEach(CreateFileRunner);
 
             Directory.GetDirectories(folder)
                 .OrderBy(name => name)
                 .ForEach(AddFolder);
+        }
+
+        private void CreateFileRunner(string fileName)
+        {
+            var runner = SpecificationFileRunner.Create(fileName, serviceProvider, context);
+            context.Add(runner);
         }
 
         private static string GetAbsoluteFolder(string folder)

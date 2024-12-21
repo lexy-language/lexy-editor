@@ -46,6 +46,18 @@ namespace Lexy.Poc.Core.Specifications
                 .GetScenarios()
                 .Select(scenario => ScenarioRunner.Create(fileName, scenario, parserContext, runnerContext, this.serviceScope.ServiceProvider))
                 .ToList();
+
+            if (parserContext.Logger.HasRootErrors())
+            {
+                var rootScenarioRunner =
+                    scenarioRunners.FirstOrDefault(runner => runner.Scenario.ExpectRootErrors.HasValues);
+
+                if (rootScenarioRunner == null)
+                {
+                    throw new InvalidOperationException(
+                        $"{fileName} has root errors but no scenario that verifies expected root errors. Errors: {parserContext.Logger.FailedRootMessages().Format()}");
+                }
+            }
         }
 
         public IEnumerable<IScenarioRunner> ScenarioRunners => scenarioRunners;

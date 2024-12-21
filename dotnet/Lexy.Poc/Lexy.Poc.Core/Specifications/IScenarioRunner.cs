@@ -7,6 +7,7 @@ namespace Lexy.Poc.Core.Specifications
     public interface IScenarioRunner
     {
         bool Failed { get; }
+        Scenario Scenario { get; }
 
         void Initialize(string fileName, Components components, Scenario scenario,
             ISpecificationRunnerContext context, IServiceScope serviceScope, IParserLogger parserLogger);
