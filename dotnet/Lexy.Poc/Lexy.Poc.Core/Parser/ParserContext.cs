@@ -1,42 +1,28 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Lexy.Poc.Core.Language;
 
 namespace Lexy.Poc.Core.Parser
 {
-    public class ParserContext
+    public class ParserContext : IParserContext
     {
-        private readonly IList<string> messages = new List<string>();
-        private readonly ITokenizer tokenizer = new Tokenizer();
+        private readonly IParserLogger logger;
+        private readonly ITokenizer tokenizer;
+        private readonly ISourceCodeDocument sourceCodeDocument;
 
-        private int failedMessages = 0;
         private IRootComponent currentComponent;
 
-        internal Line CurrentLine { get; private set; }
+        public Line CurrentLine => sourceCodeDocument.CurrentLine;
 
         public Components Components { get; } = new Components();
+        public IParserLogger Logger => logger;
+        public IRootComponent CurrentComponent => currentComponent;
 
-        public Line[] Code { get; }
-
-        public bool HasErrors() => failedMessages > 0;
-
-        public ParserContext(Line[] code)
+        public ParserContext(ITokenizer tokenizer, IParserLogger logger, ISourceCodeDocument sourceCodeDocument)
         {
-            Code = code;
-        }
-
-        public void Log(string message)
-        {
-            messages.Add($"{CurrentLine?.Index + 1}: {message}");
-        }
-
-        public void Fail(string message)
-        {
-            failedMessages++;
-            messages.Add($"{CurrentLine?.Index + 1}: ERROR - {message}");
-            currentComponent?.Fail(message);
+            this.tokenizer = tokenizer ?? throw new ArgumentNullException(nameof(tokenizer));
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            this.sourceCodeDocument = sourceCodeDocument ?? throw new ArgumentNullException(nameof(sourceCodeDocument));
         }
 
         public void ProcessComponent(IRootComponent component)
@@ -47,50 +33,47 @@ namespace Lexy.Poc.Core.Parser
             currentComponent = component;
         }
 
-        public bool ProcessLine(Line line)
+        public bool ProcessLine()
         {
-            CurrentLine = line ?? throw new ArgumentNullException(nameof(line));
-            Log(line.ToString());
+            var line = sourceCodeDocument.NextLine();
+            logger.Log(line.ToString(), currentComponent?.ComponentName);
 
             var success = CurrentLine.Tokenize(tokenizer, this);
             var tokenNames = string.Join(" ", CurrentLine.Tokens.Select(token => token.GetType().Name).ToArray());
 
-            Log("  Tokens: " + tokenNames);
+            logger.Log("  Tokens: " + tokenNames, currentComponent?.ComponentName);
 
             return success;
         }
 
         public TokenValidator ValidateTokens<T>()
         {
-            Log("  Parse: " + typeof(T).Name);
+            logger.Log("  Parse: " + typeof(T).Name, currentComponent?.ComponentName);
             return new TokenValidator(this);
         }
 
         public TokenValidator ValidateTokens(string name)
         {
-            Log("  Parse: " + name);
+            logger.Log("  Parse: " + name, currentComponent?.ComponentName);
             return new TokenValidator(this);
         }
+    }
 
-        public bool HasErrorMessage(string expectedError)
-        {
-            return failedMessages > 0;
-        }
+    public interface IParserLogger
+    {
+        void Log(string message, string componentName = null);
 
-        public string FormatMessages()
-        {
-            return
-                $"{string.Join(Environment.NewLine, messages)}{Environment.NewLine}------------- Lexy Source Code{Environment.NewLine}{FormatCode()}";
-        }
+        void Fail(string message, string componentName = null);
 
-        private string FormatCode()
-        {
-            var builder = new StringBuilder();
-            foreach (var line in Code)
-            {
-                builder.AppendLine(line.ToString());
-            }
-            return builder.ToString();
-        }
+        bool HasErrors();
+
+        bool HasErrorMessage(string expectedError);
+
+        public string FormatMessages();
+
+        bool ComponentHasErrors(IRootComponent component);
+        string[] ComponentFailedMessages(IRootComponent component);
+
+        void AssertNoErrors();
     }
 }

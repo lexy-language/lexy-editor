@@ -13,7 +13,7 @@ namespace Lexy.Poc.Core.Language
             Values = values;
         }
 
-        public static TableHeaders Parse(ParserContext context)
+        public static TableHeaders Parse(IParserContext context)
         {
             var index = 0;
             var validator = context.ValidateTokens<TableHeaders>();

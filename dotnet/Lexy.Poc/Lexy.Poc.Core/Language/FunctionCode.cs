@@ -7,7 +7,7 @@ namespace Lexy.Poc.Core.Language
     {
         public IList<Expression> Lines { get; } = new List<Expression>();
 
-        public IComponent Parse(ParserContext context)
+        public IComponent Parse(IParserContext context)
         {
             if (context.CurrentLine.IsComment())
             {

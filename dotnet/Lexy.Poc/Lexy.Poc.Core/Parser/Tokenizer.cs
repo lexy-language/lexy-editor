@@ -58,7 +58,7 @@ namespace Lexy.Poc.Core.Parser
                     var result = current.Parse(value, parserContext);
                     if (result.Status == TokenStatus.InvalidToken)
                     {
-                        parserContext.Fail($"Invalid token {index}: {result.ValidationError}");
+                        parserContext.Logger.Fail($"Invalid token {index}: {result.ValidationError}");
                         errors = true;
                         break;
                     }
@@ -92,7 +92,7 @@ namespace Lexy.Poc.Core.Parser
                 var result = current.Finalize(parserContext);
                 if (result.Status != TokenStatus.Finished)
                 {
-                    parserContext.Fail($"Invalid token at end of line: {result.Status} ({result.ValidationError})");
+                    parserContext.Logger.Fail($"Invalid token at end of line: {result.Status} ({result.ValidationError})");
                     errors = true;
                 }
                 else
@@ -124,7 +124,7 @@ namespace Lexy.Poc.Core.Parser
                 }
             }
 
-            parserContext.Fail($"Invalid character at {index} '{value}'");
+            parserContext.Logger.Fail($"Invalid character at {index} '{value}'");
             return null;
         }
     }

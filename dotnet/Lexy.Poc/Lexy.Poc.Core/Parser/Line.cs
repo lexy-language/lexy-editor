@@ -5,7 +5,6 @@ namespace Lexy.Poc.Core.Parser
 {
     public class Line
     {
-        private readonly string[] code;
 
         public int Index { get; }
 
@@ -14,9 +13,8 @@ namespace Lexy.Poc.Core.Parser
 
         internal Token[] Tokens { get; private set; }
 
-        public Line(int index, string line, string[] code)
+        public Line(int index, string line)
         {
-            this.code = code;
             Index = index;
             Content = line ?? throw new ArgumentNullException(nameof(line));
             TrimmedContent = line.Trim();

@@ -5,15 +5,19 @@ namespace Lexy.Poc.Core.Parser
 {
     public class TokenValidator
     {
-        private readonly ParserContext parserContext;
+        private readonly IParserContext parserContext;
         private readonly Token[] tokens;
+        private readonly string componentName;
+
         private bool errorsExpected;
 
         public bool IsValid { get; private set; }
 
-        public TokenValidator(ParserContext parserContext)
+        public TokenValidator(IParserContext parserContext)
         {
-            this.parserContext = parserContext;
+            this.parserContext = parserContext ?? throw new ArgumentNullException(nameof(parserContext));
+
+            componentName = parserContext.CurrentComponent?.ComponentName;
             tokens = parserContext.CurrentLine.Tokens;
 
             IsValid = true;
@@ -23,7 +27,7 @@ namespace Lexy.Poc.Core.Parser
         {
             if (tokens.Length != count)
             {
-                parserContext.Fail($"Invalid number of tokens '{tokens.Length}', should be '{count}'.");
+                parserContext.Logger.Fail($"Invalid number of tokens '{tokens.Length}', should be '{count}'.", componentName);
                 IsValid = false;
             }
 
@@ -34,7 +38,7 @@ namespace Lexy.Poc.Core.Parser
         {
             if (tokens.Length < count)
             {
-                parserContext.Fail($"Invalid number of tokens '{tokens.Length}', should be at least '{count}'.");
+                parserContext.Logger.Fail($"Invalid number of tokens '{tokens.Length}', should be at least '{count}'.", componentName);
                 IsValid = false;
             }
 
@@ -87,7 +91,7 @@ namespace Lexy.Poc.Core.Parser
         {
             if (index >= tokens.Length)
             {
-                parserContext.Fail($"Invalid token {index} value. Only {tokens.Length} tokens.");
+                parserContext.Logger.Fail($"Invalid token {index} value. Only {tokens.Length} tokens.", componentName);
                 IsValid = false;
                 return this;
             }
@@ -96,7 +100,7 @@ namespace Lexy.Poc.Core.Parser
             var token = tokens[index] as OperatorToken;
             if (token.Type != operatorType)
             {
-                parserContext.Fail($"Invalid operator token {index} value. Expected: '{operatorType}' Actual: '{token.Type}'");
+                parserContext.Logger.Fail($"Invalid operator token {index} value. Expected: '{operatorType}' Actual: '{token.Type}'", componentName);
                 IsValid = false;
             }
             return this;
@@ -129,7 +133,7 @@ namespace Lexy.Poc.Core.Parser
             var token = ValidateType<IntLiteralToken>(index);
             if (token != null && token.NumberValue != value)
             {
-                parserContext.Fail($"Invalid token {index} value. Expected: '{value}' Actual: '{token.Value}'");
+                parserContext.Logger.Fail($"Invalid token {index} value. Expected: '{value}' Actual: '{token.Value}'", componentName);
                 IsValid = false;
             }
             return this;
@@ -140,7 +144,7 @@ namespace Lexy.Poc.Core.Parser
             var token = ValidateType<NumberLiteralToken>(index);
             if (token != null && token.NumberValue != value)
             {
-                parserContext.Fail($"Invalid token {index} value. Expected: '{value}' Actual: '{token.Value}'");
+                parserContext.Logger.Fail($"Invalid token {index} value. Expected: '{value}' Actual: '{token.Value}'", componentName);
                 IsValid = false;
             }
             return this;
@@ -151,7 +155,7 @@ namespace Lexy.Poc.Core.Parser
             var token = ValidateType<BooleanLiteral>(index);
             if (token != null && token.BooleanValue != value)
             {
-                parserContext.Fail($"Invalid token {index} value. Expected: '{value}' Actual: '{token.Value}'");
+                parserContext.Logger.Fail($"Invalid token {index} value. Expected: '{value}' Actual: '{token.Value}'", componentName);
                 IsValid = false;
             }
             return this;
@@ -163,7 +167,7 @@ namespace Lexy.Poc.Core.Parser
             var value = new System.DateTime(year, month, day, hours, minutes, seconds);
             if (token != null && token.DateTimeValue != value)
             {
-                parserContext.Fail($"Invalid token {index} value. Expected: '{value}' Actual: '{token.Value}'");
+                parserContext.Logger.Fail($"Invalid token {index} value. Expected: '{value}' Actual: '{token.Value}'", componentName);
                 IsValid = false;
             }
             return this;
@@ -179,7 +183,7 @@ namespace Lexy.Poc.Core.Parser
         {
             if (index >= tokens.Length)
             {
-                parserContext.Fail($"Invalid token '{index}' Length: '{tokens.Length}'");
+                parserContext.Logger.Fail($"Invalid token '{index}' Length: '{tokens.Length}'", componentName);
                 IsValid = false;
 
                 return this;
@@ -188,7 +192,7 @@ namespace Lexy.Poc.Core.Parser
             var token = tokens[index] as ILiteralToken;
             if (token == null)
             {
-                parserContext.Fail($"Invalid token {index}  type. Expected: 'ILiteralToken' Actual: '{tokens[index].GetType().Name}'");
+                parserContext.Logger.Fail($"Invalid token {index}  type. Expected: 'ILiteralToken' Actual: '{tokens[index].GetType().Name}'", componentName);
                 IsValid = false;
 
                 return this;
@@ -200,7 +204,7 @@ namespace Lexy.Poc.Core.Parser
         {
             if (index >= tokens.Length)
             {
-                parserContext.Fail($"Invalid token '{index}' Length: '{tokens.Length}'");
+                parserContext.Logger.Fail($"Invalid token '{index}' Length: '{tokens.Length}'", componentName);
                 IsValid = false;
 
                 return null;
@@ -210,7 +214,7 @@ namespace Lexy.Poc.Core.Parser
             var type = token.GetType();
             if (type != typeof(T))
             {
-                parserContext.Fail($"Invalid token {index}  type. Expected: '{typeof(T).Name}' Actual: '{type.Name}'");
+                parserContext.Logger.Fail($"Invalid token {index}  type. Expected: '{typeof(T).Name}' Actual: '{type.Name}'", componentName);
                 IsValid = false;
 
                 return null;
@@ -222,14 +226,14 @@ namespace Lexy.Poc.Core.Parser
         {
             if (index >= tokens.Length)
             {
-                parserContext.Fail($"Invalid token {index} value. Only {tokens.Length} tokens.");
+                parserContext.Logger.Fail($"Invalid token {index} value. Only {tokens.Length} tokens.", componentName);
                 IsValid = false;
                 return this;
             }
             var token = tokens[index];
             if (token.Value != expectedValue)
             {
-                parserContext.Fail($"Invalid token  {index} value. Expected: '{expectedValue}' Actual: '{token.Value}'");
+                parserContext.Logger.Fail($"Invalid token  {index} value. Expected: '{expectedValue}' Actual: '{token.Value}'", componentName);
                 IsValid = false;
             }
             return this;
@@ -239,10 +243,9 @@ namespace Lexy.Poc.Core.Parser
         public TokenValidator ExpectError(string expectedError)
         {
             errorsExpected = true;
-            if (!parserContext.HasErrorMessage(expectedError))
+            if (!parserContext.Logger.HasErrorMessage(expectedError))
             {
-                parserContext.Fail($"Error expected but not found: " + expectedError + " - Errors: " +
-                                   parserContext.FormatMessages());
+                parserContext.Logger.Fail($"Error expected but not found: " + expectedError, componentName);
                 IsValid = false;
             }
 
@@ -251,14 +254,14 @@ namespace Lexy.Poc.Core.Parser
 
         public void Assert()
         {
-            if (!errorsExpected && parserContext.HasErrors())
+            if (!errorsExpected && parserContext.Logger.HasErrors())
             {
-                throw new InvalidOperationException(parserContext.FormatMessages());
+                throw new InvalidOperationException(parserContext.Logger.FormatMessages());
             }
 
             if (!IsValid)
             {
-                throw new InvalidOperationException(parserContext.FormatMessages());
+                throw new InvalidOperationException(parserContext.Logger.FormatMessages());
             }
         }
     }

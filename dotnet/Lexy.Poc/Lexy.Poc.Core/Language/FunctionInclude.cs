@@ -14,7 +14,7 @@ namespace Lexy.Poc.Core.Language
             Name = name;
         }
 
-        public static FunctionInclude Parse(ParserContext context)
+        public static FunctionInclude Parse(IParserContext context)
         {
             var valid = context.ValidateTokens<FunctionInclude>()
                 .Count(2)

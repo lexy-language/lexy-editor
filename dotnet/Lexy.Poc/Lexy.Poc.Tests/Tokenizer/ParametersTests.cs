@@ -3,12 +3,12 @@ using NUnit.Framework;
 
 namespace Lexy.Poc.Tokenizer
 {
-    public class ParametersTests
+    public class ParametersTests : ScopedServicesTestFixture
     {
         [Test]
         public void TestParameterDeclaration()
         {
-            TestContext
+            ServiceProvider
                 .TestLine("  number Result")
                 .ValidateTokens()
                     .Count(2)

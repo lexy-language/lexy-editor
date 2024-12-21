@@ -1,24 +1,30 @@
 using System;
 using Lexy.Poc.Core.Language;
 using Lexy.Poc.Core.Parser;
+using Lexy.Poc.Core.Specifications;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Lexy.Poc
 {
     public static class ParserExtensions
     {
-        public static Components ParseComponents(this LexyParser parser, string code)
+        public static Components ParseComponents(this ILexyParser parser, string code)
         {
+            if (parser == null) throw new ArgumentNullException(nameof(parser));
+
             var codeLines = code.Split(Environment.NewLine);
             var context = parser.Parse(codeLines, true);
 
             return context.Components;
         }
 
-        public static Function ParseFunction(this LexyParser parser, string code) => parser.ParseComponent<Function>(code);
-        public static Table ParseTable(this LexyParser parser, string code) => parser.ParseComponent<Table>(code);
+        public static Function ParseFunction(this ILexyParser parser, string code) => parser.ParseComponent<Function>(code);
+        public static Table ParseTable(this ILexyParser parser, string code) => parser.ParseComponent<Table>(code);
 
-        public static T ParseComponent<T>(this LexyParser parser, string code) where T : RootComponent
+        public static T ParseComponent<T>(this ILexyParser parser, string code) where T : RootComponent
         {
+            if (parser == null) throw new ArgumentNullException(nameof(parser));
+
             var components = parser.ParseComponents(code);
 
             if (components.Count != 1)

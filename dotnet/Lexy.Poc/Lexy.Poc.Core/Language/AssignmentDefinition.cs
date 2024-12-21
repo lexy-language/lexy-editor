@@ -15,7 +15,7 @@ namespace Lexy.Poc.Core.Language
             Name = name;
         }
 
-        public static AssignmentDefinition Parse(ParserContext context)
+        public static AssignmentDefinition Parse(IParserContext context)
         {
             var valid = context.ValidateTokens<AssignmentDefinition>()
                 .CountMinimum(3)
@@ -29,22 +29,6 @@ namespace Lexy.Poc.Core.Language
             var name = line.TokenValue(0);
             var value = Expression.Parse(line.TokensFrom(2));
             return value != null ? new AssignmentDefinition(name, value) : null;
-        }
-    }
-
-    public class Expression
-    {
-        public string Value { get; private set; }
-
-        public static Expression Parse(Token[] tokens)
-        {
-            var expression = new Expression();
-            foreach (var token in tokens)
-            {
-                expression.Value += token.Value;
-            }
-
-            return expression;
         }
     }
 }

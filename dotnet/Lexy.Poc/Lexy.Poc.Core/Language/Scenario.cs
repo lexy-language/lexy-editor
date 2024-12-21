@@ -25,7 +25,7 @@ namespace Lexy.Poc.Core.Language
             return new Scenario(name.Parameter);
         }
 
-        public override IComponent Parse(ParserContext context)
+        public override IComponent Parse(IParserContext context)
         {
             var line = context.CurrentLine;
             if (line.IsTokenType<CommentToken>(0))
@@ -36,7 +36,7 @@ namespace Lexy.Poc.Core.Language
             var name = line.TokenValue(0);
             if (!line.IsTokenType<KeywordToken>(0))
             {
-                context.Fail($"Invalid token '{name}'. Keyword expected.");
+                context.Logger.Fail($"Invalid token '{name}'. Keyword expected.", ComponentName);
                 return null;
             }
 
@@ -52,9 +52,9 @@ namespace Lexy.Poc.Core.Language
             };
         }
 
-        private IComponent InvalidToken(ParserContext parserContext, string name)
+        private IComponent InvalidToken(IParserContext parserContext, string name)
         {
-            parserContext.Fail($"Invalid token '{name}'.");
+            parserContext.Logger.Fail($"Invalid token '{name}'.", ComponentName);
             return null;
         }
     }

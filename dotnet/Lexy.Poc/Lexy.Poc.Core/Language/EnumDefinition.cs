@@ -22,7 +22,7 @@ namespace Lexy.Poc.Core.Language
             return new EnumDefinition(name.Parameter);
         }
 
-        public override IComponent Parse(ParserContext context)
+        public override IComponent Parse(IParserContext context)
         {
             var line = context.CurrentLine;
             if (line.IsEmpty()) return this;

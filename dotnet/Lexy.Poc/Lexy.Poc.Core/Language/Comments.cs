@@ -7,7 +7,7 @@ namespace Lexy.Poc.Core.Language
     {
         public IList<string> Lines { get; } = new List<string>();
 
-        public IComponent Parse(ParserContext context)
+        public IComponent Parse(IParserContext context)
         {
             var valid = context.ValidateTokens<Comments>()
                 .Count(1)

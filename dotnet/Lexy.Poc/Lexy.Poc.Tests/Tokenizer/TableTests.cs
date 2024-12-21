@@ -3,12 +3,12 @@ using NUnit.Framework;
 
 namespace Lexy.Poc.Tokenizer
 {
-    public class TableTests
+    public class TableTests : ScopedServicesTestFixture
     {
         [Test]
         public void TestTableHeader()
         {
-            TestContext
+            ServiceProvider
                 .TestLine(@"  | int Value | string Result |")
                 .ValidateTokens()
                     .Count(7)
@@ -25,7 +25,7 @@ namespace Lexy.Poc.Tokenizer
         [Test]
         public void TestTableRow()
         {
-            TestContext
+            ServiceProvider
                 .TestLine(@"  | 7 | 8 |")
                 .ValidateTokens()
                     .Count(5)

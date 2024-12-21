@@ -2,12 +2,12 @@ using NUnit.Framework;
 
 namespace Lexy.Poc.Tokenizer
 {
-    public class NumericLiteralsTests
+    public class NumericLiteralsTests : ScopedServicesTestFixture
     {
         [Test]
         public void TestInt0Literal()
         {
-            TestContext
+            ServiceProvider
                 .TestLine(@"   0")
                 .ValidateTokens()
                     .Count(1)
@@ -18,7 +18,7 @@ namespace Lexy.Poc.Tokenizer
         [Test]
         public void TestIntLiteral()
         {
-            TestContext
+            ServiceProvider
                 .TestLine(@"   456")
                 .ValidateTokens()
                     .Count(1)
@@ -29,7 +29,7 @@ namespace Lexy.Poc.Tokenizer
         [Test]
         public void TestDecimalLiteral()
         {
-            TestContext
+            ServiceProvider
                 .TestLine(@"   456.78")
                 .ValidateTokens()
                     .Count(1)

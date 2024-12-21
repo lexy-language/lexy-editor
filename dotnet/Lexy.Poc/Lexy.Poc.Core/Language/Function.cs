@@ -29,7 +29,7 @@ namespace Lexy.Poc.Core.Language
             return new Function(name.Parameter);
         }
 
-        public override IComponent Parse(ParserContext context)
+        public override IComponent Parse(IParserContext context)
         {
             var line = context.CurrentLine;
             if (line.IsTokenType<CommentToken>(0))
@@ -53,9 +53,9 @@ namespace Lexy.Poc.Core.Language
             };
         }
 
-        private IComponent InvalidToken(string name, Line line, ParserContext parserContext)
+        private IComponent InvalidToken(string name, Line line, IParserContext parserContext)
         {
-            parserContext.Fail($"Invalid token '{name}'. {line}");
+            parserContext.Logger.Fail($"Invalid token '{name}'. {line}", ComponentName);
             return null;
         }
 
@@ -85,7 +85,6 @@ namespace Lexy.Poc.Core.Language
             }
         }
 
-
         private void AddIncludes(Components components, IList<FunctionInclude> functionIncludes, List<IRootComponent> result)
         {
             foreach (var include in functionIncludes)
@@ -102,10 +101,5 @@ namespace Lexy.Poc.Core.Language
                 result.Add(dependency);
             }
         }
-    }
-
-    internal class IncludeTypes
-    {
-        public const string Table = "table";
     }
 }

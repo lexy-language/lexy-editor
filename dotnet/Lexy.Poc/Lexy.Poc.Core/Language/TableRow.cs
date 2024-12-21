@@ -14,7 +14,7 @@ namespace Lexy.Poc.Core.Language
             Values = values;
         }
 
-        public static TableRow Parse(ParserContext context)
+        public static TableRow Parse(IParserContext context)
         {
             var index = 0;
             var validator = context.ValidateTokens<TableRow>();

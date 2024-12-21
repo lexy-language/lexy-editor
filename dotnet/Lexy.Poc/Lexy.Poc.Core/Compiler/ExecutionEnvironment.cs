@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using Lexy.Poc.Core.Language;
 using Lexy.Poc.Core.Parser;
+using Microsoft.Extensions.Logging;
 
 namespace Lexy.Poc.Core.Compiler
 {
@@ -17,26 +18,30 @@ namespace Lexy.Poc.Core.Compiler
         {
             foreach (var generatedClass in generatedTypes)
             {
-                if (generatedClass.Component is Function)
+                switch (generatedClass.Component)
                 {
-                    var instance = assembly.CreateInstance(generatedClass.FullClassName);
-                    var executable = new ExecutableFunction(instance);
+                    case Function _:
+                    {
+                        var instance = assembly.CreateInstance(generatedClass.FullClassName);
+                        var executable = new ExecutableFunction(instance);
 
-                    executables.Add(generatedClass.Component.ComponentName, executable);
-                }
-                else if (generatedClass.Component is EnumDefinition)
-                {
-                    var enumType = assembly.GetType(generatedClass.FullClassName);
-                    enums.Add(generatedClass.Component.ComponentName, enumType);
-                }
-                else if (generatedClass.Component is Table)
-                {
-                    var table = assembly.GetType(generatedClass.FullClassName);
-                    tables.Add(generatedClass.Component.ComponentName, table);
-                }
-                else
-                {
-                    throw new InvalidOperationException("Unknown generated type: " + generatedClass.Component.GetType());
+                        executables.Add(generatedClass.Component.ComponentName, executable);
+                        break;
+                    }
+                    case EnumDefinition _:
+                    {
+                        var enumType = assembly.GetType(generatedClass.FullClassName);
+                        enums.Add(generatedClass.Component.ComponentName, enumType);
+                        break;
+                    }
+                    case Table _:
+                    {
+                        var table = assembly.GetType(generatedClass.FullClassName);
+                        tables.Add(generatedClass.Component.ComponentName, table);
+                        break;
+                    }
+                    default:
+                        throw new InvalidOperationException("Unknown generated type: " + generatedClass.Component.GetType());
                 }
             }
         }

@@ -4,12 +4,13 @@ using Shouldly;
 
 namespace Lexy.Poc.Compiler
 {
-    public class LexyScriptTests
+
+    public class LexyScriptTests : ScopedServicesTestFixture
     {
         [Test]
         public void TestSimpleReturn()
         {
-            var script = LexyScript.Create(@"Function: TestSimpleReturn
+            var script = ServiceScope.CompileFunction(@"Function: TestSimpleReturn
   Results
     int Result
   Code
@@ -21,7 +22,7 @@ namespace Lexy.Poc.Compiler
         [Test]
         public void TestParameterDefaultReturn()
         {
-            var script = LexyScript.Create(@"Function: TestSimpleReturn
+            var script = ServiceScope.CompileFunction(@"Function: TestSimpleReturn
   Parameters
     int Input = 5
   Results
@@ -35,7 +36,7 @@ namespace Lexy.Poc.Compiler
         [Test]
         public void TestAssignmentReturn()
         {
-            var script = LexyScript.Create(@"Function: TestSimpleReturn
+            var script = ServiceScope.CompileFunction(@"Function: TestSimpleReturn
   Parameters
     int Input = 5
 

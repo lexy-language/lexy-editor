@@ -1,39 +1,48 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using Lexy.Poc.Core.Language;
 
 namespace Lexy.Poc.Core.Parser
 {
-    public class LexyParser
+    public class LexyParser : ILexyParser
     {
-        public ParserContext ParseFile(string fileName, bool throwException = true)
+        private readonly IParserContext context;
+        private readonly ISourceCodeDocument sourceCodeDocument;
+
+        public LexyParser(IParserContext parserContext, ISourceCodeDocument sourceCodeDocument)
+        {
+            context = parserContext ?? throw new ArgumentNullException(nameof(parserContext));
+            this.sourceCodeDocument = sourceCodeDocument ?? throw new ArgumentNullException(nameof(sourceCodeDocument));
+        }
+
+        public IParserContext ParseFile(string fileName, bool throwException = true)
         {
             var code = File.ReadAllLines(fileName);
 
             return Parse(code, throwException);
         }
 
-        public ParserContext Parse(string[] code, bool throwException = true)
+        public IParserContext Parse(string[] code, bool throwException = true)
         {
             if (code == null) throw new ArgumentNullException(nameof(code));
 
-            var lines = code.Select((line, index) => new Line(index, line, code)).ToArray();
-            var context = new ParserContext(lines);
+            sourceCodeDocument.SetCode(code);
+
             var currentIndent = 0;
 
             IComponent currentComponent = null;
 
             var componentStack = new Stack<IComponent>();
 
-            foreach (var line in lines)
+            while (sourceCodeDocument.HasMoreLines())
             {
-                if (!context.ProcessLine(line))
+                if (!context.ProcessLine())
                 {
                     continue;
                 }
 
+                var line = sourceCodeDocument.CurrentLine;
                 var indent = line.Indent();
                 if (indent == 0 && !line.IsComment() && !line.IsEmpty())
                 {
@@ -58,7 +67,7 @@ namespace Lexy.Poc.Core.Parser
 
                 if (currentComponent == null)
                 {
-                    context.Fail($"Unexpected line: {line}");
+                    context.Logger.Fail(null, $"Unexpected line: {line}");
                     continue;
                 }
 
@@ -76,15 +85,15 @@ namespace Lexy.Poc.Core.Parser
                 }
             }
 
-            if (throwException && context.HasErrors())
+            if (throwException)
             {
-                throw new InvalidOperationException($"Parsing failed: {context.FormatMessages()}");
+                context.Logger.AssertNoErrors();
             }
 
             return context;
         }
 
-        private IRootComponent GetToken(Line line, ParserContext context)
+        private IRootComponent GetToken(Line line, IParserContext context)
         {
             var tokenName = ComponentName.Parse(line, context);
 
@@ -99,10 +108,10 @@ namespace Lexy.Poc.Core.Parser
             };
         }
 
-        private IRootComponent InvalidComponent(ComponentName tokenName, ParserContext context)
+        private IRootComponent InvalidComponent(ComponentName tokenName, IParserContext context)
         {
             var message = $"Unknown keyword: {tokenName.Name}";
-            context.Fail(message);
+            context.Logger.Fail(message);
             return null;
         }
     }

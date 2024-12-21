@@ -4,7 +4,6 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using Lexy.Poc.Core.Language;
 using Lexy.Poc.Core.Parser;
 using Microsoft.CodeAnalysis;
@@ -13,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Lexy.Poc.Core.Compiler
 {
-    public class LexyCompiler
+    public class LexyCompiler : ILexyCompiler
     {
         public ExecutionEnvironment Compile(Components components, Function function)
         {
@@ -21,7 +20,7 @@ namespace Lexy.Poc.Core.Compiler
             if (function == null) throw new ArgumentNullException(nameof(function));
 
             var environment = new ExecutionEnvironment();
-            var context = new LexyCompilerContext(environment);
+            var context = new CompilerContext(environment);
 
             var generateNodes = new List<IRootComponent> { function };
             generateNodes.AddRange(function.GetDependencies(components));
@@ -79,19 +78,14 @@ namespace Lexy.Poc.Core.Compiler
 
         private static IRootTokenWriter GetWriter(IRootComponent rootComponent)
         {
-            switch (rootComponent)
+            return rootComponent switch
             {
-                case Function _:
-                    return new FunctionWriter();
-                case EnumDefinition _:
-                    return new EnumWriter();
-                case Table _:
-                    return new TableWriter();
-                case Scenario _:
-                    return null;
-            }
-
-            throw new InvalidOperationException("No writer defined: " + rootComponent.GetType());
+                Function _ => new FunctionWriter(),
+                EnumDefinition _ => new EnumWriter(),
+                Table _ => new TableWriter(),
+                Scenario _ => null,
+                _ => throw new InvalidOperationException("No writer defined: " + rootComponent.GetType())
+            };
         }
 
         private string FormatCompilationErrors(ImmutableArray<Diagnostic> emitResult)

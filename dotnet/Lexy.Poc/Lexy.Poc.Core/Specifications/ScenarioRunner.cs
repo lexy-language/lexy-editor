@@ -6,51 +6,70 @@ using System.Linq;
 using Lexy.Poc.Core.Compiler;
 using Lexy.Poc.Core.Language;
 using Lexy.Poc.Core.Parser;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Lexy.Poc.Core.Specifications
 {
-    public class SpecificationRunner
+    public class ScenarioRunner : IScenarioRunner, IDisposable
     {
-        private readonly Scenario scenario;
-        private readonly Function function;
-        private readonly SpecificationRunnerContext context;
-        private readonly ParserContext parserContext;
-        private readonly Components components;
+        private ISpecificationRunnerContext context;
+        private readonly ILexyCompiler lexyCompiler;
 
-        public string FileName { get; }
+        private string fileName;
+        private Scenario scenario;
+        private Function function;
+        private Components components;
+        private IParserLogger parserLogger;
+        private IServiceScope serviceScope;
+
         public bool Failed { get; private set; }
 
-        private SpecificationRunner(string fileName, ParserContext parserContext, Components components,
-            Scenario scenario, Function function, SpecificationRunnerContext context)
+        public ScenarioRunner(ILexyCompiler lexyCompiler)
         {
-            FileName = fileName ?? throw new ArgumentNullException(nameof(fileName));
-
-            this.parserContext = parserContext;
-            this.components = components;
-            this.scenario = scenario;
-            this.function = function;
-            this.context = context;
+            this.lexyCompiler = lexyCompiler;
         }
 
-        public static SpecificationRunner Create(string fileName, Scenario scenario,
-            SpecificationRunnerContext runnerContext, ParserContext parserContext)
+        public void Initialize(string fileName, Components components, Scenario scenario,
+            ISpecificationRunnerContext context, IServiceScope serviceScope, IParserLogger parserLogger)
+        {
+            //parserContext and runnerContext are managed by a parent ServiceProvider context,
+            //thus they can't be injected via the constructor
+            if (this.fileName != null)
+            {
+                throw new InvalidOperationException(
+                    "Initialize should only called once. Scope should be managed by ServiceProvider.CreateScope");
+            }
+
+            this.fileName = fileName ?? throw new ArgumentNullException(nameof(fileName));
+            this.context = context;
+
+            this.components = components ?? throw new ArgumentNullException(nameof(components));
+            this.scenario = scenario ?? throw new ArgumentNullException(nameof(scenario));
+            this.parserLogger = parserLogger ?? throw new ArgumentNullException(nameof(parserLogger));
+            this.serviceScope = serviceScope ?? throw new ArgumentNullException(nameof(serviceScope));
+
+            function = components.GetFunction(scenario.FunctionName.Value);
+        }
+
+        public static IScenarioRunner Create(string fileName, Scenario scenario,
+            IParserContext parserContext, ISpecificationRunnerContext context,
+            IServiceProvider serviceProvider)
         {
             if (scenario == null) throw new ArgumentNullException(nameof(scenario));
-            if (parserContext == null) throw new ArgumentNullException(nameof(context));
 
-            var components = parserContext.Components;
-            var function = components.GetFunction(scenario.FunctionName.Value);
+            var serviceScope = serviceProvider.CreateScope();
+            var scenarioRunner = serviceScope.ServiceProvider.GetRequiredService<IScenarioRunner>();
+            scenarioRunner.Initialize(fileName, parserContext.Components, scenario, context, serviceScope, parserContext.Logger);
 
-            return new SpecificationRunner(fileName, parserContext, components, scenario, function, runnerContext);
+            return scenarioRunner;
         }
-
 
         public void Run()
         {
-            if (scenario.HasErrors)
+            if (parserLogger.ComponentHasErrors(scenario))
             {
                 Fail($"  Parsing scenario failed: {scenario.FunctionName}");
-                scenario.FailedMessages.ForEach(context.Log);
+                parserLogger.ComponentFailedMessages(scenario).ForEach(context.Log);
                 return;
             }
 
@@ -62,8 +81,7 @@ namespace Lexy.Poc.Core.Specifications
 
             if (ValidateErrors(context)) return;
 
-            var compiler = new LexyCompiler();
-            var environment = compiler.Compile(components, function);
+            var environment = lexyCompiler.Compile(components, function);
             var executable = environment.GetFunction(function);
             var values = GetValues(scenario.Parameters, function.Parameters, environment);
 
@@ -73,7 +91,6 @@ namespace Lexy.Poc.Core.Specifications
             if (validationResultText.Length > 0)
             {
                 Fail(validationResultText);
-
             }
             else
             {
@@ -106,11 +123,11 @@ namespace Lexy.Poc.Core.Specifications
             return validationResult.ToString();
         }
 
-        private bool ValidateErrors(SpecificationRunnerContext context)
+        private bool ValidateErrors(ISpecificationRunnerContext context)
         {
-            if (function.FailedMessages.Any())
+            if (parserLogger.ComponentHasErrors(function))
             {
-                ValidateFunctionErrors(context);
+                @ValidateFunctionErrors(context);
                 return true;
             }
 
@@ -123,15 +140,16 @@ namespace Lexy.Poc.Core.Specifications
             return false;
         }
 
-        private void ValidateFunctionErrors(SpecificationRunnerContext context)
+        private void ValidateFunctionErrors(ISpecificationRunnerContext context)
         {
+            var failedMessages = parserLogger.ComponentFailedMessages(function);
             if (!scenario.ExpectError.HasValue)
             {
-                Fail("Exception occured: " + Format(function.FailedMessages));
+                Fail("Exception occured: " + Format(failedMessages));
                 return;
             }
 
-            foreach (var message in function.FailedMessages)
+            foreach (var message in failedMessages)
             {
                 if (!message.Contains(scenario.ExpectError.Message))
                 {
@@ -172,7 +190,24 @@ namespace Lexy.Poc.Core.Specifications
 
         public string ParserLogging()
         {
-            return parserContext.FormatMessages();
+            return $"------- Filename: {fileName}{Environment.NewLine}{parserLogger.FormatMessages()}";
         }
+
+        public void Dispose()
+        {
+            serviceScope?.Dispose();
+            serviceScope = null;
+        }
+    }
+
+    public interface IScenarioRunner
+    {
+        bool Failed { get; }
+
+        void Initialize(string fileName, Components components, Scenario scenario,
+            ISpecificationRunnerContext context, IServiceScope serviceScope, IParserLogger parserLogger);
+
+        void Run();
+        string ParserLogging();
     }
 }

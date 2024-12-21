@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Lexy.Poc.Core.Language;
 using Lexy.Poc.Core.Parser;
 
@@ -64,35 +63,5 @@ namespace Lexy.Poc.Core.Compiler
 
             writer.CloseScope();
         }
-    }
-
-    public class ValidateTableKeyword
-    {
-        public class ValidateTableKeywordRow
-        {
-            public int Value { get; set; }
-            public int Result { get; set; }
-        }
-        private static IList<ValidateTableKeywordRow> _value = new List<ValidateTableKeywordRow>();
-        static ValidateTableKeyword()
-        {
-            _value.Add(new ValidateTableKeywordRow
-            {
-                Value = 0,
-                Result = 0,
-            });
-            _value.Add(new ValidateTableKeywordRow
-            {
-                Value = 1,
-                Result = 1,
-            });
-        }
-
-        public ValidateTableKeyword()
-        {
-        }
-
-        public int Count => _value.Count;
-        public IEnumerable<ValidateTableKeywordRow> Value => _value;
     }
 }

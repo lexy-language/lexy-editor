@@ -2,12 +2,12 @@ using NUnit.Framework;
 
 namespace Lexy.Poc.Tokenizer
 {
-    public class BooleanLiteralsTests
+    public class BooleanLiteralsTests : ScopedServicesTestFixture
     {
         [Test]
         public void TestBooleanTrueLiteral()
         {
-            TestContext
+            ServiceProvider
                 .TestLine(@"   true")
                 .ValidateTokens()
                     .Count(1)
@@ -18,7 +18,7 @@ namespace Lexy.Poc.Tokenizer
         [Test]
         public void TestBooleanFalseLiteral()
         {
-            TestContext
+            ServiceProvider
                 .TestLine(@"   false")
                 .ValidateTokens()
                     .Count(1)

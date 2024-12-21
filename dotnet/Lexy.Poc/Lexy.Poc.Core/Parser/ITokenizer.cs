@@ -1,6 +1,6 @@
 namespace Lexy.Poc.Core.Parser
 {
-    internal interface ITokenizer
+    public interface ITokenizer
     {
         Token[] Tokenize(Line line, ParserContext parserContext, out bool errors);
     }

@@ -3,12 +3,12 @@ using NUnit.Framework;
 
 namespace Lexy.Poc.Tokenizer
 {
-    public class TypeLiteralsTests
+    public class TypeLiteralsTests : ScopedServicesTestFixture
     {
         [Test]
         public void TestIntTypeLiteral()
         {
-            TestContext
+            ServiceProvider
                 .TestLine(@"   int Value")
                 .ValidateTokens()
                     .Count(2)
@@ -20,7 +20,7 @@ namespace Lexy.Poc.Tokenizer
         [Test]
         public void TestNumberTypeLiteral()
         {
-            TestContext
+            ServiceProvider
                 .TestLine(@"   number Value")
                 .ValidateTokens()
                     .Count(2)
@@ -32,7 +32,7 @@ namespace Lexy.Poc.Tokenizer
         [Test]
         public void TestStringTypeLiteral()
         {
-            TestContext
+            ServiceProvider
                 .TestLine(@"   string Value")
                 .ValidateTokens()
                     .Count(2)
@@ -44,7 +44,7 @@ namespace Lexy.Poc.Tokenizer
         [Test]
         public void TestDateTimeTypeLiteral()
         {
-            TestContext
+            ServiceProvider
                 .TestLine(@"   datetime Value")
                 .ValidateTokens()
                     .Count(2)
@@ -56,7 +56,7 @@ namespace Lexy.Poc.Tokenizer
         [Test]
         public void TestBooleanTypeLiteral()
         {
-            TestContext
+            ServiceProvider
                 .TestLine(@"   boolean Value")
                 .ValidateTokens()
                     .Count(2)

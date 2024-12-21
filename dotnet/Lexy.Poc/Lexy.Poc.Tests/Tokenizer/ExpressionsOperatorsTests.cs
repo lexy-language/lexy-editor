@@ -4,12 +4,12 @@ using NUnit.Framework;
 
 namespace Lexy.Poc.Tokenizer
 {
-    public class ExpressionsOperatorsTests
+    public class ExpressionsOperatorsTests : ScopedServicesTestFixture
     {
         [Test]
         public void TestAdditionOperator()
         {
-            TestContext
+            ServiceProvider
                 .TestLine(@"  X = Y + 1")
                 .ValidateTokens()
                     .Count(5)
@@ -24,7 +24,7 @@ namespace Lexy.Poc.Tokenizer
         [Test]
         public void TestSubtractionOperator()
         {
-            TestContext
+            ServiceProvider
                 .TestLine(@"  X = Y - 1")
                 .ValidateTokens()
                     .Count(5)
@@ -39,7 +39,7 @@ namespace Lexy.Poc.Tokenizer
         [Test]
         public void TestMultiplicationOperator()
         {
-            TestContext
+            ServiceProvider
                 .TestLine(@"  X = Y * 1")
                 .ValidateTokens()
                     .Count(5)
@@ -54,7 +54,7 @@ namespace Lexy.Poc.Tokenizer
         [Test]
         public void TestDivisionOperator()
         {
-            TestContext
+            ServiceProvider
                 .TestLine(@"  X = Y / 1")
                 .ValidateTokens()
                     .Count(5)
@@ -69,7 +69,7 @@ namespace Lexy.Poc.Tokenizer
         [Test]
         public void TestModulusOperator()
         {
-            TestContext
+            ServiceProvider
                 .TestLine(@"  X = Y % 1")
                 .ValidateTokens()
                     .Count(5)
@@ -84,7 +84,7 @@ namespace Lexy.Poc.Tokenizer
         [Test]
         public void TestParenthesesOperator()
         {
-            TestContext
+            ServiceProvider
                 .TestLine(@"  X = (Y)")
                 .ValidateTokens()
                     .Count(5)
@@ -99,7 +99,7 @@ namespace Lexy.Poc.Tokenizer
         [Test]
         public void TestBracketsOperator()
         {
-            TestContext
+            ServiceProvider
                 .TestLine(@"  X = A[1]")
                 .ValidateTokens()
                     .Count(6)
@@ -115,7 +115,7 @@ namespace Lexy.Poc.Tokenizer
         [Test]
         public void TestLessThanOperator()
         {
-            TestContext
+            ServiceProvider
                 .TestLine(@"  X = A < 7")
                 .ValidateTokens()
                     .Count(5)
@@ -130,7 +130,7 @@ namespace Lexy.Poc.Tokenizer
         [Test]
         public void TestLessOrEqualThanOperator()
         {
-            TestContext
+            ServiceProvider
                 .TestLine(@"  X = A <= 7")
                 .ValidateTokens()
                     .Count(5)
@@ -145,7 +145,7 @@ namespace Lexy.Poc.Tokenizer
         [Test]
         public void TestGreaterThanOperator()
         {
-            TestContext
+            ServiceProvider
                 .TestLine(@"  X = A > 7")
                 .ValidateTokens()
                     .Count(5)
@@ -160,7 +160,7 @@ namespace Lexy.Poc.Tokenizer
         [Test]
         public void TestGreaterOrEqualThanOperator()
         {
-            TestContext
+            ServiceProvider
                 .TestLine(@"  X = A >= 7")
                 .ValidateTokens()
                     .Count(5)
@@ -177,7 +177,7 @@ namespace Lexy.Poc.Tokenizer
         [Test]
         public void TestFunctionCallOperator()
         {
-            TestContext
+            ServiceProvider
                 .TestLine(@"  X = abs(Y + 8)")
                 .ValidateTokens()
                     .Count(8)

@@ -16,7 +16,7 @@ namespace Lexy.Poc.Core.Language
             Default = @default;
         }
 
-        public static VariableDefinition Parse(ParserContext context)
+        public static VariableDefinition Parse(IParserContext context)
         {
             var result = context.ValidateTokens<VariableDefinition>()
                 .CountMinimum(2)
@@ -38,12 +38,12 @@ namespace Lexy.Poc.Core.Language
 
             if (line.Token<OperatorToken>(2).Type != OperatorType.Assignment)
             {
-                context.Fail("Invalid variable declaration token. Expected '='.");
+                context.Logger.Fail("Invalid variable declaration token. Expected '='.", context.CurrentComponent?.ComponentName);
                 return null;
             }
             if (tokens.Length != 4)
             {
-                context.Fail("Invalid variable declaration token. Expected default literal token.");
+                context.Logger.Fail("Invalid variable declaration token. Expected default literal token.", context.CurrentComponent?.ComponentName);
                 return null;
             }
 

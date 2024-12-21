@@ -1,0 +1,46 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Lexy.Poc.Core.Parser
+{
+    public class SourceCodeDocument : ISourceCodeDocument
+    {
+        private int index;
+        private Line[] code;
+
+        public Line CurrentLine { get; private set; }
+
+        public IEnumerable<Line> Code => code;
+
+        public void SetCode(string[] lines)
+        {
+            if (Code != null)
+            {
+                throw new InvalidOperationException(
+                    "Source code already set. Each LexyParser should only be used once. " +
+                    "Scope should be managed by using ServiceProvider.OpenScope(). " +
+                    "See SpecificationFileRunner.Create as example.");
+            }
+
+            index = -1;
+            code = lines.Select((line, index) => new Line(index, line)).ToArray();
+        }
+
+        public bool HasMoreLines()
+        {
+            return index < code.Length - 1;
+        }
+
+        public Line NextLine()
+        {
+            if (index >= code.Length)
+            {
+                throw new InvalidOperationException("No more lines");
+            }
+
+            CurrentLine = code[++index];
+            return CurrentLine;
+        }
+    }
+}

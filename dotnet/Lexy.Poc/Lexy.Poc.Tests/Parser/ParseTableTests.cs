@@ -1,11 +1,12 @@
 using Lexy.Poc.Core;
 using Lexy.Poc.Core.Parser;
+using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Shouldly;
 
 namespace Lexy.Poc.Parser
 {
-    public class ParseTableTests
+    public class ParseTableTests : ScopedServicesTestFixture
     {
         [Test]
         public void TestInAndStringColumns()
@@ -15,7 +16,7 @@ namespace Lexy.Poc.Parser
   | 7 | ""Test quoted"" |
   | 8 | Test |";
 
-            var parser = new LexyParser();
+            var parser = ServiceProvider.GetRequiredService<ILexyParser>();
             var script = parser.ParseTable(code);
 
             script.Name.Value.ShouldBe("TestTable");
@@ -43,7 +44,7 @@ namespace Lexy.Poc.Parser
   | d""2024/12/18 17:07:45"" | false |
   | d""2024/12/18 17:08:12"" | true |";
 
-            var parser = new LexyParser();
+            var parser = ServiceProvider.GetService<ILexyParser>();
             var script = parser.ParseTable(code);
 
             script.Name.Value.ShouldBe("TestTable");

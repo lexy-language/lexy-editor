@@ -7,7 +7,7 @@ namespace Lexy.Poc.Core.Language
         public string Message { get; private set; }
         public bool HasValue { get => Message != null; }
 
-        public IComponent Parse(ParserContext context)
+        public IComponent Parse(IParserContext context)
         {
             if (context.CurrentLine.IsEmpty()) return this;
 

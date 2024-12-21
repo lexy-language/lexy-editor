@@ -3,12 +3,12 @@ using NUnit.Framework;
 
 namespace Lexy.Poc.Tokenizer
 {
-    public class KeywordTests
+    public class KeywordTests : ScopedServicesTestFixture
     {
         [Test]
         public void TestFunctionKeyword()
         {
-            TestContext
+            ServiceProvider
                 .TestLine("Function: TestSimpleReturn")
                 .ValidateTokens()
                     .Count(2)
@@ -20,7 +20,7 @@ namespace Lexy.Poc.Tokenizer
         [Test]
         public void TestResultKeyword()
         {
-            TestContext
+            ServiceProvider
                 .TestLine("  Results")
                 .ValidateTokens()
                     .Count(1)
@@ -31,7 +31,7 @@ namespace Lexy.Poc.Tokenizer
         [Test]
         public void TestExpectErrorKeywordWithQuotedLiteral()
         {
-            TestContext
+            ServiceProvider
                 .TestLine(@"  ExpectError ""Invalid token 'Paraeters'""")
                 .ValidateTokens()
                     .Count(2)
@@ -43,17 +43,17 @@ namespace Lexy.Poc.Tokenizer
         [Test]
         public void TestExpectErrorKeywordWithQuotedAndInvalidChar()
         {
-            TestContext
+            ServiceProvider
                 .TestLine(@"  ExpectError ""Invalid token 'Paraeters'"".")
                 .ValidateTokens()
-                .ExpectError(@"0: Invalid character at 41 '.'")
+                .ExpectError(@"1: ERROR - Invalid character at 41 '.'")
                 .Assert();
         }
 
         [Test]
         public void TestAssignmentWithMemberAccess()
         {
-            TestContext
+            ServiceProvider
                 .TestLine(@"  Value = ValidateEnumKeyword.Second")
                 .ValidateTokens()
                 .Count(3)
@@ -66,20 +66,20 @@ namespace Lexy.Poc.Tokenizer
         [Test]
         public void TestAssignmentWithDoubleMemberAccess()
         {
-            TestContext
+            ServiceProvider
                 .TestLine(@"  Value = ValidateEnumKeyword..Second")
                 .ValidateTokens()
-                .ExpectError("0: Invalid token 30: Unexpected character: '.'. Member accessor should be followed by member name.")
+                .ExpectError("1: ERROR - Invalid token 30: Unexpected character: '.'. Member accessor should be followed by member name.")
                 .Assert();
         }
 
         [Test]
         public void TestAssignmentWithMemberAccessWithoutLastMember()
         {
-            TestContext
+            ServiceProvider
                 .TestLine(@"  Value = ValidateEnumKeyword.")
                 .ValidateTokens()
-                .ExpectError("0: Invalid token at end of line: InvalidToken (Unexpected end of line. Member accessor should be followed by member name.)")
+                .ExpectError("1: ERROR - Invalid token at end of line: InvalidToken (Unexpected end of line. Member accessor should be followed by member name.)")
                 .Assert();
         }
 

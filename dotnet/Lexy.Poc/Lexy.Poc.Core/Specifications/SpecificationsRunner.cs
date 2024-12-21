@@ -1,38 +1,36 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Lexy.Poc.Core.Parser;
 
 namespace Lexy.Poc.Core.Specifications
 {
-    public class SpecificationsRunner
+    public class SpecificationsRunner : ISpecificationsRunner
     {
-        private readonly LexyParser parser = new LexyParser();
+        private readonly IServiceProvider serviceProvider;
+        private readonly ISpecificationRunnerContext context;
+
+        public SpecificationsRunner(IServiceProvider serviceProvider, ISpecificationRunnerContext context)
+        {
+            this.serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+            this.context = context;
+        }
 
         public void RunAll(string folder)
         {
-            var context = new SpecificationRunnerContext();
-            var runners = GetRunners(folder, context);
-            Console.WriteLine($"Specifications found: {runners.Count}");
+            GetRunners(folder);
+
+            var runners = context.FileRunners;
+            var countScenarios = context.CountScenarios();
+            Console.WriteLine($"Specifications found: {countScenarios}");
             if (runners.Count == 0)
             {
                 throw new InvalidOperationException($"No specifications found");
             }
 
-            var lastFile = string.Empty;
-            runners.ForEach(runner =>
-            {
-                if (lastFile != runner.FileName)
-                {
-                    lastFile = runner.FileName;
-                    context.LogGlobal($"{Environment.NewLine}Filename: {runner.FileName}{Environment.NewLine}");
-                }
+            runners.ForEach(runner => runner.Run());
 
-                runner.Run();
-            });
-
-            context.LogGlobal($"{Environment.NewLine}Specifications succeed: {runners.Count - context.Failed} / {runners.Count}");
+            context.LogGlobal($"{Environment.NewLine}Specifications succeed: {countScenarios - context.Failed} / {countScenarios}");
 
             foreach (var message in context.Messages)
             {
@@ -48,62 +46,42 @@ namespace Lexy.Poc.Core.Specifications
 
             if (context.Failed > 0)
             {
-                Failed(runners, context);
+                Failed(context);
             }
         }
 
-        private static void Failed(IList<SpecificationRunner> runners, SpecificationRunnerContext context)
+        private static void Failed(ISpecificationRunnerContext context)
         {
             Console.WriteLine("--------------- FAILED PARSER LOGGING ---------------");
-            var logged = new List<string>();
-            foreach (var runner in runners.Where(runner => runner.Failed))
+            foreach (var runner in context.FailedScenariosRunners())
             {
-                if (runner.Failed && !logged.Contains(runner.FileName))
-                {
-                    Console.WriteLine($"------- Filename: {runner.FileName}");
-                    logged.Add(runner.FileName);
-                    Console.WriteLine(runner.ParserLogging());
-                }
+                Console.WriteLine(runner.ParserLogging());
             }
 
             throw new InvalidOperationException($"Specifications failed: {context.Failed}");
         }
 
-        private IList<SpecificationRunner> GetRunners(string folder,
-            SpecificationRunnerContext runnerContext)
+        private void GetRunners(string folder)
         {
             var absoluteFolder = GetAbsoluteFolder(folder);
 
             Console.WriteLine($"Specifications folder: {absoluteFolder}");
 
-            var result = new List<SpecificationRunner>();
-            AddSpecifications(result, absoluteFolder, runnerContext);
-            return result;
+            AddFolder(absoluteFolder);
         }
 
-        private void AddSpecifications(List<SpecificationRunner> result, string folder,
-            SpecificationRunnerContext runnerContext)
+        private void AddFolder(string folder)
         {
-            var files = Directory.GetFiles(folder, "*.lexy");
+            var files = Directory.GetFiles(folder, $"*.{LexySourceDocument.FileExtension}");
+
             files
                 .OrderBy(name => name)
-                .SelectMany(file => ParseFile(file, runnerContext))
-                .ForEach(result.Add);
+                .Select(fileName => SpecificationFileRunner.Create(fileName, serviceProvider, context))
+                .ForEach(context.Add);
 
             Directory.GetDirectories(folder)
                 .OrderBy(name => name)
-                .ForEach(folder => AddSpecifications(result, folder, runnerContext));
-        }
-
-        private IEnumerable<SpecificationRunner> ParseFile(string fileName,
-            SpecificationRunnerContext runnerContext)
-        {
-            var parserContext = parser.ParseFile(fileName, false);
-
-            return parserContext
-                .Components
-                .GetScenarios()
-                .Select(scenario => SpecificationRunner.Create(fileName, scenario, runnerContext, parserContext));
+                .ForEach(AddFolder);
         }
 
         private static string GetAbsoluteFolder(string folder)

@@ -7,7 +7,7 @@ namespace Lexy.Poc.Core.Language
     {
         public string Value { get; private set; }
 
-        public IComponent Parse(ParserContext context)
+        public IComponent Parse(IParserContext context)
         {
             var line = context.CurrentLine;
             Value = line.TokenValue(1);

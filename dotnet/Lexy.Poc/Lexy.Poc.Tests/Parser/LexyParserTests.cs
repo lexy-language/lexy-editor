@@ -1,10 +1,11 @@
 using Lexy.Poc.Core.Parser;
+using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Shouldly;
 
 namespace Lexy.Poc.Parser
 {
-    public class LexyParserTests
+    public class LexyParserTests : ScopedServicesTestFixture
     {
         [Test]
         public void TestSimpleReturn()
@@ -15,7 +16,7 @@ namespace Lexy.Poc.Parser
   Code
     Result = 777";
 
-            var parser = new LexyParser();
+            var parser = ServiceProvider.GetRequiredService<ILexyParser>();
             var script = parser.ParseFunction(code);
 
             script.Name.Value.ShouldBe("TestSimpleReturn");
@@ -35,7 +36,7 @@ namespace Lexy.Poc.Parser
   Results
   Code";
 
-            var parser = new LexyParser();
+            var parser = ServiceProvider.GetRequiredService<ILexyParser>();
             parser.ParseFunction(code);
         }
     }

@@ -12,7 +12,7 @@ namespace Lexy.Poc.Core.Parser
             Name = name;
         }
 
-        public static ComponentName Parse(Line line, ParserContext context)
+        public static ComponentName Parse(Line line, IParserContext context)
         {
             var valid = context.ValidateTokens<ComponentName>()
                 .Count(2)

@@ -7,7 +7,7 @@ namespace Lexy.Poc.Core.Language
     {
         public IList<VariableDefinition> Variables { get; } = new List<VariableDefinition>();
 
-        public IComponent Parse(ParserContext context)
+        public IComponent Parse(IParserContext context)
         {
             var line = context.CurrentLine;
 
