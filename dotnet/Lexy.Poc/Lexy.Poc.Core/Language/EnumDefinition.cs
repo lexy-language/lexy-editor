@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Lexy.Poc.Core.Parser;
 
@@ -5,7 +6,6 @@ namespace Lexy.Poc.Core.Language
 {
     public class EnumDefinition : RootComponent
     {
-        public Comments Comments { get; } = new Comments();
         public EnumName Name { get; } = new EnumName();
 
         public override string ComponentName => Name.Value;
@@ -29,13 +29,11 @@ namespace Lexy.Poc.Core.Language
 
             if (line.IsComment())
             {
-                Comments.Parse(context);
+                throw new InvalidOperationException("No comments expected. Comment should be parsed by Document only.");
             }
-            else
-            {
-                var assignment = EnumMember.Parse(context);
-                Members.Add(assignment);
-            }
+
+            var assignment = EnumMember.Parse(context);
+            Members.Add(assignment);
             return this;
         }
     }

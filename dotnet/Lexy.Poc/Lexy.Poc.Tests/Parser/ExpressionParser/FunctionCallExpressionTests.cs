@@ -13,8 +13,7 @@ namespace Lexy.Poc.Parser.ExpressionParser
             expression.ValidateOfType<FunctionCallExpression>(functionCallExpression =>
             {
                 functionCallExpression.FunctionName.ShouldBe("func");
-                functionCallExpression.Expression.ValidateOfType<VariableExpression>(variable =>
-                    variable.VariableName.ShouldBe("y"));
+                functionCallExpression.Expression.ValidateVariableExpression("y");
             });
         }
 

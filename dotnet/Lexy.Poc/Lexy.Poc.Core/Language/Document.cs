@@ -6,11 +6,15 @@ namespace Lexy.Poc.Core.Language
     {
         public override string ComponentName => "Document";
 
+        public Comments Comments { get; } = new Comments();
+
         public override IComponent Parse(IParserContext context)
         {
             var line = context.CurrentLine;
 
-            if (line.Tokens.IsComment() || line.IsEmpty()) return this;
+            if (line.IsEmpty()) return this;
+            if (line.Tokens.IsComment()) return Comments;
+
             if (line.Indent() > 0)
             {
                 context.Logger.Fail( $"Unexpected line: {line}");
@@ -40,7 +44,7 @@ namespace Lexy.Poc.Core.Language
         {
             var message = $"Unknown keyword: {tokenName.Keyword}";
             context.Logger.Fail(message);
-            return null;
+            return this;
         }
     }
 }

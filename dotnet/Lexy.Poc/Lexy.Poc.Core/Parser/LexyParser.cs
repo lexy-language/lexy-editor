@@ -48,7 +48,6 @@ namespace Lexy.Poc.Core.Parser
                 var line = sourceCodeDocument.CurrentLine;
                 if (line.IsComment() || line.IsEmpty())
                 {
-                    currentComponent?.Parse(context);
                     continue;
                 }
 

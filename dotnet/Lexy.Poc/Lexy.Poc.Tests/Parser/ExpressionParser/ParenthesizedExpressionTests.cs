@@ -11,8 +11,7 @@ namespace Lexy.Poc.Parser.ExpressionParser
         {
             var expression = this.ParseExpression("(A)");
             expression.ValidateOfType<ParenthesizedExpression>(parenthesized =>
-                parenthesized.Expression.ValidateOfType<VariableExpression>(variable =>
-                    variable.VariableName.ShouldBe("A")));
+                parenthesized.Expression.ValidateVariableExpression("A"));
         }
 
         [Test]

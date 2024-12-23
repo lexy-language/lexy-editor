@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Lexy.Poc.Core.Parser;
 
@@ -6,7 +7,6 @@ namespace Lexy.Poc.Core.Language
     public class Table : RootComponent
     {
         public TableName Name { get; } = new TableName();
-        public Comments Comments { get; } = new Comments();
         public TableHeaders Headers { get; private set; }
         public IList<TableRow> Rows { get; } = new List<TableRow>();
         public override string ComponentName => Name.Value;
@@ -24,16 +24,14 @@ namespace Lexy.Poc.Core.Language
         public override IComponent Parse(IParserContext context)
         {
             var line = context.CurrentLine;
-            if (line.IsEmpty())
-            {
-                return this;
-            }
+            if (line.IsEmpty()) return this;
 
             if (line.IsComment())
             {
-                Comments.Parse(context);
+                throw new InvalidOperationException("No comments expected. Comment should be parsed by Document only.");
             }
-            else if (Headers == null)
+
+            if (IsFirstLine())
             {
                 Headers = TableHeaders.Parse(context);
             }
@@ -43,6 +41,11 @@ namespace Lexy.Poc.Core.Language
             }
 
             return this;
+        }
+
+        private bool IsFirstLine()
+        {
+            return Headers == null;
         }
     }
 }

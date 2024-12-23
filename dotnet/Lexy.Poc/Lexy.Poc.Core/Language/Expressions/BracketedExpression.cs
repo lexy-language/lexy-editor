@@ -40,8 +40,9 @@ namespace Lexy.Poc.Core.Language.Expressions
 
         public static bool IsValid(TokenList tokens)
         {
-            return tokens.IsTokenType<StringLiteralToken>(0)
-                   && tokens.OperatorToken(1, OperatorType.OpenBrackets);
+            return tokens.Length > 1
+                && tokens.IsTokenType<StringLiteralToken>(0)
+                && tokens.OperatorToken(1, OperatorType.OpenBrackets);
         }
 
         internal static int FindMatchingClosingBracket(TokenList tokens)

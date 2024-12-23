@@ -1,3 +1,4 @@
+using System;
 using Lexy.Poc.Core.Parser;
 using Lexy.Poc.Core.Parser.Tokens;
 
@@ -5,7 +6,6 @@ namespace Lexy.Poc.Core.Language
 {
     public class Scenario : RootComponent
     {
-        public Comments Comments { get; } = new Comments();
         public ScenarioName Name { get; } = new ScenarioName();
 
         public Function Function { get; private set; }
@@ -33,9 +33,9 @@ namespace Lexy.Poc.Core.Language
         public override IComponent Parse(IParserContext context)
         {
             var line = context.CurrentLine;
-            if (line.Tokens.IsTokenType<CommentToken>(0))
+            if (line.IsComment())
             {
-                return Comments;
+                throw new InvalidOperationException("No comments expected. Comment should be parsed by Document only.");
             }
 
             var name = line.Tokens.TokenValue(0);
@@ -52,7 +52,6 @@ namespace Lexy.Poc.Core.Language
                 TokenValues.Parameters => ResetRootComponent(context, Parameters),
                 TokenValues.Results => ResetRootComponent(context, Results),
                 TokenValues.Table => ResetRootComponent(context, Table),
-                TokenValues.Comment => ResetRootComponent(context, Comments),
                 TokenValues.ExpectError => ResetRootComponent(context, ExpectError.Parse(context)),
                 TokenValues.ExpectRootErrors => ResetRootComponent(context, ExpectRootErrors),
                 _ => InvalidToken(context, name)
@@ -90,7 +89,7 @@ namespace Lexy.Poc.Core.Language
         private IComponent InvalidToken(IParserContext parserContext, string name)
         {
             parserContext.Logger.Fail($"Invalid token '{name}'.", this);
-            return null;
+            return this;
         }
     }
 }

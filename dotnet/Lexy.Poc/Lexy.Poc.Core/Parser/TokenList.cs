@@ -114,7 +114,7 @@ namespace Lexy.Poc.Core.Parser
             var builder = new StringBuilder();
             foreach (var value in values)
             {
-                builder.Append($"{value.GetType().Name}({value.Value}) ");
+                builder.Append($"{value.GetType().Name}('{value.Value}') ");
             }
             return builder.ToString();
         }

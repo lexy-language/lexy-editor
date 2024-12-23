@@ -17,10 +17,8 @@ namespace Lexy.Poc.Parser.ExpressionParser
                 assignmentExpression.Assignment.ValidateOfType<BinaryExpression>(addition =>
                 {
                     addition.Operator.ShouldBe(ExpressionOperator.Addition);
-                    addition.Left.ValidateOfType<VariableExpression>(left =>
-                        left.VariableName.ShouldBe("B"));
-                    addition.Right.ValidateOfType<VariableExpression>(right =>
-                        right.VariableName.ShouldBe("C"));
+                    addition.Left.ValidateVariableExpression("B");
+                    addition.Right.ValidateVariableExpression("C");
                 });
             });
         }
@@ -35,18 +33,12 @@ namespace Lexy.Poc.Parser.ExpressionParser
                 assignment.Assignment.ValidateOfType<BinaryExpression>(addition =>
                 {
                     addition.Operator.ShouldBe(ExpressionOperator.Addition);
-                    addition.Left.ValidateOfType<VariableExpression>(left =>
-                        left.VariableName.ShouldBe("B"));
+                    addition.Left.ValidateVariableExpression("B");
                     addition.Right.ValidateOfType<BinaryExpression>(multiplication =>
                     {
                         multiplication.Operator.ShouldBe(ExpressionOperator.Multiplication);
-                        multiplication.Left.ValidateOfType<VariableExpression>(left =>
-                            left.VariableName.ShouldBe("C"));
-                        multiplication.Right.ValidateOfType<LiteralExpression>(literal =>
-                        {
-                            literal.Literal.ValidateOfType<NumberLiteralToken>(number =>
-                                number.NumberValue.ShouldBe(12m));
-                        });
+                        multiplication.Left.ValidateVariableExpression("C");
+                        multiplication.Right.ValidateNumericLiteralExpression(12m);
                     });
                 });
             });

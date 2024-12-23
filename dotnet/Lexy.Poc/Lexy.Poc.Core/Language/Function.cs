@@ -11,7 +11,6 @@ namespace Lexy.Poc.Core.Language
         private static readonly LambdaComparer<IRootComponent> componentComparer =
             new LambdaComparer<IRootComponent>((token1, token2) => token1.ComponentName == token2.ComponentName);
 
-        public Comments Comments { get; } = new Comments();
         public FunctionName Name { get; } = new FunctionName();
         public FunctionParameters Parameters { get; } = new FunctionParameters();
         public FunctionResults Results { get; } = new FunctionResults();
@@ -33,9 +32,9 @@ namespace Lexy.Poc.Core.Language
         public override IComponent Parse(IParserContext context)
         {
             var line = context.CurrentLine;
-            if (line.Tokens.IsTokenType<CommentToken>(0))
+            if (line.IsComment())
             {
-                return Comments;
+                throw new InvalidOperationException("No comments expected. Comment should be parsed by Document only.");
             }
 
             var name = line.Tokens.TokenValue(0);

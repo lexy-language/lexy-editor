@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Lexy.Poc.Core.Parser;
 using Lexy.Poc.Core.Parser.Tokens;
 
@@ -7,29 +8,56 @@ namespace Lexy.Poc.Core.Language.Expressions
 {
     public class BinaryExpression : Expression
     {
-        private static readonly IDictionary<OperatorType, ExpressionOperator> supportedOperators = new Dictionary<OperatorType, ExpressionOperator>
+        private class OperatorEntry
         {
-            { OperatorType.Addition, ExpressionOperator.Addition },
-            { OperatorType.Subtraction, ExpressionOperator.Subtraction },
-            { OperatorType.Multiplication, ExpressionOperator.Multiplication },
-            { OperatorType.Division, ExpressionOperator.Division },
-            { OperatorType.Modulus, ExpressionOperator.Modulus },
+            public OperatorType OperatorType { get; }
+            public ExpressionOperator ExpressionOperator { get; }
 
-            { OperatorType.GreaterThan, ExpressionOperator.GreaterThan },
-            { OperatorType.GreaterThanOrEqual, ExpressionOperator.GreaterThanOrEqual },
-            { OperatorType.LessThan, ExpressionOperator.LessThan },
-            { OperatorType.LessThanOrEqual, ExpressionOperator.LessThanOrEqual },
+            public OperatorEntry(OperatorType operatorType, ExpressionOperator expressionOperator)
+            {
+                OperatorType = operatorType;
+                ExpressionOperator = expressionOperator;
+            }
+        }
 
-            { OperatorType.Equals, ExpressionOperator.Equals },
-            { OperatorType.NotEqual, ExpressionOperator.NotEqual },
+        private class TokenIndex
+        {
+            public int Index { get; }
+            public OperatorType OperatorType { get; }
+            public ExpressionOperator ExpressionOperator { get; }
 
-            { OperatorType.And, ExpressionOperator.And },
-            { OperatorType.Or, ExpressionOperator.Or },
+            public TokenIndex(int index, OperatorType operatorType, ExpressionOperator expressionOperator)
+            {
+                Index = index;
+                OperatorType = operatorType;
+                ExpressionOperator = expressionOperator;
+            }
+        }
+
+        private static readonly IList<OperatorEntry> supportedOperatorsByPriority = new List<OperatorEntry>
+        {
+            new OperatorEntry(OperatorType.Multiplication, ExpressionOperator.Multiplication),
+            new OperatorEntry(OperatorType.Division, ExpressionOperator.Division),
+            new OperatorEntry(OperatorType.Modulus, ExpressionOperator.Modulus),
+
+            new OperatorEntry(OperatorType.Addition, ExpressionOperator.Addition),
+            new OperatorEntry(OperatorType.Subtraction, ExpressionOperator.Subtraction),
+
+            new OperatorEntry(OperatorType.GreaterThan, ExpressionOperator.GreaterThan),
+            new OperatorEntry(OperatorType.GreaterThanOrEqual, ExpressionOperator.GreaterThanOrEqual),
+            new OperatorEntry(OperatorType.LessThan, ExpressionOperator.LessThan),
+            new OperatorEntry(OperatorType.LessThanOrEqual, ExpressionOperator.LessThanOrEqual),
+
+            new OperatorEntry(OperatorType.Equals, ExpressionOperator.Equals),
+            new OperatorEntry(OperatorType.NotEqual, ExpressionOperator.NotEqual),
+
+            new OperatorEntry(OperatorType.And, ExpressionOperator.And),
+            new OperatorEntry(OperatorType.Or, ExpressionOperator.Or),
         };
 
         public Expression Left { get; }
         public Expression Right { get; }
-        public ExpressionOperator Operator { get; set; }
+        public ExpressionOperator Operator { get; }
 
         private BinaryExpression(Expression left, Expression right, ExpressionOperator operatorValue, Line sourceLine,
             TokenList tokens) : base(sourceLine, tokens)
@@ -41,35 +69,96 @@ namespace Lexy.Poc.Core.Language.Expressions
 
         public static ParseExpressionResult Parse(Line sourceLine, TokenList tokens)
         {
-            if (!IsValid(tokens))
+            var supportedTokens = GetCurrentLevelSupportedTokens(tokens);
+            var lowerPriorityOperation = GetLowestPriorityOperation(supportedTokens);
+            if (lowerPriorityOperation == null)
             {
-                return ParseExpressionResult.Invalid<BinaryExpression>("Invalid expression.");
+                return ParseExpressionResult.Invalid<BinaryExpression>("No valid Operator token found.");
             }
 
-            var left = ExpressionFactory.Parse(tokens.TokensFromStart(1), sourceLine);
-            var right = ExpressionFactory.Parse(tokens.TokensFrom(2), sourceLine);
-            var operatorValue = OperatorValue(tokens.Token<OperatorToken>(1).Type);
+            var leftTokens = tokens.TokensRange(0, lowerPriorityOperation.Index - 1);
+            if (leftTokens.Length == 0)
+            {
+                return ParseExpressionResult.Invalid<BinaryExpression>(
+                    $"No tokens left from: {lowerPriorityOperation.Index} ({tokens})");
+            }
+            var rightTokens = tokens.TokensFrom(lowerPriorityOperation.Index + 1);
+            if (rightTokens.Length == 0)
+            {
+                return ParseExpressionResult.Invalid<BinaryExpression>(
+                    $"No tokens right from: {lowerPriorityOperation.Index} ({tokens})");
+            }
+
+            var left = ExpressionFactory.Parse(leftTokens, sourceLine);
+            var right = ExpressionFactory.Parse(rightTokens, sourceLine);
+            var operatorValue = lowerPriorityOperation.ExpressionOperator;
 
             var binaryExpression = new BinaryExpression(left, right, operatorValue, sourceLine, tokens);
             return ParseExpressionResult.Success(binaryExpression) ;
         }
 
-        private static ExpressionOperator OperatorValue(OperatorType operatorType)
+        private static TokenIndex GetLowestPriorityOperation(IList<TokenIndex> supportedTokens)
         {
-            if (supportedOperators.ContainsKey(operatorType))
+            foreach (var supportedOperator in supportedOperatorsByPriority.Reverse())
             {
-                return supportedOperators[operatorType];
+                foreach (var supportedToken in supportedTokens)
+                {
+                    if (supportedOperator.OperatorType == supportedToken.OperatorType)
+                    {
+                        return supportedToken;
+                    }
+                }
             }
-            throw new ArgumentOutOfRangeException(nameof(operatorType), operatorType, null);
+
+            return null;
         }
 
         public static bool IsValid(TokenList tokens)
         {
-            if (tokens.Length < 3 || !tokens.IsTokenType<OperatorToken>(1)) return false;
-
-            var operatorToken = tokens.OperatorToken(1);
-
-            return operatorToken != null && supportedOperators.ContainsKey(operatorToken.Type);
+            var supportedTokens = GetCurrentLevelSupportedTokens(tokens);
+            return supportedTokens.Count > 0;
         }
+
+        private static IList<TokenIndex> GetCurrentLevelSupportedTokens(TokenList tokens)
+        {
+            if (tokens == null) throw new ArgumentNullException(nameof(tokens));
+
+            var result = new List<TokenIndex>();
+            var countParentheses = 0;
+            var countBrackets = 0;
+            for (var index = 0; index < tokens.Length; index++)
+            {
+                var token = tokens[index];
+                if (!(token is OperatorToken operatorToken)) continue;
+
+                switch (operatorToken.Type)
+                {
+                    case OperatorType.OpenParentheses:
+                        countParentheses++;
+                        break;
+                    case OperatorType.CloseParentheses:
+                        countParentheses--;
+                        break;
+                    case OperatorType.OpenBrackets:
+                        countBrackets++;
+                        break;
+                    case OperatorType.CloseBrackets:
+                        countBrackets--;
+                        break;
+                }
+
+                if (countBrackets != 0 || countParentheses != 0) continue;
+
+                var supported = IsSupported(operatorToken.Type);
+                if (supported != null)
+                {
+                    result.Add(new TokenIndex(index, operatorToken.Type, supported.ExpressionOperator));
+                }
+            }
+            return result;
+        }
+
+        private static OperatorEntry IsSupported(OperatorType operatorTokenType) =>
+            supportedOperatorsByPriority.FirstOrDefault(entry => entry.OperatorType == operatorTokenType);
     }
 }

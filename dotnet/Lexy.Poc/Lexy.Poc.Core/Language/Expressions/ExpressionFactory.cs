@@ -10,12 +10,12 @@ namespace Lexy.Poc.Core.Language.Expressions
             new Dictionary<Func<TokenList, bool>, Func<Line, TokenList, ParseExpressionResult>>()
             {
                 { AssignmentExpression.IsValid, AssignmentExpression.Parse },
+                { ParenthesizedExpression.IsValid, ParenthesizedExpression.Parse },
+                { BracketedExpression.IsValid, BracketedExpression.Parse },
                 { VariableExpression.IsValid, VariableExpression.Parse },
                 { LiteralExpression.IsValid, LiteralExpression.Parse },
                 { MemberAccessExpression.IsValid, MemberAccessExpression.Parse },
                 { BinaryExpression.IsValid, BinaryExpression.Parse },
-                { ParenthesizedExpression.IsValid, ParenthesizedExpression.Parse },
-                { BracketedExpression.IsValid, BracketedExpression.Parse },
                 { FunctionCallExpression.IsValid, FunctionCallExpression.Parse },
             };
 
