@@ -129,11 +129,17 @@ namespace Lexy.Poc.Core.Specifications
             if (failedMessages.Length > 0 && !scenario.ExpectError.HasValue)
             {
                 Fail("Exception occured: " + failedMessages.Format(2));
-                context.Fail(scenario, "Exception occured: " + failedMessages.Format(2));
                 return false;
             }
 
             if (!scenario.ExpectError.HasValue) return true;
+
+            if (failedMessages.Length == 0)
+            {
+                Fail($"No exception {Environment.NewLine}" +
+                     $"  Expected: {scenario.ExpectError.Message}{Environment.NewLine}");
+                return false;
+            }
 
             if (failedMessages.Any(message => message.Contains(scenario.ExpectError.Message)))
             {

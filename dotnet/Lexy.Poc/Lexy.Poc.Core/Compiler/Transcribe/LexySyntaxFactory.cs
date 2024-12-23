@@ -41,7 +41,7 @@ namespace Lexy.Poc.Core.Transcribe
             return type switch
             {
                 PrimitiveVariableType primitive => MapType(primitive.Type),
-                EnumVariableType enumType => SyntaxFactory.IdentifierName(enumType.EnumName),
+                CustomVariableType enumType => SyntaxFactory.IdentifierName(enumType.EnumName),
                 _ => throw new InvalidOperationException("Couldn't map type: " + type)
             };
         }

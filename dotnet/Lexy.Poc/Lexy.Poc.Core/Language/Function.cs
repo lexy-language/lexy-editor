@@ -72,7 +72,7 @@ namespace Lexy.Poc.Core.Language
         {
             foreach (var parameter in variableDefinitions)
             {
-                if (!(parameter.Type is EnumVariableType enumVariableType)) continue;
+                if (!(parameter.Type is CustomVariableType enumVariableType)) continue;
 
                 var dependency = nodes.GetEnum(enumVariableType.EnumName);
                 if (dependency == null)
@@ -112,6 +112,18 @@ namespace Lexy.Poc.Core.Language
 
         protected override void Validate(IParserContext context)
         {
+            ValidateDuplicatedVariablesNames(context);
+        }
+
+        private void ValidateDuplicatedVariablesNames(IParserContext context)
+        {
+            //var variableDeclarations = Code.GetVariableDeclarations();
+            DuplicateChecker.Validate(
+                context,
+                member => member.Name,
+                member => $"Duplicated variable name: '{member.Name}'",
+                Parameters.Variables,
+                Results.Variables);
         }
     }
 }

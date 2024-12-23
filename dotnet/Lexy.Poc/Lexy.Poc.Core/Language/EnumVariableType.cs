@@ -1,12 +1,17 @@
 namespace Lexy.Poc.Core.Language
 {
-    public class EnumVariableType : VariableType
+    public class CustomVariableType : VariableType
     {
         public string EnumName { get; }
 
-        public EnumVariableType(string enumName)
+        public CustomVariableType(string enumName)
         {
             EnumName = enumName;
+        }
+
+        public override string ToString()
+        {
+            return EnumName;
         }
     }
 }

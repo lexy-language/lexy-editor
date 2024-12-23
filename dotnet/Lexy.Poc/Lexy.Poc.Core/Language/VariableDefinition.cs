@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Lexy.Poc.Core.Parser;
 using Lexy.Poc.Core.Parser.Tokens;
@@ -12,8 +13,8 @@ namespace Lexy.Poc.Core.Language
 
         private VariableDefinition(string name, VariableType type, ILiteralToken @default = null)
         {
-            Type = type;
-            Name = name;
+            Type = type ?? throw new ArgumentNullException(nameof(type));
+            Name = name ?? throw new ArgumentNullException(nameof(name));
             Default = @default;
         }
 
@@ -64,6 +65,13 @@ namespace Lexy.Poc.Core.Language
 
         protected override void Validate(IParserContext context)
         {
+            if (Type is CustomVariableType customVariableType)
+            {
+                if (!context.Nodes.ContainsEnum(customVariableType.EnumName))
+                {
+                    context.Logger.Fail($"Unknown type: '{customVariableType.EnumName}'");
+                }
+            }
         }
     }
 }

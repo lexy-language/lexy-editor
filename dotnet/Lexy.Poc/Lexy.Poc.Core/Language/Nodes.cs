@@ -11,7 +11,7 @@ namespace Lexy.Poc.Core.Language
 
         public int Count => values.Count;
 
-        private bool ContainsEnum(string enumName)
+        internal bool ContainsEnum(string enumName)
         {
             return values
                 .OfType<EnumDefinition>()
@@ -83,7 +83,7 @@ namespace Lexy.Poc.Core.Language
                 TypeNames.Number => "decimal",
                 TypeNames.Boolean => "bool",
                 TypeNames.DateTime => "System.DateTime",
-                _ => throw new InvalidOperationException("Unknown type: " + variableType)
+                _ => throw new InvalidOperationException($"Unknown type: '{variableType}'")
             };
         }
     }

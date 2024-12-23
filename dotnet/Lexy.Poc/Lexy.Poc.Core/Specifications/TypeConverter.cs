@@ -8,7 +8,7 @@ namespace Lexy.Poc.Core.Specifications
     {
         public static object Convert(CompilerResult compilerResult, string value, VariableType type)
         {
-            if (type is EnumVariableType enumVariableType)
+            if (type is CustomVariableType enumVariableType)
             {
                 if (!compilerResult.ContainsEnum(enumVariableType.EnumName)) throw new InvalidOperationException("Known enum: " + enumVariableType.EnumName);
 

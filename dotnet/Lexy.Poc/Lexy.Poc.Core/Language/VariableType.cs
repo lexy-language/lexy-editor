@@ -11,7 +11,7 @@ namespace Lexy.Poc.Core.Language
                 return new PrimitiveVariableType(type);
             }
 
-            return new EnumVariableType(type);
+            return new CustomVariableType(type);
         }
     }
 }

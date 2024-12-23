@@ -52,18 +52,11 @@ namespace Lexy.Poc.Core.Language
 
         protected override void Validate(IParserContext context)
         {
-            var found = new List<string>();
-            foreach (var member in Members)
-            {
-                if (found.Contains(member.Name))
-                {
-                    context.Logger.Fail($"Enum member name should be unique. Duplicate name: '{member.Name}'");
-                }
-                else
-                {
-                    found.Add(member.Name);
-                }
-            }
+            DuplicateChecker.Validate(
+                context,
+                member => member.Name,
+                member => $"Enum member name should be unique. Duplicate name: '{member.Name}'",
+                Members);
         }
     }
 }
