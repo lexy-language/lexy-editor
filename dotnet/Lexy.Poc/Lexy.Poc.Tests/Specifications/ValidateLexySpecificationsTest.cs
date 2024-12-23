@@ -21,7 +21,7 @@ namespace Lexy.Poc.Specifications
             LoggingConfiguration.LogFileNames();
 
             var runner = ServiceProvider.GetRequiredService<ISpecificationsRunner>();
-            runner.Run("../../../../../../laws/Specifications/Language/00005-ArithmeticOperators.lexy");
+            runner.Run("../../../../../../laws/Specifications/Language/00006-Indentation.lexy");
         }
     }
 }

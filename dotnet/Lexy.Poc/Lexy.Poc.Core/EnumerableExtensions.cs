@@ -19,15 +19,16 @@ namespace Lexy.Poc.Core
             return enumerable;
         }
 
-        public static string Format<TItem>(this IEnumerable<TItem> enumerable)
+        public static string Format<TItem>(this IEnumerable<TItem> enumerable, int indentLevel)
         {
             if (enumerable == null) throw new ArgumentNullException(nameof(enumerable));
 
+            var indent = indentLevel > 0 ? new string(' ', 4) : string.Empty;
             var builder = new StringBuilder();
             builder.AppendLine();
             foreach (var item in enumerable)
             {
-                builder.AppendLine(item.ToString());
+                builder.AppendLine(indent + item.ToString());
             }
 
             return builder.ToString();

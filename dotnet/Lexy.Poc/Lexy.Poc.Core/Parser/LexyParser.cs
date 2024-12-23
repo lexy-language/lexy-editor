@@ -34,8 +34,8 @@ namespace Lexy.Poc.Core.Parser
             sourceCodeDocument.SetCode(code);
 
             var currentIndent = 0;
-            var componentStack = new Stack<IComponent>();
             IComponent currentComponent = new Document();
+            var components = new ComponentArray(currentComponent);
 
             while (sourceCodeDocument.HasMoreLines())
             {
@@ -52,14 +52,19 @@ namespace Lexy.Poc.Core.Parser
                 }
 
                 var indent = line.Indent();
+                if (indent > currentIndent)
+                {
+                    context.Logger.Fail($"Invalid indent: {indent}");
+                    continue;
+                }
 
-                currentComponent = WalkBackOnCallStackByIndent(indent, currentIndent, componentStack, currentComponent);
+                currentComponent = components.Get(indent);
 
                 var component = ParseLine(currentComponent);
 
-                componentStack.Push(currentComponent);
                 currentComponent = component;
                 currentIndent = indent + 1;
+                components.Set(currentIndent, currentComponent);
             }
 
             if (throwException)
@@ -91,6 +96,39 @@ namespace Lexy.Poc.Core.Parser
             }
 
             return currentComponent;
+        }
+    }
+
+    public class ComponentArray
+    {
+        private IComponent[] values = new IComponent[8];
+
+        public ComponentArray(IComponent rootComponent)
+        {
+            values[0] = rootComponent;
+        }
+
+        public IComponent Get(int indent)
+        {
+            var component = values[indent];
+            for (var index = indent + 1; index < values.Length; index++)
+            {
+                if (values[index] == null) break;
+
+                values[index] = null;
+            }
+
+            return component;
+        }
+
+        public void Set(int indent, IComponent component)
+        {
+            if (indent >= values.Length)
+            {
+                Array.Resize(ref values, values.Length * 2);
+            }
+
+            values[indent] = component;
         }
     }
 }

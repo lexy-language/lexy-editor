@@ -140,8 +140,8 @@ namespace Lexy.Poc.Core.Specifications
 
             if (failedMessages.Length > 0 && !scenario.ExpectError.HasValue)
             {
-                Fail("Exception occured: " + failedMessages.Format());
-                context.Fail(scenario, "Exception occured: " + failedMessages.Format());
+                Fail("Exception occured: " + failedMessages.Format(2));
+                context.Fail(scenario, "Exception occured: " + failedMessages.Format(2));
                 return false;
             }
 
@@ -153,7 +153,7 @@ namespace Lexy.Poc.Core.Specifications
                 return false;
             }
 
-            Fail($"Wrong exception {Environment.NewLine}  Expected: {scenario.ExpectError.Message}{Environment.NewLine}  Actual: {failedMessages.Format()}");
+            Fail($"Wrong exception {Environment.NewLine}  Expected: {scenario.ExpectError.Message}{Environment.NewLine}  Actual: {failedMessages.Format(4)}");
             return false;
         }
 
@@ -175,13 +175,19 @@ namespace Lexy.Poc.Core.Specifications
                 }
             }
 
-            if (!failedMessages.Any() && !failed)
+            if (!failedMessages.Any())
             {
-                context.Success(scenario);
-                return false; // don't compile and run rest of scenario
+                if (!failed)
+                {
+                    context.Success(scenario);
+                    return false; // don't compile and run rest of scenario
+                }
+
+                Fail($"No exception occured {Environment.NewLine}  Expected: {scenario.ExpectRootErrors.Messages.Format(4)}");
+                return false;
             }
 
-            Fail($"Wrong exception {Environment.NewLine}  Expected: {scenario.ExpectRootErrors.Messages.Format()}{Environment.NewLine}  Actual: {parserLogger.FailedRootMessages().Format()}");
+            Fail($"Wrong exception {Environment.NewLine}  Expected: {scenario.ExpectRootErrors.Messages.Format(4)}{Environment.NewLine}  Actual: {failedMessages.Format(4)}");
             return false;
         }
 

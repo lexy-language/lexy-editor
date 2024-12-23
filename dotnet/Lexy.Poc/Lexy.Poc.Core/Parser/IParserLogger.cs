@@ -5,8 +5,8 @@ namespace Lexy.Poc.Core.Parser
     public interface IParserLogger
     {
         void LogInfo(string message);
-        void Log(string message, IComponent component = null);
-        void Fail(string message, IComponent component = null);
+        void Log(string message);
+        void Fail(string message);
 
         bool HasErrors();
         bool HasRootErrors();
@@ -21,5 +21,6 @@ namespace Lexy.Poc.Core.Parser
         string[] FailedRootMessages();
 
         void AssertNoErrors();
+        void SetCurrentComponent(IRootComponent component);
     }
 }

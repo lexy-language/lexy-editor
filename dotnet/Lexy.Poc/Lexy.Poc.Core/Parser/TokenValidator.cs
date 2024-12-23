@@ -9,7 +9,6 @@ namespace Lexy.Poc.Core.Parser
         private readonly string parserName;
         private readonly IParserContext parserContext;
         private readonly TokenList tokens;
-        private readonly IComponent component;
 
         private bool errorsExpected;
 
@@ -20,7 +19,6 @@ namespace Lexy.Poc.Core.Parser
             this.parserName = parserName;
             this.parserContext = parserContext ?? throw new ArgumentNullException(nameof(parserContext));
 
-            component = parserContext.CurrentComponent;
             tokens = parserContext.CurrentLine.Tokens;
 
             IsValid = true;
@@ -235,7 +233,7 @@ namespace Lexy.Poc.Core.Parser
 
         private void Fail(string error)
         {
-            parserContext.Logger.Fail($"({parserName}) {error}", component);
+            parserContext.Logger.Fail($"({parserName}) {error}");
         }
 
         public void Assert()

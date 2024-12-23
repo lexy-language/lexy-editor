@@ -19,7 +19,7 @@ namespace Lexy.Poc.Core.Language
             if (variableDefinition.Default != null)
             {
                 context.Logger.Fail(
-                    $"Result variable '{variableDefinition.Name}' should not have a default value.", context.CurrentComponent);
+                    $"Result variable '{variableDefinition.Name}' should not have a default value.");
                 return null;
             }
             Variables.Add(variableDefinition);

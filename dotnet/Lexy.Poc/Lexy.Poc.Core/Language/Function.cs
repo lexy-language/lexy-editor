@@ -55,7 +55,7 @@ namespace Lexy.Poc.Core.Language
 
         private IComponent InvalidToken(string name, Line line, IParserContext parserContext)
         {
-            parserContext.Logger.Fail($"Invalid token '{name}'. {line}", this);
+            parserContext.Logger.Fail($"Invalid token '{name}'. {line}");
             return this;
         }
 

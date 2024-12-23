@@ -41,7 +41,7 @@ namespace Lexy.Poc.Core.Language
             var name = line.Tokens.TokenValue(0);
             if (!line.Tokens.IsTokenType<KeywordToken>(0))
             {
-                context.Logger.Fail($"Invalid token '{name}'. Keyword expected.", this);
+                context.Logger.Fail($"Invalid token '{name}'. Keyword expected.");
                 return this;
             }
 
@@ -75,20 +75,20 @@ namespace Lexy.Poc.Core.Language
         {
             if (Function != null)
             {
-                context.Logger.Fail($"Duplicated inline Function '{ComponentName}'.", this);
+                context.Logger.Fail($"Duplicated inline Function '{ComponentName}'.");
                 return null;
             }
 
             var tokenName = Parser.ComponentName.Parse(context.CurrentLine, context);
 
             Function = Function.Parse(tokenName);
-            context.SetCurrentComponent(Function);
+            context.Logger.SetCurrentComponent(Function);
             return Function;
         }
 
         private IComponent InvalidToken(IParserContext parserContext, string name)
         {
-            parserContext.Logger.Fail($"Invalid token '{name}'.", this);
+            parserContext.Logger.Fail($"Invalid token '{name}'.");
             return this;
         }
     }

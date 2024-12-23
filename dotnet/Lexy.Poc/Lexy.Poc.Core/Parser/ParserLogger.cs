@@ -29,6 +29,7 @@ namespace Lexy.Poc.Core.Parser
         private readonly ISourceCodeDocument sourceCodeDocument;
         private readonly IList<LogEntry> logEntries = new List<LogEntry>();
         private int failedMessages = 0;
+        private IRootComponent currentComponent;
 
         public bool HasErrors() => failedMessages > 0;
         public bool HasRootErrors() => logEntries.Any(entry => entry.IsError && entry.Component == null);
@@ -44,21 +45,21 @@ namespace Lexy.Poc.Core.Parser
             logger.LogInformation(message);
         }
 
-        public void Log(string message, IComponent component)
+        public void Log(string message)
         {
             var item = $"{sourceCodeDocument.CurrentLine?.Index + 1}: {message}";
 
             logger.LogDebug(item);
-            logEntries.Add(new LogEntry(component, false, item));
+            logEntries.Add(new LogEntry(currentComponent, false, item));
         }
 
-        public void Fail(string message, IComponent component)
+        public void Fail(string message)
         {
             failedMessages++;
             var item = $"{sourceCodeDocument.CurrentLine?.Index + 1}: ERROR - {message}";
 
             logger.LogError(item);
-            logEntries.Add(new LogEntry(component, true, item));
+            logEntries.Add(new LogEntry(currentComponent, true, item));
         }
 
         public bool HasErrorMessage(string expectedError)
@@ -70,6 +71,11 @@ namespace Lexy.Poc.Core.Parser
         {
             return
                 $"{string.Join(Environment.NewLine, logEntries)}{Environment.NewLine}";
+        }
+
+        public void SetCurrentComponent(IRootComponent component)
+        {
+            currentComponent = component ?? throw new ArgumentNullException(nameof(component));
         }
 
         public bool ComponentHasErrors(IRootComponent component)

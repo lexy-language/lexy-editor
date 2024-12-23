@@ -43,12 +43,12 @@ namespace Lexy.Poc.Core.Language
 
             if (tokens.Token<OperatorToken>(2).Type != OperatorType.Assignment)
             {
-                context.Logger.Fail("Invalid variable declaration token. Expected '='.", context.CurrentComponent);
+                context.Logger.Fail("Invalid variable declaration token. Expected '='.");
                 return null;
             }
             if (tokens.Length != 4)
             {
-                context.Logger.Fail("Invalid variable declaration token. Expected default literal token.", context.CurrentComponent);
+                context.Logger.Fail("Invalid variable declaration token. Expected default literal token.");
                 return null;
             }
 

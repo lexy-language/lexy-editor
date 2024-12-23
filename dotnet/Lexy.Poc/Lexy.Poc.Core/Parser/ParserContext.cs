@@ -10,13 +10,10 @@ namespace Lexy.Poc.Core.Parser
         private readonly ITokenizer tokenizer;
         private readonly ISourceCodeDocument sourceCodeDocument;
 
-        private IRootComponent currentComponent;
-
         public Line CurrentLine => sourceCodeDocument.CurrentLine;
 
         public Components Components { get; } = new Components();
         public IParserLogger Logger => logger;
-        public IRootComponent CurrentComponent => currentComponent;
 
         public ParserContext(ITokenizer tokenizer, IParserLogger logger, ISourceCodeDocument sourceCodeDocument)
         {
@@ -31,12 +28,7 @@ namespace Lexy.Poc.Core.Parser
 
             Components.AddIfNew(component);
 
-            currentComponent = component;
-        }
-
-        public void SetCurrentComponent(IRootComponent component)
-        {
-            currentComponent = component ?? throw new ArgumentNullException(nameof(component));
+            logger.SetCurrentComponent(component);
         }
 
         public bool ProcessLine()
