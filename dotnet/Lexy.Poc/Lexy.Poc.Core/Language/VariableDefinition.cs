@@ -61,7 +61,7 @@ namespace Lexy.Poc.Core.Language
             return new VariableDefinition(name, variableType, context.LineStartReference(), defaultValue);
         }
 
-        protected override IEnumerable<INode> GetChildren()
+        public override IEnumerable<INode> GetChildren()
         {
             yield break;
         }

@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -5,7 +6,7 @@ using Lexy.Poc.Core.Parser;
 
 namespace Lexy.Poc.Core.Language
 {
-    public class Nodes
+    public class Nodes : IEnumerable<INode>
     {
         private readonly IList<IRootNode> values = new Collection<IRootNode>();
 
@@ -79,6 +80,16 @@ namespace Lexy.Poc.Core.Language
                 EnumDefinition enumDefinition => new EnumType(name, enumDefinition),
                 _ => null
             };
+        }
+
+        public IEnumerator<INode> GetEnumerator()
+        {
+            return values.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }

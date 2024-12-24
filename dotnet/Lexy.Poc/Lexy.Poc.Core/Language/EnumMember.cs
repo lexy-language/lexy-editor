@@ -52,7 +52,7 @@ namespace Lexy.Poc.Core.Language
             return new EnumMember(name, reference, value);
         }
 
-        protected override IEnumerable<INode> GetChildren()
+        public override IEnumerable<INode> GetChildren()
         {
             yield break;
         }

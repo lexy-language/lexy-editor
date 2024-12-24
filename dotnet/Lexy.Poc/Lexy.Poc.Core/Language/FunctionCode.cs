@@ -30,7 +30,7 @@ namespace Lexy.Poc.Core.Language
             return expression is IParsableNode node ? node : this;
         }
 
-        protected override IEnumerable<INode> GetChildren() => Expressions;
+        public override IEnumerable<INode> GetChildren() => Expressions;
 
         protected override void Validate(IValidationContext context)
         {

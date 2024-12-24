@@ -33,7 +33,7 @@ namespace Lexy.Poc.Core.Language
             return new FunctionInclude(name, type, reference);
         }
 
-        protected override IEnumerable<INode> GetChildren()
+        public override IEnumerable<INode> GetChildren()
         {
             yield break;
         }

@@ -26,11 +26,11 @@ namespace Lexy.Poc.Core.Specifications
                     TypeNames.DateTime => DateTime.Parse(value),
                     TypeNames.Boolean => bool.Parse(value),
                     TypeNames.String => value,
-                    _ => throw new InvalidOperationException($"Invalid type: {primitiveVariableType.Type}")
+                    _ => throw new InvalidOperationException($"Invalid type: '{primitiveVariableType.Type}'")
                 };
             }
 
-            throw new InvalidOperationException($"Invalid type: {type}");
+            throw new InvalidOperationException($"Invalid type: '{type}'");
         }
     }
 }

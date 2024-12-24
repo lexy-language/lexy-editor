@@ -37,7 +37,7 @@ namespace Lexy.Poc.Core.Language.Expressions
                    && tokens.IsTokenType<MemberAccessLiteral>(0);
         }
 
-        protected override IEnumerable<INode> GetChildren()
+        public override IEnumerable<INode> GetChildren()
         {
             yield break;
         }

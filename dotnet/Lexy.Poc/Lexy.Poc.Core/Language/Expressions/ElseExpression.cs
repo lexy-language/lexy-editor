@@ -38,7 +38,7 @@ namespace Lexy.Poc.Core.Language.Expressions
             return tokens.IsKeyword(0, Keywords.Else);
         }
 
-        protected override IEnumerable<INode> GetChildren()
+        public override IEnumerable<INode> GetChildren()
         {
             foreach (var expression in FalseExpressions)
             {

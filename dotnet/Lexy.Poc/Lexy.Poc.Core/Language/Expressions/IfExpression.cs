@@ -62,7 +62,7 @@ namespace Lexy.Poc.Core.Language.Expressions
             return expression is IParsableNode node ? node : this;
         }
 
-        protected override IEnumerable<INode> GetChildren()
+        public override IEnumerable<INode> GetChildren()
         {
             yield return Condition;
             foreach (var expression in TrueExpressions)

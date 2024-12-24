@@ -30,7 +30,7 @@ namespace Lexy.Poc.Core.Language
             return nameBuilder.ToString();
         }
 
-        protected override IEnumerable<INode> GetChildren()
+        public override IEnumerable<INode> GetChildren()
         {
             yield break;
         }

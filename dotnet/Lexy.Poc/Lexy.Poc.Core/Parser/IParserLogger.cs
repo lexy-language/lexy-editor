@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Lexy.Poc.Core.Language;
 
 namespace Lexy.Poc.Core.Parser
@@ -9,6 +10,8 @@ namespace Lexy.Poc.Core.Parser
         void Log(SourceReference reference, string message);
         void Fail(SourceReference reference, string message);
         void Fail(INode node, SourceReference reference, string message);
+
+        void LogNodes(IEnumerable<INode> nodes);
 
         bool HasErrors();
         bool HasRootErrors();

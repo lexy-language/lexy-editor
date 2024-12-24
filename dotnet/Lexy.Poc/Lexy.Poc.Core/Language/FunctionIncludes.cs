@@ -24,7 +24,7 @@ namespace Lexy.Poc.Core.Language
             return this;
         }
 
-        protected override IEnumerable<INode> GetChildren() => Definitions;
+        public override IEnumerable<INode> GetChildren() => Definitions;
 
         protected override void Validate(IValidationContext context)
         {

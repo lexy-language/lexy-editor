@@ -20,7 +20,7 @@ namespace Lexy.Poc.Core.Language
             return new TableHeader(name, typeName, reference);
         }
 
-        protected override IEnumerable<INode> GetChildren()
+        public override IEnumerable<INode> GetChildren()
         {
             yield break;
         }

@@ -98,8 +98,13 @@ namespace Lexy.Poc.Core.Language
             }
 
             var tokenName = Parser.NodeName.Parse(context.CurrentLine, context);
+            if (tokenName.Name != null)
+            {
+                context.Logger.Fail(context.TokenReference(1),
+                    $"Unexpected function name. Inline function should not have a name: '{tokenName.Name}'");
+            }
 
-            Function = Function.Create(tokenName?.Name ?? $"{Name.Value}Function", reference);
+            Function = Function.Create($"{Name.Value}Function", reference);
             context.Logger.SetCurrentNode(Function);
             return Function;
         }
@@ -140,7 +145,7 @@ namespace Lexy.Poc.Core.Language
             return this;
         }
 
-        protected override IEnumerable<INode> GetChildren()
+        public override IEnumerable<INode> GetChildren()
         {
             yield return Name;
 

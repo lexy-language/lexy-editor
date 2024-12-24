@@ -20,7 +20,7 @@ namespace Lexy.Poc.Core.Language
 
         public override string ToString() => Value;
 
-        protected override IEnumerable<INode> GetChildren()
+        public override IEnumerable<INode> GetChildren()
         {
             yield break;
         }

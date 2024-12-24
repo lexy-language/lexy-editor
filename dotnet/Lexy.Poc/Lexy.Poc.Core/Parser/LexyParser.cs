@@ -65,11 +65,8 @@ namespace Lexy.Poc.Core.Parser
                 nodes.Set(currentIndent, node);
             }
 
-            sourceCodeDocument.Reset();
-            logger.Reset();
-
-            var validationContext = new ValidationContext(context);
-            document.ValidateTree(validationContext);
+            Finalize();
+            ValidateNodesTree(document);
 
             if (throwException)
             {
@@ -77,6 +74,20 @@ namespace Lexy.Poc.Core.Parser
             }
 
             return new ParserResult(context.Nodes);
+        }
+
+        private void ValidateNodesTree(Document document)
+        {
+            var validationContext = new ValidationContext(context);
+            document.ValidateTree(validationContext);
+        }
+
+        private void Finalize()
+        {
+            sourceCodeDocument.Reset();
+
+            logger.Reset();
+            logger.LogNodes(context.Nodes);
         }
 
         private IParsableNode ParseLine(IParsableNode currentNode)

@@ -68,7 +68,7 @@ namespace Lexy.Poc.Core.Language.Expressions
             return tokens.OperatorToken(0, OperatorType.OpenParentheses);
         }
 
-        protected override IEnumerable<INode> GetChildren()
+        public override IEnumerable<INode> GetChildren()
         {
             yield return Expression;
         }

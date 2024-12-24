@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Lexy.Poc.Core.Language;
 using Microsoft.Extensions.Logging;
 
@@ -70,6 +71,16 @@ namespace Lexy.Poc.Core.Parser
             logEntries.Add(new LogEntry(node, true, $"{reference}: ERROR - {message}"));
         }
 
+        public void LogNodes(IEnumerable<INode> nodes)
+        {
+            if (!logger.IsEnabled(LogLevel.Debug)) return;
+
+            var nodeLogger = new NodesLogger();
+            nodeLogger.Log(nodes);
+
+            logger.LogDebug("Parsed nodes: " + nodeLogger.ToString());
+        }
+
         public bool HasErrorMessage(string expectedError)
         {
             return logEntries.Any(message => message.IsError && message.Message.Contains(expectedError));
@@ -123,6 +134,42 @@ namespace Lexy.Poc.Core.Parser
                 throw new InvalidOperationException($"Parsing failed: {FormatMessages()}");
             }
         }
+    }
+
+    public class NodesLogger
+    {
+        private readonly StringBuilder builder = new StringBuilder();
+        private int indent;
+
+        public void Log(IEnumerable<INode> nodes)
+        {
+            foreach (var node in nodes)
+            {
+                Log(node);
+            }
+        }
+
+        private void Log(INode node)
+        {
+            builder.Append(new string(' ', indent));
+
+            if (node is IRootNode rootNode)
+            {
+                builder.AppendLine($"{rootNode.GetType().Name}: {rootNode.NodeName}");
+            }
+            else
+            {
+                builder.AppendLine(node.GetType().Name);
+            }
+
+            var children = node.GetChildren();
+
+            indent += 2;
+            Log(children);
+            indent -= 2;
+        }
+
+        public override string ToString() => builder.ToString();
     }
 
     public class SourceReference

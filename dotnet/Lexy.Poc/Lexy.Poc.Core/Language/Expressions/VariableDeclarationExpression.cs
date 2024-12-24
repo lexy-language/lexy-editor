@@ -48,7 +48,7 @@ namespace Lexy.Poc.Core.Language.Expressions
                    && tokens.OperatorToken(2, OperatorType.Assignment);
         }
 
-        protected override IEnumerable<INode> GetChildren()
+        public override IEnumerable<INode> GetChildren()
         {
             if (Assignment != null)
             {

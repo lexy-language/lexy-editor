@@ -35,7 +35,7 @@ namespace Lexy.Poc.Core.Language
             return value != null ? new AssignmentDefinition(name, value, reference) : null;
         }
 
-        protected override IEnumerable<INode> GetChildren()
+        public override IEnumerable<INode> GetChildren()
         {
             yield return Expression;
         }

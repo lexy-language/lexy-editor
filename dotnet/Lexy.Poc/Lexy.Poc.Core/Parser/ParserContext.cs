@@ -61,8 +61,8 @@ namespace Lexy.Poc.Core.Parser
         {
             return new SourceReference(
                 sourceCodeDocument.File,
-                sourceCodeDocument.CurrentLine?.Index,
-                sourceCodeDocument.CurrentLine?.Tokens.CharacterPosition(tokenIndex));
+                sourceCodeDocument.CurrentLine?.Index + 1,
+                sourceCodeDocument.CurrentLine?.Tokens.CharacterPosition(tokenIndex) + 1);
         }
 
         public SourceReference LineEndReference()

@@ -164,7 +164,7 @@ namespace Lexy.Poc.Core.Language.Expressions
             supportedOperatorsByPriority.FirstOrDefault(entry => entry.OperatorType == operatorTokenType);
 
 
-        protected override IEnumerable<INode> GetChildren()
+        public override IEnumerable<INode> GetChildren()
         {
             yield return Left;
             yield return Right;

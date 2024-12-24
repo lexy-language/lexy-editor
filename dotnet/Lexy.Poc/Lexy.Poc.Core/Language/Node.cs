@@ -36,7 +36,7 @@ namespace Lexy.Poc.Core.Language
             }
         }
 
-        protected abstract IEnumerable<INode> GetChildren();
+        public abstract IEnumerable<INode> GetChildren();
 
         protected abstract void Validate(IValidationContext context);
     }

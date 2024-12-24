@@ -48,7 +48,7 @@ namespace Lexy.Poc.Core.Language
             return Headers == null;
         }
 
-        protected override IEnumerable<INode> GetChildren()
+        public override IEnumerable<INode> GetChildren()
         {
             yield return Headers;
 

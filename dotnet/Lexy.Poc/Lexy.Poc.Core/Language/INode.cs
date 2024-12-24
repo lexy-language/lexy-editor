@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Lexy.Poc.Core.Parser;
 
 namespace Lexy.Poc.Core.Language
@@ -7,5 +8,7 @@ namespace Lexy.Poc.Core.Language
         SourceReference Reference { get; }
 
         void ValidateTree(IValidationContext context);
+
+        IEnumerable<INode> GetChildren();
     }
 }

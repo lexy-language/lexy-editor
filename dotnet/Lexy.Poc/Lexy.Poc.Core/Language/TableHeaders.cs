@@ -50,7 +50,7 @@ namespace Lexy.Poc.Core.Language
             return new TableHeaders(headers.ToArray(), context.LineStartReference());
         }
 
-        protected override IEnumerable<INode> GetChildren() => Values;
+        public override IEnumerable<INode> GetChildren() => Values;
 
         protected override void Validate(IValidationContext context)
         {

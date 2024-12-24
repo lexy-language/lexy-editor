@@ -54,10 +54,11 @@ namespace Lexy.Poc.Parser
             var parser = GetService<ILexyParser>();
             var scenario = parser.ParseScenario(code);
 
-            var context = GetService<IParserContext>();
-            context.Logger.NodeHasErrors(scenario).ShouldBeTrue();
+            var logger = GetService<IParserLogger>();
+            var errors = logger.NodeFailedMessages(scenario);
 
-            var errors = context.Logger.NodeFailedMessages(scenario);
+            logger.NodeHasErrors(scenario).ShouldBeTrue();
+
             errors.Length.ShouldBe(1);
             errors[0].ShouldBe("tests.lexy(2, 2): ERROR - Invalid token 'Functtion'. Keyword expected.");
         }
@@ -87,7 +88,7 @@ namespace Lexy.Poc.Parser
         public void TestScenarioWithInlineFunction()
         {
             const string code = @"Scenario: ValidNumberIntAsParameter
-  Function: ValidNumberIntAsParameterFunction
+  Function:
     Parameters
       number Value1 = 123
       number Value2 = 456
@@ -164,7 +165,7 @@ namespace Lexy.Poc.Parser
         public void TestValidScenarioWithInvalidInlineFunction()
         {
             const string code = @"Scenario: InvalidNumberEndsWithLetter
-  Function: InvalidNumberEndsWithLetterFunction
+  Function:
     Results
       number Result
     Code
@@ -181,6 +182,24 @@ namespace Lexy.Poc.Parser
 
             scenario.Function.ShouldNotBeNull();
             scenario.ExpectError.ShouldNotBeNull();
+        }
+
+        [Test]
+        public void ScenarioWithInlineFunctionShouldNotHaveAFunctionNameAfterKeywords()
+        {
+            const string code = @"Scenario: TestScenario
+  Function: ThisShouldNotBeAllowed";
+
+            var parser = GetService<ILexyParser>();
+            var scenario = parser.ParseScenario(code);
+
+            var logger = GetService<IParserLogger>();
+            var errors = logger.NodeFailedMessages(scenario);
+
+            logger.NodeHasErrors(scenario).ShouldBeTrue();
+
+            errors.Length.ShouldBe(1);
+            errors[0].ShouldBe("tests.lexy(2, 13): ERROR - Unexpected function name. Inline function should not have a name: 'ThisShouldNotBeAllowed'");
         }
     }
 }
