@@ -1,4 +1,4 @@
-using Lexy.Poc.Core.Language.Expressions;
+using Lexy.Poc.Core.Language.Expressions.Functions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -60,9 +60,11 @@ namespace Lexy.Poc.Core.Compiler.CSharp.BuiltInFunctions
                                                     Token(SyntaxKind.CommaToken),
                                                     Argument(IdentifierName("condition")),
                                                     Token(SyntaxKind.CommaToken),
-                                                    Arguments.MemberAccessLambda("row", LookupFunction.SearchValueColumnHeaderName),
+                                                    Arguments.MemberAccessLambda("row",
+                                                        LookupFunction.SearchValueColumnHeaderName),
                                                     Token(SyntaxKind.CommaToken),
-                                                    Arguments.MemberAccessLambda("row", LookupFunction.ResultColumnHeaderName),
+                                                    Arguments.MemberAccessLambda("row",
+                                                        LookupFunction.ResultColumnHeaderName),
                                                     Token(SyntaxKind.CommaToken),
                                                     Argument(IdentifierName("context"))
                                                 })))))));
@@ -76,7 +78,8 @@ namespace Lexy.Poc.Core.Compiler.CSharp.BuiltInFunctions
                         SeparatedList<ArgumentSyntax>(
                             new SyntaxNodeOrToken[]
                             {
-                                Argument(ExpressionSyntaxFactory.ExpressionSyntax(LookupFunction.ValueExpression, context)),
+                                Argument(ExpressionSyntaxFactory.ExpressionSyntax(LookupFunction.ValueExpression,
+                                    context)),
                                 Token(SyntaxKind.CommaToken),
                                 Argument(IdentifierName("context"))
                             })));

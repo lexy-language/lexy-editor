@@ -22,9 +22,9 @@ namespace Lexy.Poc.Core.Parser
 
         bool NodeHasErrors(IRootNode node);
 
-        string[] NodeFailedMessages(IRootNode node);
-        string[] FailedRootMessages();
-        string[] FailedMessages();
+        string[] ErrorMessages();
+        string[] ErrorRootMessages();
+        string[] ErrorNodeMessages(IRootNode node);
 
         void AssertNoErrors();
 

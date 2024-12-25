@@ -48,6 +48,17 @@ namespace Lexy.Poc.Core.Language
 
         protected override void Validate(IValidationContext context)
         {
+            var expressionType = Expression.DeriveType(context);
+            if (!context.FunctionCodeContext.Contains(Name))
+            {
+                context.Logger.Fail(Reference, $"Unknown variable '{Name}'.");
+                return;
+            }
+            var variableType = context.FunctionCodeContext.GetVariableType(this.Name);
+            if (!expressionType.Equals(variableType))
+            {
+                context.Logger.Fail(Reference, $"Variable '{Name}' of type '{variableType}' is not assignable from expression of type '{expressionType}'.");
+            }
         }
     }
 }

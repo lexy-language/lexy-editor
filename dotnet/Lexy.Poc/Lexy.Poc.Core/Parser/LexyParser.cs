@@ -40,7 +40,7 @@ namespace Lexy.Poc.Core.Parser
             {
                 if (!context.ProcessLine())
                 {
-                    currentIndent = sourceCodeDocument.CurrentLine.Indent();
+                    currentIndent = sourceCodeDocument.CurrentLine?.Indent(context) ?? currentIndent;
                     continue;
                 }
 
@@ -50,7 +50,13 @@ namespace Lexy.Poc.Core.Parser
                     continue;
                 }
 
-                var indent = line.Indent();
+                var indentResult = line.Indent(context);
+                if (!indentResult.HasValue)
+                {
+                    continue;
+                }
+
+                var indent = indentResult.Value;
                 if (indent > currentIndent)
                 {
                     context.Logger.Fail(context.LineStartReference(), $"Invalid indent: {indent}");

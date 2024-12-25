@@ -1,4 +1,5 @@
 using Lexy.Poc.Core.Language.Expressions;
+using Lexy.Poc.Core.Language.Expressions.Functions;
 using NUnit.Framework;
 using Shouldly;
 
@@ -32,6 +33,26 @@ namespace Lexy.Poc.Parser.ExpressionParser
                                 addition.Operator.ShouldBe(ExpressionOperator.Addition)))));
             });
         }
+
+        [Test]
+        public void NestedParenthesizedMultipleArguments()
+        {
+            var expression = this.ParseExpression("ROUND(POWER(98.6,3.2),3)");
+            expression.ValidateOfType<FunctionCallExpression>(round =>
+            {
+                round.FunctionName.ShouldBe("ROUND");
+                round.Arguments.Count.ShouldBe(2);
+                round.Arguments[0].ValidateOfType<FunctionCallExpression>(power =>
+                {
+                    power.Arguments.Count.ShouldBe(2);
+                    power.Arguments[0].ValidateNumericLiteralExpression(98.6m);
+                    power.Arguments[1].ValidateNumericLiteralExpression(3.2m);
+                });
+                round.Arguments[1].ValidateNumericLiteralExpression(3);
+            });
+        }
+
+
 
         [Test]
         public void InvalidParenthesizedExpression()

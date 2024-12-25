@@ -20,7 +20,8 @@ namespace Lexy.Poc.Core.Parser.Tokens
             TokenValues.CloseParentheses,
             TokenValues.CloseBrackets,
             TokenValues.GreaterThan,
-            TokenValues.LessThan
+            TokenValues.LessThan,
+            TokenValues.ArgumentSeparator,
         };
 
         private bool hasDecimalSeparator;
@@ -41,6 +42,11 @@ namespace Lexy.Poc.Core.Parser.Tokens
         public override string Value => numberValue.HasValue
             ? numberValue.Value.ToString(CultureInfo.InvariantCulture)
             : base.Value;
+
+        public NumberLiteralToken(decimal value, TokenCharacter character) : base(character)
+        {
+            numberValue = value;
+        }
 
         public NumberLiteralToken(TokenCharacter character) : base(character)
         {

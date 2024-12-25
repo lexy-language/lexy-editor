@@ -61,7 +61,7 @@ namespace Lexy.Poc.Core.Specifications
             if (rootScenarioRunner == null)
             {
                 throw new InvalidOperationException(
-                    $"{fileName} has root errors but no scenario that verifies expected root errors. Errors: {parserContext.Logger.FailedRootMessages().Format(2)}");
+                    $"{fileName} has root errors but no scenario that verifies expected root errors. Errors: {parserContext.Logger.ErrorRootMessages().Format(2)}");
             }
         }
 

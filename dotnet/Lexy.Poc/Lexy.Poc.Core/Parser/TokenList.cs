@@ -89,6 +89,13 @@ namespace Lexy.Poc.Core.Parser
                 && operatorToken.Type == type;
         }
 
+        public OperatorToken OperatorToken(int index)
+        {
+            return index >= 0
+                   && index <= values.Length - 1
+                   && values[index] is OperatorToken operatorToken ? operatorToken : null;
+        }
+
         public IEnumerator<Token> GetEnumerator()
         {
             return ((IEnumerable<Token>)values).GetEnumerator();

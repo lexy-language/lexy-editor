@@ -72,7 +72,7 @@ namespace Lexy.Poc.Core.Specifications
             if (parserLogger.NodeHasErrors(scenario))
             {
                 Fail($"  Parsing scenario failed: {scenario.FunctionName}");
-                parserLogger.NodeFailedMessages(scenario).ForEach(context.Log);
+                parserLogger.ErrorNodeMessages(scenario).ForEach(context.Log);
                 return;
             }
 
@@ -130,7 +130,7 @@ namespace Lexy.Poc.Core.Specifications
             if (scenario.ExpectRootErrors.HasValues) return ValidateRootErrors(context);
 
             var node = function ?? scenario.Function ?? scenario.Enum ?? (IRootNode) scenario.Table;
-            var failedMessages = parserLogger.NodeFailedMessages(node);
+            var failedMessages = parserLogger.ErrorNodeMessages(node);
 
             if (failedMessages.Length > 0 && !scenario.ExpectError.HasValue)
             {
@@ -161,7 +161,7 @@ namespace Lexy.Poc.Core.Specifications
 
         private bool ValidateRootErrors(ISpecificationRunnerContext specificationRunnerContext)
         {
-            var failedMessages = parserLogger.FailedMessages().ToList();
+            var failedMessages = parserLogger.ErrorMessages().ToList();
             if (!failedMessages.Any())
             {
                 Fail($"No exceptions {Environment.NewLine}" +
@@ -195,7 +195,7 @@ namespace Lexy.Poc.Core.Specifications
 
             Fail($"Wrong exception {Environment.NewLine}" +
                  $"  Expected: {scenario.ExpectRootErrors.Messages.Format(4)}{Environment.NewLine}" +
-                 $"  Actual: {parserLogger.FailedMessages().Format(4)}");
+                 $"  Actual: {parserLogger.ErrorMessages().Format(4)}");
             return false;
         }
 

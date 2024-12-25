@@ -21,8 +21,9 @@ namespace Lexy.Poc.Core.Language
             {
                 context.Logger.Fail(Reference,
                     $"Result variable '{variableDefinition.Name}' should not have a default value.");
-                return null;
+                return this;
             }
+
             Variables.Add(variableDefinition);
 
             return this;

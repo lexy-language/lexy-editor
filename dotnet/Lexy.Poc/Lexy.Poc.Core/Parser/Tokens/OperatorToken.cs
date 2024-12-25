@@ -22,6 +22,8 @@ namespace Lexy.Poc.Core.Parser.Tokens
         private static readonly char[] TerminatorValues =
         {
             TokenValues.Space,
+            TokenValues.ArgumentSeparator,
+            TokenValues.Subtraction,
             TokenValues.OpenParentheses,
             TokenValues.OpenBrackets,
             TokenValues.CloseParentheses,
@@ -83,7 +85,7 @@ namespace Lexy.Poc.Core.Parser.Tokens
             }
 
             if (char.IsLetterOrDigit(value)
-                || TerminatorValues.Contains(value))
+             || TerminatorValues.Contains(value))
             {
                 if (Value.Length == 1 && Value[0] == TokenValues.TableSeparator)
                 {

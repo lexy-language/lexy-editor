@@ -18,13 +18,15 @@ namespace Lexy.Poc.Core.Parser
             TrimmedContent = line.Trim();
         }
 
-        public int Indent()
+        public int? Indent(IParserContext parserContext)
         {
             var spaces = 0;
             var tabs = 0;
 
-            foreach (var value in Content)
+            var index = 0;
+            for (; index < Content.Length; index++)
             {
+                var value = Content[index];
                 if (value == ' ')
                 {
                     spaces++;
@@ -41,14 +43,14 @@ namespace Lexy.Poc.Core.Parser
 
             if (spaces > 0 && tabs > 0)
             {
-                throw new InvalidOperationException(
-                    "Don't mix spaces and tabs for indentations. Use 2 spaces or tabs.");
+                parserContext.Logger.Fail(parserContext.LineReference(index), "Don't mix spaces and tabs for indentations. Use 2 spaces or tabs.");
+                return null;
             }
 
             if (spaces % 2 != 0)
             {
-                throw new InvalidOperationException(
-                    "Wrong number of indent spaces " + spaces + ". Should be multiplication of 2.");
+                parserContext.Logger.Fail(parserContext.LineReference(index), $"Wrong number of indent spaces {spaces}. Should be multiplication of 2. (line: {Index} line: {Content})");
+                return null;
             }
 
             return tabs > 0 ? tabs : spaces / 2;

@@ -21,8 +21,8 @@ namespace Lexy.Poc.Specifications
             LoggingConfiguration.LogFileNames();
 
             var runner = GetService<ISpecificationsRunner>();
-            runner.Run("../../../../../../laws/Specifications/Table/LookupByDate.lexy");
-            //runner.Run("../../../../../../laws/Specifications/Enum/00000-Validation.lexy");
+            runner.Run("../../../../../../laws/Specifications/Language/Indentation.lexy");
+            //runner.Run("../../../../../../laws/Specifications/Function/Variables.lexy");
         }
     }
 }

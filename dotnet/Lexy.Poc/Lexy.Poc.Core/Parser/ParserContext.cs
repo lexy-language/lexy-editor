@@ -39,7 +39,8 @@ namespace Lexy.Poc.Core.Parser
             logger.Log(LineStartReference(), $"'{line.Content}'");
 
             var success = CurrentLine.Tokenize(tokenizer, this);
-            var tokenNames = string.Join(" ", CurrentLine.Tokens.Select(token => token.GetType().Name).ToArray());
+            var tokenNames = string.Join(" ", CurrentLine.Tokens.Select(token =>
+                $"{token.GetType().Name}({token.Value})").ToArray());
 
             logger.Log(LineStartReference(), "  Tokens: " + tokenNames);
 
@@ -95,7 +96,7 @@ namespace Lexy.Poc.Core.Parser
 
         public SourceReference LineReference(int characterIndex)
         {
-            return new SourceReference(sourceCodeDocument.File, sourceCodeDocument.CurrentLine?.Index + 1, characterIndex + 1);
+            return new SourceReference(sourceCodeDocument.File ?? new SourceFile("runtime"), sourceCodeDocument.CurrentLine?.Index + 1, characterIndex + 1);
         }
     }
 }

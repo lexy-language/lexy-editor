@@ -1,6 +1,6 @@
 using Lexy.Poc.Core.Parser;
 
-namespace Lexy.Poc.Core.Language.Expressions
+namespace Lexy.Poc.Core.Language.Expressions.Functions
 {
     public abstract class BuiltInFunction : Node
     {

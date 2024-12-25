@@ -63,16 +63,16 @@ namespace Lexy.Poc.Core.Language.Expressions
             var variableType = Type.CreateVariableType(context);
             context.FunctionCodeContext.RegisterVariableAndVerifyUnique(Reference, Name, variableType);
 
-            var memberAccessExpression = Assignment as MemberAccessExpression;
-            var literalExpression = Assignment as LiteralExpression;
-            if (Assignment != null && literalExpression == null && memberAccessExpression == null)
+            var assignmentType = Assignment?.DeriveType(context);
+            if (Assignment != null && !assignmentType.Equals(variableType))
             {
                 context.Logger.Fail(Reference, "Invalid expression. Literal or enum value expression expected.");
             }
 
+            /*
             var defaultValue = literalExpression?.Literal;
-
             context.ValidateTypeAndDefault(Reference, Type, defaultValue);
+            */
         }
 
         public override VariableType DeriveType(IValidationContext context) => null;

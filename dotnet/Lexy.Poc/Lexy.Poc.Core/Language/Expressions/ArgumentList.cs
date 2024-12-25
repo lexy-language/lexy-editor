@@ -15,17 +15,42 @@ namespace Lexy.Poc.Core.Language.Expressions
             var result = new List<TokenList>();
             var argumentTokens = new List<Token>();
 
+            int countParentheses = 0;
+            int countBrackets = 0;
             foreach (var token in tokens)
             {
-                if (token is OperatorToken { Type: OperatorType.ArgumentSeparator })
+                if (token is OperatorToken operatorToken)
                 {
-                    if (argumentTokens.Count == 0)
+                    switch (operatorToken.Type)
                     {
-                        return ArgumentTokenParseResult.Failed(@"Invalid token ','. No tokens before comma.");
+                        case OperatorType.OpenParentheses:
+                            countParentheses++;
+                            break;
+                        case OperatorType.CloseParentheses:
+                            countParentheses--;
+                            break;
+                        case OperatorType.OpenBrackets:
+                            countBrackets++;
+                            break;
+                        case OperatorType.CloseBrackets:
+                            countBrackets--;
+                            break;
                     }
 
-                    result.Add(new TokenList(argumentTokens.ToArray()));
-                    argumentTokens = new List<Token>();
+                    if (countParentheses == 0 && countBrackets == 0 && operatorToken.Type == OperatorType.ArgumentSeparator)
+                    {
+                        if (argumentTokens.Count == 0)
+                        {
+                            return ArgumentTokenParseResult.Failed(@"Invalid token ','. No tokens before comma.");
+                        }
+
+                        result.Add(new TokenList(argumentTokens.ToArray()));
+                        argumentTokens = new List<Token>();
+                    }
+                    else
+                    {
+                        argumentTokens.Add(token);
+                    }
                 }
                 else
                 {

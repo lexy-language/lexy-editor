@@ -2,11 +2,13 @@ using System;
 using System.Collections.Generic;
 using Lexy.Poc.Core.Parser;
 
-namespace Lexy.Poc.Core.Language.Expressions
+namespace Lexy.Poc.Core.Language.Expressions.Functions
 {
     internal class LookupFunction : BuiltInFunction
     {
-        private const string FunctionHelp = "LOOKUP expects 4 arguments (Table, lookUpValue, SearchValueColumnName, ResultColumnName)";
+        private const string FunctionHelp = Name + " expects 4 arguments (Table, lookUpValue, SearchValueColumnName, ResultColumnName)";
+
+        public const string Name = "LOOKUP";
 
         private const int Arguments = 4;
         private const int ArgumentTable = 0;
@@ -34,7 +36,7 @@ namespace Lexy.Poc.Core.Language.Expressions
             SearchValueColumnHeaderName = searchValueColumnHeaderName;
         }
 
-        public static ParseBuiltInFunctionsResult Parse(SourceReference functionCallReference, IReadOnlyList<Expression> arguments)
+        public static ParseBuiltInFunctionsResult Parse(string name, SourceReference functionCallReference, IReadOnlyList<Expression> arguments)
         {
             if (arguments.Count != Arguments)
             {
@@ -57,8 +59,7 @@ namespace Lexy.Poc.Core.Language.Expressions
             }
             var searchValueColumnHeaderName = searchValueColumnHeader.Identifier;
 
-            var resultColumnExpression = arguments[ArgumentResultColumn] as IdentifierExpression;
-            if (resultColumnExpression == null)
+            if (!(arguments[ArgumentResultColumn] is IdentifierExpression resultColumnExpression))
             {
                 return ParseBuiltInFunctionsResult.Failed($"Invalid argument 4. Should be lookup column name. {FunctionHelp}");
             }

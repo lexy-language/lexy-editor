@@ -1,3 +1,4 @@
+using Lexy.Poc.Core.Infrastructure;
 using Lexy.Poc.Core.Language;
 using Lexy.Poc.Core.Parser;
 using NUnit.Framework;
@@ -55,19 +56,23 @@ namespace Lexy.Poc.Parser
             var scenario = parser.ParseScenario(code);
 
             var logger = GetService<IParserLogger>();
-            var errors = logger.NodeFailedMessages(scenario);
+            var errors = logger.ErrorNodeMessages(scenario);
 
             logger.NodeHasErrors(scenario).ShouldBeTrue();
 
-            errors.Length.ShouldBe(1);
+            errors.Length.ShouldBe(3, logger.ErrorMessages().Format(2));
             errors[0].ShouldBe("tests.lexy(2, 2): ERROR - Invalid token 'Functtion'. Keyword expected.");
+            errors[1].ShouldBe("tests.lexy(4, 4): ERROR - Unknown variable 'Value'.");
+            errors[2].ShouldBe("tests.lexy(6, 4): ERROR - Unknown variable 'Result'.");
         }
 
         [Test]
         public void TestInvalidNumberValueScenario()
         {
             const string code = @"Scenario: TestScenario
-  Function TestScenarioFunction
+  Function:
+    Results
+      number Result
   Parameters
     Value = 12d3
   Results
@@ -79,9 +84,9 @@ namespace Lexy.Poc.Parser
             var context = GetService<IParserContext>();
             context.Logger.NodeHasErrors(scenario).ShouldBeTrue();
 
-            var errors = context.Logger.NodeFailedMessages(scenario);
+            var errors = context.Logger.ErrorNodeMessages(scenario);
             errors.Length.ShouldBe(1, context.Logger.FormatMessages());
-            errors[0].ShouldBe("tests.lexy(4, 15): ERROR - Invalid number token character: 'd'");
+            errors[0].ShouldBe("tests.lexy(6, 15): ERROR - Invalid number token character: 'd'");
         }
 
         [Test]
@@ -194,7 +199,7 @@ namespace Lexy.Poc.Parser
             var scenario = parser.ParseScenario(code);
 
             var logger = GetService<IParserLogger>();
-            var errors = logger.NodeFailedMessages(scenario);
+            var errors = logger.ErrorNodeMessages(scenario);
 
             logger.NodeHasErrors(scenario).ShouldBeTrue();
 

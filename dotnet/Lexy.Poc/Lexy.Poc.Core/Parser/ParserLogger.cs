@@ -105,21 +105,21 @@ namespace Lexy.Poc.Core.Parser
             return logEntries.Any(message => message.IsError && message.Node == node);
         }
 
-        public string[] NodeFailedMessages(IRootNode node)
+        public string[] ErrorNodeMessages(IRootNode node)
         {
             return logEntries.Where(entry => entry.IsError && entry.Node == node)
                 .Select(entry => entry.Message)
                 .ToArray();
         }
 
-        public string[] FailedRootMessages()
+        public string[] ErrorRootMessages()
         {
             return logEntries.Where(entry => entry.IsError && entry.Node == null)
                 .Select(entry => entry.Message)
                 .ToArray();
         }
 
-        public string[] FailedMessages()
+        public string[] ErrorMessages()
         {
             return logEntries.Where(entry => entry.IsError)
                 .Select(entry => entry.Message)

@@ -23,7 +23,8 @@ namespace Lexy.Poc.Core.Language
             if (line.IsEmpty()) return this;
             if (line.Tokens.IsComment()) return Comments;
 
-            if (line.Indent() > 0)
+            var indent = line.Indent(context);
+            if (indent == null || indent > 0)
             {
                 context.Logger.Fail(context.DocumentReference(),$"Unexpected line: {line}");
                 return this;

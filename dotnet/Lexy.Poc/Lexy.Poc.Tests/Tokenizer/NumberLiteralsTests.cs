@@ -34,9 +34,9 @@ namespace Lexy.Poc.Tokenizer
             ServiceProvider
                 .TestLine(@"   -456")
                 .ValidateTokens()
-                .Count(2)
-                .Operator(0, OperatorType.Subtraction)
-                .NumberLiteral(1, 456)
+                    .Count(2)
+                    .Operator(0, OperatorType.Subtraction)
+                    .NumberLiteral(1, 456)
                 .Assert();
         }
 
@@ -57,12 +57,11 @@ namespace Lexy.Poc.Tokenizer
             ServiceProvider
                 .TestLine(@"   -456.78")
                 .ValidateTokens()
-                .Count(2)
-                .Operator(0, OperatorType.Subtraction)
-                .NumberLiteral(1, 456.78m)
+                    .Count(2)
+                    .Operator(0, OperatorType.Subtraction)
+                    .NumberLiteral(1, 456.78m)
                 .Assert();
         }
-
 
         [Test]
         public void InvalidDecimalSubtract()
@@ -70,10 +69,10 @@ namespace Lexy.Poc.Tokenizer
             ServiceProvider
                 .TestLine(@"   456-78")
                 .ValidateTokens()
-                .Count(3)
-                .NumberLiteral(0, 456)
-                .Operator(1, OperatorType.Subtraction)
-                .NumberLiteral(2, 78m)
+                    .Count(3)
+                    .NumberLiteral(0, 456)
+                    .Operator(1, OperatorType.Subtraction)
+                    .NumberLiteral(2, 78m)
                 .Assert();
         }
 

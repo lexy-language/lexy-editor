@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Lexy.Poc.Core.Language.Expressions.Functions;
 using Lexy.Poc.Core.Parser;
 using Lexy.Poc.Core.Parser.Tokens;
 
@@ -9,12 +10,16 @@ namespace Lexy.Poc.Core.Language.Expressions
     public class FunctionCallExpression : Expression
     {
         public string FunctionName { get; }
+
+        public List<Expression> Arguments { get; }
         public BuiltInFunction BuiltInFunction { get; }
 
-        private FunctionCallExpression(string functionName, BuiltInFunction builtInFunction,
+        private FunctionCallExpression(string functionName, List<Expression> arguments,
+            BuiltInFunction builtInFunction,
             ExpressionSource source, SourceReference reference) : base(source, reference)
         {
             FunctionName = functionName ?? throw new ArgumentNullException(nameof(functionName));
+            Arguments = arguments;
             BuiltInFunction = builtInFunction;
         }
 
@@ -57,7 +62,7 @@ namespace Lexy.Poc.Core.Language.Expressions
                 return ParseExpressionResult.Invalid<FunctionCallExpression>(builtInFunctionResult.ErrorMessage);
             }
 
-            var expression = new FunctionCallExpression(functionName, builtInFunctionResult.Result, source, reference);
+            var expression = new FunctionCallExpression(functionName, arguments, builtInFunctionResult.Result, source, reference);
 
             return ParseExpressionResult.Success(expression);
         }
