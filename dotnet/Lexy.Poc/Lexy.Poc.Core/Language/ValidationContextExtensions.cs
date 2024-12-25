@@ -77,7 +77,7 @@ namespace Lexy.Poc.Core.Language
                     ValidateDefaultLiteral<BooleanLiteral>(context, reference,primitiveVariableDeclarationType, defaultValue);
                     break;
 
-                case TypeNames.DateTime:
+                case TypeNames.Date:
                     ValidateDefaultLiteral<DateTimeLiteral>(context, reference, primitiveVariableDeclarationType, defaultValue);
                     break;
 

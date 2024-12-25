@@ -87,6 +87,6 @@ namespace Lexy.Poc.Core.Parser.Tokens
 
         public override string ToString() => DateTimeValue.ToString(DateTimeFormat, CultureInfo.InvariantCulture);
 
-        public VariableType DeriveType(IValidationContext context) => PrimitiveType.DateTime;
+        public VariableType DeriveType(IValidationContext context) => PrimitiveType.Date;
     }
 }

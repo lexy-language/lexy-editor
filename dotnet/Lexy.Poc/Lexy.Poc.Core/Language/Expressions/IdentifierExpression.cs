@@ -4,13 +4,13 @@ using Lexy.Poc.Core.Parser.Tokens;
 
 namespace Lexy.Poc.Core.Language.Expressions
 {
-    public class VariableExpression : Expression
+    public class IdentifierExpression : Expression
     {
-        public string VariableName { get; }
+        public string Identifier { get; }
 
-        private VariableExpression(string variableName, ExpressionSource source, SourceReference reference) : base(source, reference)
+        private IdentifierExpression(string identifier, ExpressionSource source, SourceReference reference) : base(source, reference)
         {
-            VariableName = variableName;
+            Identifier = identifier;
         }
 
         public static ParseExpressionResult Parse(ExpressionSource source)
@@ -18,13 +18,13 @@ namespace Lexy.Poc.Core.Language.Expressions
             var tokens = source.Tokens;
             if (!IsValid(tokens))
             {
-                return ParseExpressionResult.Invalid<VariableExpression>("Invalid expression");
+                return ParseExpressionResult.Invalid<IdentifierExpression>("Invalid expression");
             }
 
             var variableName = tokens.TokenValue(0);
             var reference = source.CreateReference();
 
-            var expression = new VariableExpression(variableName, source, reference);
+            var expression = new IdentifierExpression(variableName, source, reference);
 
             return ParseExpressionResult.Success(expression);
         }
@@ -42,10 +42,10 @@ namespace Lexy.Poc.Core.Language.Expressions
 
         protected override void Validate(IValidationContext context)
         {
-            context.FunctionCodeContext.EnsureVariableExists(Reference, VariableName);
+            context.FunctionCodeContext.EnsureVariableExists(Reference, Identifier);
         }
 
         public override VariableType DeriveType(IValidationContext context) =>
-            context.FunctionCodeContext.GetVariableType(VariableName);
+            context.FunctionCodeContext.GetVariableType(Identifier);
     }
 }

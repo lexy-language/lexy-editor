@@ -8,43 +8,14 @@ namespace Lexy.Poc.Core.Language.Expressions
 {
     public class FunctionCallExpression : Expression
     {
-        private class ArgumentTokenParseResult
-        {
-            public string ErrorMessage { get; }
-            public bool IsSuccess { get; }
-            public IEnumerable<TokenList> Result { get; }
-
-            private ArgumentTokenParseResult(IEnumerable<TokenList> result)
-            {
-                Result = result;
-                IsSuccess = true;
-            }
-
-            private ArgumentTokenParseResult(bool success, string errorMessage)
-            {
-                ErrorMessage = errorMessage;
-                IsSuccess = success;
-            }
-
-            public static ArgumentTokenParseResult Success(IEnumerable<TokenList> result = null)
-            {
-                return new ArgumentTokenParseResult(result ?? new TokenList[]{});
-            }
-
-            public static ArgumentTokenParseResult Failed(string errorMessage)
-            {
-                return new ArgumentTokenParseResult(false, errorMessage);
-            }
-        }
-
         public string FunctionName { get; }
-        public Expression[] Arguments { get; }
+        public BuiltInFunction BuiltInFunction { get; }
 
-        private FunctionCallExpression(string functionName, Expression[] arguments,
+        private FunctionCallExpression(string functionName, BuiltInFunction builtInFunction,
             ExpressionSource source, SourceReference reference) : base(source, reference)
         {
             FunctionName = functionName ?? throw new ArgumentNullException(nameof(functionName));
-            Arguments = arguments ?? throw new ArgumentNullException(nameof(arguments));
+            BuiltInFunction = builtInFunction;
         }
 
         public static ParseExpressionResult Parse(ExpressionSource source)
@@ -63,54 +34,33 @@ namespace Lexy.Poc.Core.Language.Expressions
 
             var functionName = tokens.TokenValue(0);
             var innerExpressionTokens = tokens.TokensRange(2, matchingClosingParenthesis - 1);
-            var argumentsTokenList = GetArgumentTokensList(innerExpressionTokens);
+            var argumentsTokenList = ArgumentList.Parse(innerExpressionTokens);
             if (!argumentsTokenList.IsSuccess)
             {
                 return ParseExpressionResult.Invalid<FunctionCallExpression>(argumentsTokenList.ErrorMessage);
             }
-            var arguments = argumentsTokenList.Result.Select(tokens =>
-                ExpressionFactory.Parse(source.File, tokens, source.Line));
+
+            var arguments = new List<Expression>();
+            foreach (var argumentTokens in argumentsTokenList.Result)
+            {
+                var argumentExpression = ExpressionFactory.Parse(source.File, argumentTokens, source.Line);
+                if (argumentExpression.Status == ParseExpressionStatus.Failed) return argumentExpression;
+
+                arguments.Add(argumentExpression.Expression);
+            }
+
             var reference = source.CreateReference();
 
-            var expression = new FunctionCallExpression(functionName, arguments.ToArray(), source, reference);
+            var builtInFunctionResult = BuiltInFunctions.Parse(functionName, source.CreateReference(), arguments);
+            if (!builtInFunctionResult.IsSuccess)
+            {
+                return ParseExpressionResult.Invalid<FunctionCallExpression>(builtInFunctionResult.ErrorMessage);
+            }
+
+            var expression = new FunctionCallExpression(functionName, builtInFunctionResult.Result, source, reference);
+
             return ParseExpressionResult.Success(expression);
         }
-
-        private static ArgumentTokenParseResult GetArgumentTokensList(TokenList allArgumentTokens)
-        {
-            if (allArgumentTokens.Length == 0) return ArgumentTokenParseResult.Success();
-
-            var result = new List<TokenList>();
-            var argumentTokens = new List<Token>();
-
-            foreach (var token in allArgumentTokens)
-            {
-                if (token is OperatorToken { Type: OperatorType.ArgumentSeparator })
-                {
-                    if (argumentTokens.Count == 0)
-                    {
-                        return ArgumentTokenParseResult.Failed(@"Invalid token ','. No tokens before comma.");
-                    }
-
-                    result.Add(new TokenList(argumentTokens.ToArray()));
-                    argumentTokens = new List<Token>();
-                }
-                else
-                {
-                    argumentTokens.Add(token);
-                }
-            }
-
-            if (argumentTokens.Count == 0)
-            {
-                return ArgumentTokenParseResult.Failed(@"Invalid token ','. No tokens before comma.");
-            }
-
-            result.Add(new TokenList(argumentTokens.ToArray()));
-
-            return ArgumentTokenParseResult.Success(result);
-        }
-
 
         public static bool IsValid(TokenList tokens)
         {
@@ -118,34 +68,26 @@ namespace Lexy.Poc.Core.Language.Expressions
                    && tokens.OperatorToken(1, OperatorType.OpenParentheses);
         }
 
-        public override IEnumerable<INode> GetChildren() => Arguments;
-
-        protected override void Validate(IValidationContext context)
+        public override IEnumerable<INode> GetChildren()
         {
-            if (!BuiltInFunction.Contains(FunctionName))
+            if (BuiltInFunction != null)
             {
-                context.Logger.Fail(Reference, $"Invalid function name: '{FunctionName}'");
+                yield return BuiltInFunction;
             }
         }
 
-        public override VariableType DeriveType(IValidationContext context) => BuiltInFunction.GetType(FunctionName);
-    }
-
-    public static class BuiltInFunction
-    {
-        private static readonly IDictionary<string, PrimitiveType> values = new Dictionary<string, PrimitiveType>
+        protected override void Validate(IValidationContext context)
         {
-            { "LOOKUP", PrimitiveType.Number }
-        };
-
-        public static bool Contains(string functionName)
-        {
-            return values.ContainsKey(functionName);
+            if (BuiltInFunction == null)
+            {
+                context.Logger.Fail(Reference, $"Invalid function name: '{FunctionName}'");
+                return;
+            }
         }
 
-        public static PrimitiveType GetType(string functionName)
+        public override VariableType DeriveType(IValidationContext context)
         {
-            return values.TryGetValue(functionName, out var value) ? value : null;
+            return BuiltInFunction?.DeriveReturnType(context);
         }
     }
 }

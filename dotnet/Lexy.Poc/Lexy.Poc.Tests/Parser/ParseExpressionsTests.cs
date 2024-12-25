@@ -1,6 +1,8 @@
 using Lexy.Poc.Core;
+using Lexy.Poc.Core.Language;
 using Lexy.Poc.Core.Parser;
 using Lexy.Poc.Core.Parser.Tokens;
+using Lexy.Poc.Parser.ExpressionParser;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Shouldly;
@@ -24,11 +26,11 @@ namespace Lexy.Poc.Parser
             context.Logger.HasErrors().ShouldBeFalse(context.Logger.FormatMessages());
 
             script.Name.Value.ShouldBe("TestTable");
-            script.Headers.Values.Count.ShouldBe(2);
-            script.Headers.Values[0].Name.ShouldBe("Value");
-            script.Headers.Values[0].Type.ShouldBe(TypeNames.Number);
-            script.Headers.Values[1].Name.ShouldBe("Result");
-            script.Headers.Values[1].Type.ShouldBe(TypeNames.String);
+            script.Header.Values.Count.ShouldBe(2);
+            script.Header.Values[0].Name.ShouldBe("Value");
+            script.Header.Values[0].Type.ShouldBePrimitiveType(TypeNames.Number);
+            script.Header.Values[1].Name.ShouldBe("Result");
+            script.Header.Values[1].Type.ShouldBePrimitiveType(TypeNames.String);
             script.Rows.Count.ShouldBe(2);
             script.Rows[0].Values[0].ShouldBeOfType<NumberLiteralToken>();
             script.Rows[0].Values[0].Value.ShouldBe("7");
@@ -44,7 +46,7 @@ namespace Lexy.Poc.Parser
         public void TestDateTimeAndBoolean()
         {
             var code = @"Table: TestTable
-  | datetime Value | boolean Result |
+  | date Value | boolean Result |
   | d""2024/12/18 17:07:45"" | false |
   | d""2024/12/18 17:08:12"" | true |";
 
@@ -52,11 +54,11 @@ namespace Lexy.Poc.Parser
             var script = parser.ParseTable(code);
 
             script.Name.Value.ShouldBe("TestTable");
-            script.Headers.Values.Count.ShouldBe(2);
-            script.Headers.Values[0].Name.ShouldBe("Value");
-            script.Headers.Values[0].Type.ShouldBe(TypeNames.DateTime);
-            script.Headers.Values[1].Name.ShouldBe("Result");
-            script.Headers.Values[1].Type.ShouldBe(TypeNames.Boolean);
+            script.Header.Values.Count.ShouldBe(2);
+            script.Header.Values[0].Name.ShouldBe("Value");
+            script.Header.Values[0].Type.ShouldBePrimitiveType(TypeNames.Date);
+            script.Header.Values[1].Name.ShouldBe("Result");
+            script.Header.Values[1].Type.ShouldBePrimitiveType(TypeNames.Boolean);
             script.Rows.Count.ShouldBe(2);
             script.Rows[0].Values[0].ShouldBeOfType<DateTimeLiteral>();
             script.Rows[0].Values[0].Value.ShouldBe("2024/12/18 17:07:45");
@@ -66,6 +68,15 @@ namespace Lexy.Poc.Parser
             script.Rows[1].Values[0].Value.ShouldBe("2024/12/18 17:08:12");
             script.Rows[1].Values[1].ShouldBeOfType<BooleanLiteral>();
             script.Rows[1].Values[1].Value.ShouldBe("true");
+        }
+    }
+
+    internal static class VariableTypeExtensions
+    {
+        public static void ShouldBePrimitiveType(this VariableDeclarationType type, string name)
+        {
+            type.ShouldBeOfType<PrimitiveVariableDeclarationType>()
+                .Type.ShouldBe(name);
         }
     }
 }

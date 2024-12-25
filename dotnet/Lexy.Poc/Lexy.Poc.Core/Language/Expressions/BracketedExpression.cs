@@ -34,9 +34,11 @@ namespace Lexy.Poc.Core.Language.Expressions
             var functionName = tokens.TokenValue(0);
             var innerExpressionTokens = tokens.TokensRange(2, matchingClosingParenthesis - 1);
             var innerExpression = ExpressionFactory.Parse(source.File, innerExpressionTokens, source.Line);
+            if (innerExpression.Status == ParseExpressionStatus.Failed) return innerExpression;
+
             var reference = source.CreateReference();
 
-            var expression = new BracketedExpression(functionName, innerExpression, source, reference);
+            var expression = new BracketedExpression(functionName, innerExpression.Expression, source, reference);
             return ParseExpressionResult.Success(expression);
         }
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Lexy.Poc.Core.Compiler.CSharp;
 using Lexy.Poc.Core.RunTime;
 
 namespace Lexy.Poc.Core.Compiler
@@ -21,13 +22,13 @@ namespace Lexy.Poc.Core.Compiler
             this.functionObject = functionObject ?? throw new ArgumentNullException(nameof(functionObject));
             this.context = context ?? throw new ArgumentNullException(nameof(context));
 
-            runMethod = functionObject.GetType().GetMethod("__Run", BindingFlags.Instance | BindingFlags.Public);
-            resultMethod = functionObject.GetType().GetMethod("__Result", BindingFlags.Instance | BindingFlags.Public);
+            runMethod = functionObject.GetType().GetMethod( LexyCodeConstants.RunMethod, BindingFlags.Instance | BindingFlags.Public);
+            resultMethod = functionObject.GetType().GetMethod(LexyCodeConstants.ResultMethod, BindingFlags.Instance | BindingFlags.Public);
         }
 
         public FunctionResult Run()
         {
-            runMethod.Invoke(functionObject, new []{context});
+            runMethod.Invoke(functionObject, new [] { context });
 
             return (FunctionResult)resultMethod.Invoke(functionObject, emptyParameters);
         }

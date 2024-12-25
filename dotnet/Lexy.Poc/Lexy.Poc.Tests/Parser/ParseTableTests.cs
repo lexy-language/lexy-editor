@@ -1,4 +1,5 @@
 using Lexy.Poc.Core;
+using Lexy.Poc.Core.Language;
 using Lexy.Poc.Core.Parser;
 using Lexy.Poc.Core.Parser.Tokens;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,11 +22,11 @@ namespace Lexy.Poc.Parser
             var table = parser.ParseTable(code);
 
             table.Name.Value.ShouldBe("TestTable");
-            table.Headers.Values.Count.ShouldBe(2);
-            table.Headers.Values[0].Name.ShouldBe("Value");
-            table.Headers.Values[0].Type.ShouldBe(TypeNames.Number);
-            table.Headers.Values[1].Name.ShouldBe("Result");
-            table.Headers.Values[1].Type.ShouldBe(TypeNames.String);
+            table.Header.Values.Count.ShouldBe(2);
+            table.Header.Values[0].Name.ShouldBe("Value");
+            table.Header.Values[0].Type.ShouldBePrimitiveType(TypeNames.Number);
+            table.Header.Values[1].Name.ShouldBe("Result");
+            table.Header.Values[1].Type.ShouldBePrimitiveType(TypeNames.String);
             table.Rows.Count.ShouldBe(2);
             table.Rows[0].Values[0].ShouldBeOfType<NumberLiteralToken>();
             table.Rows[0].Values[0].Value.ShouldBe("7");
@@ -41,7 +42,7 @@ namespace Lexy.Poc.Parser
         public void TestDateTimeAndBoolean()
         {
             var code = @"Table: TestTable
-  | datetime Value | boolean Result |
+  | date Value | boolean Result |
   | d""2024/12/18 17:07:45"" | false |
   | d""2024/12/18 17:08:12"" | true |";
 
@@ -49,11 +50,11 @@ namespace Lexy.Poc.Parser
             var table = parser.ParseTable(code);
 
             table.Name.Value.ShouldBe("TestTable");
-            table.Headers.Values.Count.ShouldBe(2);
-            table.Headers.Values[0].Name.ShouldBe("Value");
-            table.Headers.Values[0].Type.ShouldBe(TypeNames.DateTime);
-            table.Headers.Values[1].Name.ShouldBe("Result");
-            table.Headers.Values[1].Type.ShouldBe(TypeNames.Boolean);
+            table.Header.Values.Count.ShouldBe(2);
+            table.Header.Values[0].Name.ShouldBe("Value");
+            table.Header.Values[0].Type.ShouldBePrimitiveType(TypeNames.Date);
+            table.Header.Values[1].Name.ShouldBe("Result");
+            table.Header.Values[1].Type.ShouldBePrimitiveType(TypeNames.Boolean);
             table.Rows.Count.ShouldBe(2);
             table.Rows[0].Values[0].ShouldBeOfType<DateTimeLiteral>();
             table.Rows[0].Values[0].Value.ShouldBe("2024/12/18 17:07:45");

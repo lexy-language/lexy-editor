@@ -45,10 +45,10 @@ namespace Lexy.Poc.Tokenizer
         public void TestDateTimeTypeLiteral()
         {
             ServiceProvider
-                .TestLine(@"   datetime Value")
+                .TestLine(@"   date Value")
                 .ValidateTokens()
                     .Count(2)
-                    .StringLiteral(0, "datetime")
+                    .StringLiteral(0, "date")
                     .StringLiteral(1, "Value")
                 .Assert();
         }

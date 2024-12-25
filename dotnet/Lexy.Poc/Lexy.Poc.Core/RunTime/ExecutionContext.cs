@@ -17,5 +17,10 @@ namespace Lexy.Poc.Core.RunTime
         {
             logger.LogDebug(message);
         }
+
+        public void LogVariable<T>(string name, T value)
+        {
+            logger.LogDebug("  {Name}: {Value}", name, value);
+        }
     }
 }

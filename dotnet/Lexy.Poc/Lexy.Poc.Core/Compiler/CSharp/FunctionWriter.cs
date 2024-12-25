@@ -1,43 +1,61 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Lexy.Poc.Core.Compiler.CSharp.BuiltInFunctions;
 using Lexy.Poc.Core.Language;
+using Lexy.Poc.Core.Language.Expressions;
 using Lexy.Poc.Core.RunTime;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
-using static Lexy.Poc.Core.Compiler.Transcribe.ExpressionSyntaxFactory;
+using static Lexy.Poc.Core.Compiler.CSharp.ExpressionSyntaxFactory;
 
-namespace Lexy.Poc.Core.Compiler.Transcribe
+namespace Lexy.Poc.Core.Compiler.CSharp
 {
     public class FunctionWriter : IRootTokenWriter
     {
-        public GeneratedClass CreateCode(IRootNode node, Nodes nodes)
+        public GeneratedClass CreateCode(IRootNode node)
         {
             if (!(node is Function function))
             {
                 throw new InvalidOperationException("Root token not Function");
             }
 
-            var name = function.Name.ClassName();
+            var builtInFunctionCalls = GetBuiltInFunctionCalls(function);
+            var context = new CompileFunctionContext(function, builtInFunctionCalls);
 
             var members = new List<MemberDeclarationSyntax>();
+            members.AddRange(TranslateIncludes(function));
+            members.AddRange(TranslateVariables(function.Parameters.Variables));
+            members.AddRange(TranslateVariables(function.Results.Variables));
 
-            members.AddRange(WriteIncludes(function));
-            members.AddRange(WriteVariables(function.Parameters.Variables));
-            members.AddRange(WriteVariables(function.Results.Variables));
+            members.AddRange(CustomBuiltInFunctions(context));
 
-            members.Add(WriteResultMethod(function.Results.Variables));
-            members.Add(WriteRunMethod(function));
+            members.Add(ResultMethod(function.Results.Variables));
+            members.Add(RunMethod(function, context));
 
+            var name = context.ClassName();
             var classDeclaration = ClassDeclaration(name)
-                .WithModifiers(Modifiers.PublicAsList)
+                .WithModifiers(Modifiers.Public())
                 .WithMembers(List(members));
 
             return new GeneratedClass(function, name, classDeclaration);
         }
 
-        private IEnumerable<MemberDeclarationSyntax> WriteIncludes(Function function)
+        private IEnumerable<MemberDeclarationSyntax> CustomBuiltInFunctions(ICompileFunctionContext context)
+        {
+            return context.BuiltInFunctionCalls
+                .Select(functionCall => functionCall.CustomMethodSyntax(context))
+                .Where(customMethodSyntax => customMethodSyntax != null);
+        }
+
+        private IEnumerable<BuiltInFunctionCall> GetBuiltInFunctionCalls(Function function)
+        {
+            return NodesWalker.Walk(function.Code.Expressions,
+                node => node is FunctionCallExpression expression ? BuiltInFunctionCall.Create(expression) : null);
+        }
+
+        private IEnumerable<MemberDeclarationSyntax> TranslateIncludes(Function function)
         {
             foreach (var include in function.Include.Definitions)
             {
@@ -45,27 +63,21 @@ namespace Lexy.Poc.Core.Compiler.Transcribe
                     throw new InvalidOperationException("Invalid include type: " + include.Type);
 
                 var fieldDeclaration = FieldDeclaration(
-                    VariableDeclaration(
-                            IdentifierName(include.Name))
+                    VariableDeclaration(IdentifierName(include.Name))
                         .WithVariables(
                             SingletonSeparatedList(
-                                VariableDeclarator(
-                                        Identifier(include.Name))
+                                VariableDeclarator(Identifier(include.Name))
                                     .WithInitializer(
                                         EqualsValueClause(
-                                            ObjectCreationExpression(
-                                                    IdentifierName(include.Name))
-                                                .WithArgumentList(
-                                                    ArgumentList()))))))
-                    .WithModifiers(
-                        TokenList(
-                            Token(SyntaxKind.PublicKeyword)));
+                                            ObjectCreationExpression(IdentifierName(include.Name))
+                                                .WithArgumentList(ArgumentList()))))))
+                    .WithModifiers(Modifiers.Public());
 
                 yield return fieldDeclaration;
             }
         }
 
-        private MemberDeclarationSyntax WriteResultMethod(IList<VariableDefinition> resultVariables)
+        private static MemberDeclarationSyntax ResultMethod(IList<VariableDefinition> resultVariables)
         {
             var resultType = ParseName($"{typeof(FunctionResult).Namespace}.{nameof(FunctionResult)}");
 
@@ -110,22 +122,20 @@ namespace Lexy.Poc.Core.Compiler.Transcribe
 
             var function = MethodDeclaration(
                 resultType,
-                Identifier("__Result"))
-                .WithModifiers(
-                    TokenList(
-                        Token(SyntaxKind.PublicKeyword)))
+                Identifier(LexyCodeConstants.ResultMethod))
+                .WithModifiers(Modifiers.Public())
                 .WithBody(
                     Block(statements));
 
             return function;
         }
 
-        private IEnumerable<MemberDeclarationSyntax> WriteVariables(IList<VariableDefinition> variables)
+        private IEnumerable<MemberDeclarationSyntax> TranslateVariables(IList<VariableDefinition> variables)
         {
             foreach (var variable in variables)
             {
                 var variableDeclaration = VariableDeclarator(Identifier(variable.Name));
-                var defaultValue = TokenValueExpression(variable.Default);
+                var defaultValue = TokenValuesSyntax.Expression(variable.Default);
                 if (defaultValue != null)
                 {
                     variableDeclaration = variableDeclaration.WithInitializer(
@@ -135,42 +145,37 @@ namespace Lexy.Poc.Core.Compiler.Transcribe
                 {
                     variableDeclaration = variableDeclaration.WithInitializer(
                         EqualsValueClause(
-                            PrimitiveTypeDefaultExpression(primitiveType)));
+                            Types.PrimitiveTypeDefaultExpression(primitiveType)));
                 }
 
                 var fieldDeclaration = FieldDeclaration(
-                    VariableDeclaration(MapType(variable))
+                    VariableDeclaration(Types.Syntax(variable))
                         .WithVariables(
                             SingletonSeparatedList(
                                 variableDeclaration)))
-                    .WithModifiers(Modifiers.PublicAsList);
+                    .WithModifiers(Modifiers.Public());
 
                 yield return fieldDeclaration;
             }
         }
 
-        private MethodDeclarationSyntax WriteRunMethod(Function function)
+        private MethodDeclarationSyntax RunMethod(Function function,
+            ICompileFunctionContext compileFunctionContext)
         {
-            var statements = function.Code.Expressions.SelectMany(ExecuteStatementSyntax);
+            var statements = function.Code.Expressions.SelectMany(expression => ExecuteStatementSyntax(expression, compileFunctionContext));
 
             var functionSyntax = MethodDeclaration(
-                    PredefinedType(
-                        Token(SyntaxKind.VoidKeyword)),
-                    Identifier("__Run"))
-                .WithModifiers(
-                    TokenList(
-                        Token(SyntaxKind.PublicKeyword)))
+                    PredefinedType(Token(SyntaxKind.VoidKeyword)),
+                    Identifier(LexyCodeConstants.RunMethod))
+                .WithModifiers(Modifiers.Public())
                 .WithParameterList(
                     ParameterList(
                         SingletonSeparatedList<ParameterSyntax>(
-                            Parameter(
-                                    Identifier("context"))
-                                .WithType(
-                                    IdentifierName(nameof(IExecutionContext))))))
+                            Parameter(Identifier("context"))
+                                .WithType(IdentifierName(nameof(IExecutionContext))))))
                 .WithBody(Block(statements));
 
             return functionSyntax;
         }
-
     }
 }

@@ -24,11 +24,15 @@ namespace Lexy.Poc.Core.Language
             }
 
             var expression = ExpressionFactory.Parse(context.SourceCode.File, line.Tokens, line);
-            if (expression != null)
+            if (expression.Status == ParseExpressionStatus.Failed)
             {
-                expressions.Add(expression, context);
+                context.Logger.Fail(context.LineStartReference(), expression.ErrorMessage);
+                return this;
             }
-            return expression is IParsableNode node ? node : this;
+
+            expressions.Add(expression.Expression, context);
+
+            return expression.Expression is IParsableNode node ? node : this;
         }
 
         public override IEnumerable<INode> GetChildren() => Expressions;

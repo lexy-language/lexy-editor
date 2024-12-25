@@ -90,11 +90,11 @@ namespace Lexy.Poc.Parser.ExpressionParser
         [Test]
         public void DateTime()
         {
-            var expression = this.ParseExpression("datetime temp");
+            var expression = this.ParseExpression("date temp");
             expression.ValidateOfType<VariableDeclarationExpression>(assignmentExpression =>
             {
                 assignmentExpression.Type.ValidateOfType<PrimitiveVariableDeclarationType>(type =>
-                    type.Type.ShouldBe("datetime"));
+                    type.Type.ShouldBe("date"));
                 assignmentExpression.Name.ShouldBe("temp");
                 assignmentExpression.Assignment.ShouldBeNull();
             });
@@ -103,11 +103,11 @@ namespace Lexy.Poc.Parser.ExpressionParser
         [Test]
         public void DateTimeWithDefaultValue()
         {
-            var expression = this.ParseExpression(@"datetime temp = d""2024/12/16 16:51:12""");
+            var expression = this.ParseExpression(@"date temp = d""2024/12/16 16:51:12""");
             expression.ValidateOfType<VariableDeclarationExpression>(assignmentExpression =>
             {
                 assignmentExpression.Type.ValidateOfType<PrimitiveVariableDeclarationType>(type =>
-                    type.Type.ShouldBe("datetime"));
+                    type.Type.ShouldBe("date"));
                 assignmentExpression.Name.ShouldBe("temp");
                 assignmentExpression.Assignment.ValidateDateTimeLiteralExpression(new DateTime(2024, 12, 16,16,51, 12));
             });

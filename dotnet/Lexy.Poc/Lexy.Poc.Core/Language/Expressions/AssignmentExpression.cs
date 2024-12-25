@@ -25,9 +25,11 @@ namespace Lexy.Poc.Core.Language.Expressions
 
             var variableName = tokens.TokenValue(0);
             var assignment = ExpressionFactory.Parse(source.File, tokens.TokensFrom(2), source.Line);
+            if (assignment.Status == ParseExpressionStatus.Failed) return assignment;
+
             var reference = source.CreateReference();
 
-            var expression = new AssignmentExpression(variableName, assignment, source, reference);
+            var expression = new AssignmentExpression(variableName, assignment.Expression, source, reference);
 
             return ParseExpressionResult.Success(expression);
         }

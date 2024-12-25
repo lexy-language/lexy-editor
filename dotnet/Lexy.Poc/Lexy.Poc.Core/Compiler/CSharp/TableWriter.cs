@@ -6,13 +6,12 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
-using static Lexy.Poc.Core.Compiler.Transcribe.ExpressionSyntaxFactory;
 
-namespace Lexy.Poc.Core.Compiler.Transcribe
+namespace Lexy.Poc.Core.Compiler.CSharp
 {
     internal class TableWriter : IRootTokenWriter
     {
-        public GeneratedClass CreateCode(IRootNode node, Nodes nodes)
+        public GeneratedClass CreateCode(IRootNode node)
         {
             if (!(node is Table table))
             {
@@ -23,33 +22,32 @@ namespace Lexy.Poc.Core.Compiler.Transcribe
             var rowName = $"{className}Row";
 
             var members = new List<MemberDeclarationSyntax>();
-            members.Add(GenerateRowClass(nodes, rowName, table));
+            members.Add(GenerateRowClass(rowName, table));
             members.Add(GenerateFields(rowName));
             members.Add(GenerateStaticConstructor(className, table, rowName));
             members.AddRange(GenerateProperties(rowName));
 
             var classDeclaration = ClassDeclaration(className)
-                .WithModifiers(Modifiers.PublicAsList)
+                .WithModifiers(Modifiers.Public())
                 .WithMembers(List(members));
 
             return new GeneratedClass(node, className, classDeclaration);
         }
 
-        private static ClassDeclarationSyntax GenerateRowClass(Nodes nodes, string rowName, Table table)
+        private static ClassDeclarationSyntax GenerateRowClass(string rowName, Table table)
         {
-            var properties = table.Headers.Values
-                .Select(header =>
-                    PropertyDeclaration(
-                            MapType(header.Type),
-                            Identifier(header.Name))
-                        .WithModifiers(Modifiers.PublicAsList)
-                        .WithAccessorList(Accessors.GetSet));
+            var properties = List<MemberDeclarationSyntax>(
+                table.Header.Values
+                    .Select(header =>
+                        PropertyDeclaration(
+                                Types.Syntax(header.Type),
+                                Identifier(header.Name))
+                            .WithModifiers(Modifiers.Public())
+                            .WithAccessorList(Accessors.GetSet)));
 
             var rowClassDeclaration = ClassDeclaration(rowName)
-                .WithModifiers(Modifiers.PublicAsList)
-                .WithMembers(
-                    List<MemberDeclarationSyntax>(
-                        properties));
+                .WithModifiers(Modifiers.Public())
+                .WithMembers(properties);
 
             return rowClassDeclaration;
         }
@@ -58,23 +56,14 @@ namespace Lexy.Poc.Core.Compiler.Transcribe
         {
             var fieldDeclaration = FieldDeclaration(
                 VariableDeclaration(
-                        GenericName(
-                                Identifier("IList"))
+                        GenericName(Identifier("List"))
                             .WithTypeArgumentList(
-                                TypeArgumentList(
-                                    SingletonSeparatedList<TypeSyntax>(
+                                TypeArgumentList(SingletonSeparatedList<TypeSyntax>(
                                         IdentifierName(rowName)))))
                     .WithVariables(
-                        SingletonSeparatedList<VariableDeclaratorSyntax>(
-                            VariableDeclarator(
-                                Identifier("_value")))))
-                    .WithModifiers(
-                        TokenList(
-                            new[]
-                            {
-                                Token(SyntaxKind.PrivateKeyword),
-                                Token(SyntaxKind.StaticKeyword)
-                            }));
+                        SingletonSeparatedList(
+                            VariableDeclarator(Identifier("_value")))))
+                    .WithModifiers(Modifiers.PrivateStatic());
 
             return fieldDeclaration;
         }
@@ -88,26 +77,10 @@ namespace Lexy.Poc.Core.Compiler.Transcribe
                             InitializerExpression(
                                 SyntaxKind.ObjectInitializerExpression,
                                 SeparatedList<ExpressionSyntax>(
-                                    new SyntaxNodeOrToken[]
-                                    {
-                                        AssignmentExpression(
-                                            SyntaxKind.SimpleAssignmentExpression,
-                                            IdentifierName("Value"),
-                                            LiteralExpression(
-                                                SyntaxKind.NumericLiteralExpression,
-                                                Literal(0))),
-                                        Token(SyntaxKind.CommaToken),
-                                        AssignmentExpression(
-                                            SyntaxKind.SimpleAssignmentExpression,
-                                            IdentifierName("Result"),
-                                            LiteralExpression(
-                                                SyntaxKind.NumericLiteralExpression,
-                                                Literal(0))),
-                                        Token(SyntaxKind.CommaToken)
-                                    }))));
+                                    RowValues(row, table.Header)))));
 
             var declaration = ConstructorDeclaration(Identifier(className))
-                .WithModifiers(Modifiers.StaticAsList)
+                .WithModifiers(Modifiers.Static())
                 .WithBody(
                     Block(
                         SingletonList<StatementSyntax>(
@@ -131,6 +104,28 @@ namespace Lexy.Poc.Core.Compiler.Transcribe
             return declaration;
         }
 
+        private static SyntaxNodeOrToken[] RowValues(TableRow tableRow, TableHeader header)
+        {
+            var result = new List<SyntaxNodeOrToken>();
+            for (var index = 0; index < header.Values.Count; index++)
+            {
+                var columnHeader = header.Values[index];
+                var value = tableRow.Values[index];
+
+                if (result.Count > 0)
+                {
+                    result.Add(Token(SyntaxKind.CommaToken));
+                }
+
+                result.Add(
+                    AssignmentExpression(
+                        SyntaxKind.SimpleAssignmentExpression,
+                        IdentifierName(columnHeader.Name),
+                        TokenValuesSyntax.Expression(value)));
+            }
+            return result.ToArray();
+        }
+
         private static IEnumerable<PropertyDeclarationSyntax> GenerateProperties(string rowName)
         {
             yield return PropertyDeclaration(
@@ -152,12 +147,12 @@ namespace Lexy.Poc.Core.Compiler.Transcribe
             yield return
                 PropertyDeclaration(
                         GenericName(
-                                Identifier("IEnumerable"))
+                                Identifier("IReadOnlyList"))
                             .WithTypeArgumentList(
                                 TypeArgumentList(
                                     SingletonSeparatedList<TypeSyntax>(
                                         IdentifierName(rowName)))),
-                        Identifier("Value"))
+                        Identifier("Values"))
                     .WithModifiers(
                         TokenList(
                             Token(SyntaxKind.PublicKeyword)))

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Lexy.Poc.Core.Language;
 using Microsoft.Extensions.Logging;
 
@@ -134,60 +133,5 @@ namespace Lexy.Poc.Core.Parser
                 throw new InvalidOperationException($"Parsing failed: {FormatMessages()}");
             }
         }
-    }
-
-    public class NodesLogger
-    {
-        private readonly StringBuilder builder = new StringBuilder();
-        private int indent;
-
-        public void Log(IEnumerable<INode> nodes)
-        {
-            foreach (var node in nodes)
-            {
-                Log(node);
-            }
-        }
-
-        private void Log(INode node)
-        {
-            builder.Append(new string(' ', indent));
-
-            if (node is IRootNode rootNode)
-            {
-                builder.AppendLine($"{rootNode.GetType().Name}: {rootNode.NodeName}");
-            }
-            else
-            {
-                builder.AppendLine(node == null ? "<null>" : node?.GetType().Name);
-            }
-
-            if (node == null) return;
-
-            var children = node.GetChildren();
-
-            indent += 2;
-            Log(children);
-            indent -= 2;
-        }
-
-        public override string ToString() => builder.ToString();
-    }
-
-    public class SourceReference
-    {
-        private readonly int? lineNumber;
-        private readonly int? characterNumber;
-
-        public SourceFile File { get; }
-
-        public SourceReference(SourceFile file, int? lineNumber, int? characterNumber)
-        {
-            File = file ?? throw new ArgumentNullException(nameof(file));
-            this.characterNumber = characterNumber;
-            this.lineNumber = lineNumber;
-        }
-
-        public override string ToString() => $"{File.FileName}({lineNumber}, {characterNumber})";
     }
 }

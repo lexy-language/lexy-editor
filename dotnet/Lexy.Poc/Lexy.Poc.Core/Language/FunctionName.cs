@@ -15,19 +15,9 @@ namespace Lexy.Poc.Core.Language
         {
         }
 
-        public void ParseName(string parameter = null)
+        public void ParseName(string name)
         {
-            Value = parameter ?? "Function__" + Guid.NewGuid().ToString("N");
-        }
-
-        public string ClassName()
-        {
-            var nameBuilder = new StringBuilder("Function");
-            foreach (var @char in Value.Where(char.IsLetter))
-            {
-                nameBuilder.Append(@char);
-            }
-            return nameBuilder.ToString();
+            Value = name ?? throw new ArgumentNullException(nameof(name));
         }
 
         public override IEnumerable<INode> GetChildren()

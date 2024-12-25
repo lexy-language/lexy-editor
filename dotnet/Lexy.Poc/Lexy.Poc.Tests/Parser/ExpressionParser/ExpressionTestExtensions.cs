@@ -23,8 +23,8 @@ namespace Lexy.Poc.Parser.ExpressionParser
 
         public static void ValidateVariableExpression(this Expression expression, string name)
         {
-            expression.ValidateOfType<VariableExpression>(left =>
-                left.VariableName.ShouldBe(name));
+            expression.ValidateOfType<IdentifierExpression>(left =>
+                left.Identifier.ShouldBe(name));
         }
 
         public static void ValidateNumericLiteralExpression(this Expression expression, decimal value)

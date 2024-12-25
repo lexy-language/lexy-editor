@@ -9,28 +9,27 @@ namespace Lexy.Poc.Parser.ExpressionParser
         [Test]
         public void FunctionCallExpression()
         {
-            var expression = this.ParseExpression("func(y)");
+            var expression = this.ParseExpression("INT(y)");
             expression.ValidateOfType<FunctionCallExpression>(functionCallExpression =>
             {
-                functionCallExpression.FunctionName.ShouldBe("func");
-                functionCallExpression.Arguments.Length.ShouldBe(1);
-                functionCallExpression.Arguments[0].ValidateVariableExpression("y");
+                functionCallExpression.FunctionName.ShouldBe("INT");
+                functionCallExpression.BuiltInFunction.ValidateOfType<IntFunction>(function =>
+                    function.ValueExpression.ValidateVariableExpression("y"));
             });
         }
 
         [Test]
         public void NestedParenthesizedExpression()
         {
-            var expression = this.ParseExpression("func(5 * (3 + A))");
+            var expression = this.ParseExpression("INT(5 * (3 + A))");
             expression.ValidateOfType<FunctionCallExpression>(functionCall =>
             {
-                functionCall.FunctionName.ShouldBe("func");
-
-                functionCall.Arguments.Length.ShouldBe(1);
-                functionCall.Arguments[0].ValidateOfType<BinaryExpression>(multiplication =>
-                    multiplication.Right.ValidateOfType<ParenthesizedExpression>(inner =>
-                        inner.Expression.ValidateOfType<BinaryExpression>(addition =>
-                            addition.Operator.ShouldBe(ExpressionOperator.Addition))));
+                functionCall.FunctionName.ShouldBe("INT");
+                functionCall.BuiltInFunction.ValidateOfType<IntFunction>(function =>
+                    function.ValueExpression.ValidateOfType<BinaryExpression>(multiplication =>
+                        multiplication.Right.ValidateOfType<ParenthesizedExpression>(inner =>
+                            inner.Expression.ValidateOfType<BinaryExpression>(addition =>
+                                addition.Operator.ShouldBe(ExpressionOperator.Addition)))));
             });
         }
 

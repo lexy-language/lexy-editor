@@ -55,7 +55,7 @@ namespace Lexy.Poc.Parser.Expressions
             var expression = this.ParseExpression(@"d""2024/12/24 10:05:00""");
             var type = expression.DeriveType(validationContext);
 
-            type.ShouldBe(PrimitiveType.DateTime);
+            type.ShouldBe(PrimitiveType.Date);
         }
 
         [Test]
@@ -136,12 +136,12 @@ namespace Lexy.Poc.Parser.Expressions
             var validationContext = new ValidationContext(GetService<IParserContext>());
             using var _ = validationContext.CreateCodeContextScope();
             var reference = new SourceReference(new SourceFile("tests.lexy"), 1, 1);
-            validationContext.FunctionCodeContext.RegisterVariableAndVerifyUnique(reference, "a", PrimitiveType.DateTime);
+            validationContext.FunctionCodeContext.RegisterVariableAndVerifyUnique(reference, "a", PrimitiveType.Date);
 
             var expression = this.ParseExpression(@"a");
             var type = expression.DeriveType(validationContext);
 
-            type.ShouldBe(PrimitiveType.DateTime);
+            type.ShouldBe(PrimitiveType.Date);
         }
 
         [Test]

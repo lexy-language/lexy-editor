@@ -30,9 +30,11 @@ namespace Lexy.Poc.Core.Language.Expressions
 
             var innerExpressionTokens = tokens.TokensRange(1, matchingClosingParenthesis - 1);
             var innerExpression = ExpressionFactory.Parse(source.File, innerExpressionTokens, source.Line);
+            if (innerExpression.Status == ParseExpressionStatus.Failed) return innerExpression;
+
             var reference = source.CreateReference();
 
-            var expression = new ParenthesizedExpression(innerExpression, source, reference);
+            var expression = new ParenthesizedExpression(innerExpression.Expression, source, reference);
             return ParseExpressionResult.Success(expression);
         }
 

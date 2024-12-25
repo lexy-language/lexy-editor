@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Lexy.Poc.Core.Compiler.Transcribe
+namespace Lexy.Poc.Core.Compiler.CSharp
 {
     public class ValidateTableKeyword
     {

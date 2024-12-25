@@ -30,9 +30,11 @@ namespace Lexy.Poc.Core.Language.Expressions
             var type = VariableDeclarationType.Parse(tokens.TokenValue(0));
             var name = tokens.TokenValue(1);
             var assignment = tokens.Length > 3 ? ExpressionFactory.Parse(source.File, tokens.TokensFrom(3), source.Line) : null;
+            if (assignment?.Status == ParseExpressionStatus.Failed) return assignment;
+
             var reference = source.CreateReference();
 
-            var expression = new VariableDeclarationExpression(type, name, assignment, source, reference);
+            var expression = new VariableDeclarationExpression(type, name, assignment?.Expression, source, reference);
 
             return ParseExpressionResult.Success(expression);
         }

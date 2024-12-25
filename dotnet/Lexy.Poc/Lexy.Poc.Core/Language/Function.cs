@@ -118,10 +118,13 @@ namespace Lexy.Poc.Core.Language
         public override IEnumerable<INode> GetChildren()
         {
             yield return Name;
+
+            yield return Include;
+
             yield return Parameters;
             yield return Results;
+
             yield return Code;
-            yield return Include;
         }
 
         protected override void Validate(IValidationContext context)

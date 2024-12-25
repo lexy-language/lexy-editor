@@ -34,10 +34,11 @@ namespace Lexy.Poc.Core.Language.Expressions
 
             var condition = tokens.TokensFrom(1);
             var conditionExpression = ExpressionFactory.Parse(source.File, condition, source.Line);
+            if (conditionExpression.Status == ParseExpressionStatus.Failed) return conditionExpression;
 
             var reference = source.CreateReference();
 
-            var expression = new IfExpression(conditionExpression, source, reference);
+            var expression = new IfExpression(conditionExpression.Expression, source, reference);
 
             return ParseExpressionResult.Success(expression);
         }
@@ -56,11 +57,14 @@ namespace Lexy.Poc.Core.Language.Expressions
             }
 
             var expression = ExpressionFactory.Parse(context.SourceCode.File, line.Tokens, line);
-            if (expression != null)
+            if (expression.Status == ParseExpressionStatus.Failed)
             {
-                trueExpressions.Add(expression, context);
+                context.Logger.Fail(context.LineStartReference(), expression.ErrorMessage);
+                return null;
             }
-            return expression is IParsableNode node ? node : this;
+
+            trueExpressions.Add(expression.Expression, context);
+            return expression.Expression is IParsableNode node ? node : this;
         }
 
         public override IEnumerable<INode> GetChildren()

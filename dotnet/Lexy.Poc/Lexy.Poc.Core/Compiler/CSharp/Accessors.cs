@@ -1,7 +1,7 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Lexy.Poc.Core.Compiler.Transcribe
+namespace Lexy.Poc.Core.Compiler.CSharp
 {
     internal static class Accessors
     {

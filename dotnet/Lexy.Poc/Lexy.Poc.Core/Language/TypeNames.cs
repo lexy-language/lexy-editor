@@ -1,7 +1,6 @@
-using System;
 using System.Collections.Generic;
 
-namespace Lexy.Poc.Core
+namespace Lexy.Poc.Core.Language
 {
     public static class TypeNames
     {
@@ -9,30 +8,18 @@ namespace Lexy.Poc.Core
         {
             Number,
             Boolean,
-            DateTime,
+            Date,
             String
         };
 
         public const string Number = "number";
         public const string Boolean = "boolean";
-        public const string DateTime = "datetime";
+        public const string Date = "date";
         public const string String = "string";
 
         public static bool Contains(string parameterType)
         {
             return existing.Contains(parameterType);
-        }
-
-        public static Types ConvertToTypes(string value)
-        {
-            return value switch
-            {
-                Number => Types.Number,
-                Boolean => Types.Boolean,
-                DateTime => Types.DateTime,
-                String => Types.String,
-                _ => Types.Unknown
-            };
         }
     }
 }

@@ -1,3 +1,5 @@
+using Lexy.Poc.Core.Language;
+
 namespace Lexy.Poc.Core.Parser
 {
     public interface IFunctionCodeContext

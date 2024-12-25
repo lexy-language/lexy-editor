@@ -26,7 +26,7 @@ namespace Lexy.Poc.Core.Specifications
                 return primitiveVariableType.Type switch
                 {
                     TypeNames.Number => decimal.Parse(value),
-                    TypeNames.DateTime => DateTime.Parse(value),
+                    TypeNames.Date => DateTime.Parse(value),
                     TypeNames.Boolean => bool.Parse(value),
                     TypeNames.String => value,
                     _ => throw new InvalidOperationException($"Invalid type: '{primitiveVariableType.Type}'")

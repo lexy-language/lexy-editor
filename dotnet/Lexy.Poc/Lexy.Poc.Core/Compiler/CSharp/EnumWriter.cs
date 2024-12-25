@@ -6,11 +6,11 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
-namespace Lexy.Poc.Core.Compiler.Transcribe
+namespace Lexy.Poc.Core.Compiler.CSharp
 {
     public class EnumWriter : IRootTokenWriter
     {
-        public GeneratedClass CreateCode(IRootNode node, Nodes nodes)
+        public GeneratedClass CreateCode(IRootNode node)
         {
             if (!(node is EnumDefinition enumDefinition))
             {
@@ -22,10 +22,9 @@ namespace Lexy.Poc.Core.Compiler.Transcribe
 
             var enumNode = EnumDeclaration(name)
                 .WithMembers(SeparatedList<EnumMemberDeclarationSyntax>(members))
-                .WithModifiers(Modifiers.PublicAsList);
+                .WithModifiers(Modifiers.Public());
 
             return new GeneratedClass(enumDefinition, name, enumNode);
-
         }
 
         private SyntaxNodeOrToken[] WriteValues(EnumDefinition enumDefinition)

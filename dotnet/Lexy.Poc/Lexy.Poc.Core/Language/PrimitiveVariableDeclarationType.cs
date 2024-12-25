@@ -8,7 +8,7 @@ namespace Lexy.Poc.Core.Language
         public static PrimitiveVariableDeclarationType Boolean => new PrimitiveVariableDeclarationType(TypeNames.Boolean);
         public static PrimitiveVariableDeclarationType String => new PrimitiveVariableDeclarationType(TypeNames.String);
         public static PrimitiveVariableDeclarationType Number => new PrimitiveVariableDeclarationType(TypeNames.Number);
-        public static PrimitiveVariableDeclarationType DateTime => new PrimitiveVariableDeclarationType(TypeNames.DateTime);
+        public static PrimitiveVariableDeclarationType DateTime => new PrimitiveVariableDeclarationType(TypeNames.Date);
 
         public string Type { get; }
 

@@ -7,7 +7,7 @@ namespace Lexy.Poc.Core.Language
         public static PrimitiveType Boolean => new PrimitiveType(TypeNames.Boolean);
         public static PrimitiveType String => new PrimitiveType(TypeNames.String);
         public static PrimitiveType Number => new PrimitiveType(TypeNames.Number);
-        public static PrimitiveType DateTime => new PrimitiveType(TypeNames.DateTime);
+        public static PrimitiveType Date => new PrimitiveType(TypeNames.Date);
 
         public string Type { get; }
 

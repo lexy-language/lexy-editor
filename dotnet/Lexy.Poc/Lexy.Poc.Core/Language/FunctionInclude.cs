@@ -44,6 +44,7 @@ namespace Lexy.Poc.Core.Language
             if (table == null)
             {
                 context.Logger.Fail(Reference, $"Invalid table name: '{Name}'");
+                return;
             }
 
             var variableType = new TableType(Name, table);

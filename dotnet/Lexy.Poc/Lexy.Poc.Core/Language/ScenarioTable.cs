@@ -5,7 +5,7 @@ namespace Lexy.Poc.Core.Language
 {
     public class ScenarioTable : ParsableNode
     {
-        public TableHeaders Headers { get; private set; }
+        public TableHeader Header { get; private set; }
         public IList<TableRow> Rows { get; } = new List<TableRow>();
 
         public ScenarioTable(SourceReference reference) : base(reference)
@@ -18,9 +18,9 @@ namespace Lexy.Poc.Core.Language
 
             if (line.IsEmpty()) return this;
 
-            if (Headers == null)
+            if (Header == null)
             {
-                Headers = TableHeaders.Parse(context);
+                Header = TableHeader.Parse(context);
                 return this;
             }
 
@@ -35,9 +35,9 @@ namespace Lexy.Poc.Core.Language
 
         public override IEnumerable<INode> GetChildren()
         {
-            if (Headers != null)
+            if (Header != null)
             {
-                yield return Headers;
+                yield return Header;
             }
 
             foreach (var row in Rows)

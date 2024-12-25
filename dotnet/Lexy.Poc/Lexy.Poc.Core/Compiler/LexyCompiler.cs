@@ -4,7 +4,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Lexy.Poc.Core.Compiler.Transcribe;
+using Lexy.Poc.Core.Compiler.CSharp;
 using Lexy.Poc.Core.Language;
 using Lexy.Poc.Core.RunTime;
 using Microsoft.CodeAnalysis;
@@ -79,7 +79,7 @@ namespace Lexy.Poc.Core.Compiler
             var references = GetDllReferences();
 
             return CSharpCompilation.Create(
-                $"{WriterCode.Namespace}.{Guid.NewGuid():D}",
+                $"{LexyCodeConstants.Namespace}.{Guid.NewGuid():D}",
                 new[] { syntaxTree },
                 references,
                 new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
@@ -106,58 +106,48 @@ namespace Lexy.Poc.Core.Compiler
                 .ForEach(reference =>
                     references.Add(MetadataReference.CreateFromFile(Assembly.Load(reference).Location)));
 
-
-            /* var references = AppDomain.CurrentDomain.GetAssemblies()
-                .Where(assembly => !assembly.IsDynamic && !string.IsNullOrEmpty(assembly.Location))
-                .Select(assembly => (MetadataReference) MetadataReference.CreateFromFile(assembly.Location))
-                .ToList();*/
-
             return references;
         }
 
         private SyntaxNode GenerateSyntaxNode(Nodes nodes, List<IRootNode> generateNodes)
         {
-            var members = generateNodes.Select(node =>
-            {
-                var writer = GetWriter(node);
-                var generatedType = writer.CreateCode(node, nodes);
-
-                environment.AddType(generatedType);
-
-                return generatedType.Syntax;
-            }).ToList();
-
-            var namespaceDeclaration = NamespaceDeclaration(IdentifierName(WriterCode.Namespace))
-                .WithMembers(List(members));
-
-            var root = CompilationUnit()
-                .WithUsings(List(
-                    new[]{
-                        Using("System.Collections.Generic"),
-                        Using(typeof(IExecutionContext).Namespace)
-                    }))
-                .WithMembers(SingletonList<MemberDeclarationSyntax>(namespaceDeclaration));
+            var root = GenerateCompilationUnitS(nodes, generateNodes);
 
             return root.NormalizeWhitespace();
         }
 
-        private UsingDirectiveSyntax Using(string ns)
+        private CompilationUnitSyntax GenerateCompilationUnitS(Nodes nodes, List<IRootNode> generateNodes)
         {
-            var usingDirective = UsingDirective(ParseName(ns));
-            return usingDirective;
+            var members = generateNodes
+                .Select(node => GenerateMember(nodes, node))
+                .ToList();
+
+            var namespaceDeclaration = NamespaceDeclaration(IdentifierName(LexyCodeConstants.Namespace))
+                .WithMembers(List(members));
+
+            var root = CompilationUnit()
+                .WithUsings(List(
+                    new[]
+                    {
+                        Using("System.Collections.Generic"),
+                        Using(typeof(IExecutionContext).Namespace)
+                    }))
+                .WithMembers(SingletonList<MemberDeclarationSyntax>(namespaceDeclaration));
+            return root;
         }
 
-        private static IRootTokenWriter GetWriter(IRootNode rootNode)
+        private MemberDeclarationSyntax GenerateMember(Nodes nodes, IRootNode node)
         {
-            return rootNode switch
-            {
-                Function _ => new FunctionWriter(),
-                EnumDefinition _ => new EnumWriter(),
-                Table _ => new TableWriter(),
-                Scenario _ => null,
-                _ => throw new InvalidOperationException("No writer defined: " + rootNode.GetType())
-            };
+            var writer = CSharpCode.GetWriter(node);
+
+            var generatedType = writer.CreateCode(node);
+
+            environment.AddType(generatedType);
+
+            return generatedType.Syntax;
         }
+
+        private static UsingDirectiveSyntax Using(string ns) => UsingDirective(ParseName(ns));
 
         private static string FormatCompilationErrors(ImmutableArray<Diagnostic> emitResult)
         {

@@ -7,7 +7,7 @@ namespace Lexy.Poc.Core.Language
     public class Table : RootNode
     {
         public TableName Name { get; } = new TableName();
-        public TableHeaders Headers { get; private set; }
+        public TableHeader Header { get; private set; }
         public IList<TableRow> Rows { get; } = new List<TableRow>();
         public override string NodeName => Name.Value;
 
@@ -33,7 +33,7 @@ namespace Lexy.Poc.Core.Language
 
             if (IsFirstLine())
             {
-                Headers = TableHeaders.Parse(context);
+                Header = TableHeader.Parse(context);
             }
             else
             {
@@ -45,12 +45,12 @@ namespace Lexy.Poc.Core.Language
 
         private bool IsFirstLine()
         {
-            return Headers == null;
+            return Header == null;
         }
 
         public override IEnumerable<INode> GetChildren()
         {
-            yield return Headers;
+            yield return Header;
 
             foreach (var row in Rows)
             {

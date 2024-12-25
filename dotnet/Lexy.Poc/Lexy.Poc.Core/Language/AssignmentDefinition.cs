@@ -30,9 +30,15 @@ namespace Lexy.Poc.Core.Language
             var name = line.Tokens.TokenValue(0);
 
             var value = ExpressionFactory.Parse(context.SourceCode.File, line.Tokens.TokensFrom(2), line);
+            if (value.Status == ParseExpressionStatus.Failed)
+            {
+                context.Logger.Fail(context.LineStartReference(), value.ErrorMessage);
+                return null;
+            }
+
             var reference = context.LineStartReference();
 
-            return value != null ? new AssignmentDefinition(name, value, reference) : null;
+            return new AssignmentDefinition(name, value.Expression, reference);
         }
 
         public override IEnumerable<INode> GetChildren()

@@ -91,11 +91,15 @@ namespace Lexy.Poc.Core.Language.Expressions
             }
 
             var left = ExpressionFactory.Parse(source.File, leftTokens, source.Line);
+            if (left.Status == ParseExpressionStatus.Failed) return left;
+
             var right = ExpressionFactory.Parse(source.File, rightTokens, source.Line);
+            if (right.Status == ParseExpressionStatus.Failed) return left;
+
             var operatorValue = lowestPriorityOperation.ExpressionOperator;
             var reference = source.CreateReference(lowestPriorityOperation.Index);
 
-            var binaryExpression = new BinaryExpression(left, right, operatorValue, source, reference);
+            var binaryExpression = new BinaryExpression(left.Expression, right.Expression, operatorValue, source, reference);
             return ParseExpressionResult.Success(binaryExpression) ;
         }
 
