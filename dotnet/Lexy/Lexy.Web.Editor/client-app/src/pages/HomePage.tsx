@@ -9,13 +9,12 @@ import {makeStyles, styled} from '@mui/material/styles';
 import {Edit} from "@mui/icons-material";
 
 const GridFullHeight = styled(Grid)`
-  height: calc(100% - 264px);
-  background: blue;
+  height: calc(100% - 64px);
+  padding: 8px;
 `;
 
 const GridItem = styled(Grid)`
   height: 100%;
-  background: yellow;
 `;
 
 const ToolPanel = styled(Grid)`
@@ -23,11 +22,23 @@ const ToolPanel = styled(Grid)`
   background: grey;
 `;
 
+const FullHeightPaper = styled(Paper)`
+  height: 100%;
+  overflow-y: scroll;
+  padding: 8px;
+`;
+
+const PaperContainer = styled(FullHeightPaper)`
+  position: relative;
+`;
+
 function HomePage() {
   return (
     <GridFullHeight container>
       <GridItem size={12}>
-        <Box>Welcome to the Lexy Editor</Box>
+        <PaperContainer>
+          <Box>Welcome to the Lexy Editor</Box>
+        </PaperContainer>
       </GridItem>
     </GridFullHeight>
   );

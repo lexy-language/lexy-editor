@@ -1,18 +1,35 @@
-import React, {FunctionComponent} from 'react';
+import React, {FunctionComponent, useEffect, useRef} from 'react';
 import Editor, { DiffEditor, useMonaco, loader } from '@monaco-editor/react';
-import Paper from '@mui/material/Paper';
-import Container from "@mui/material/Container";
-import Box from "@mui/material/Box";
-import Grid from "@mui/material/Grid2";
-import Stack from "@mui/material/Stack";
-import {makeStyles, styled} from '@mui/material/styles';
-import {Edit} from "@mui/icons-material";
-import {MenuItem, MenuList} from "@mui/material";
+import {CircularProgress, MenuItem, MenuList} from "@mui/material";
+import {Loading, useContext} from "../context/editorContext";
+import MonacoEditor, { OnMount } from "@monaco-editor/react";
+import {configuration, languageDef} from "./LexyLanguage";
 
 function SourceEditor() {
-  return (
-    <div>SourceEditor</div>
-  );
+
+  const editorRef = useRef(null);
+
+  function handleEditorDidMount(editor: any, monaco: any) {
+    console.log("handleEditorDidMount: " + monaco)
+    if (!monaco.languages.getLanguages().some((value: any) => value.id === 'lexy')) {
+
+      monaco.languages.register({ id: 'lexy' })
+      monaco.languages.setMonarchTokensProvider('lexy', languageDef)
+      monaco.languages.setLanguageConfiguration('lexy', configuration)
+    }
+  }
+
+  const {
+    currentFileDetails,
+  } = useContext();
+
+  if (currentFileDetails instanceof Loading) {
+    return <CircularProgress/>;
+  }
+  if (!currentFileDetails) {
+    return <Editor/>
+  }
+  return <Editor value={currentFileDetails.code} language={'lexy'} onMount={handleEditorDidMount} />
 }
 
 export default SourceEditor;

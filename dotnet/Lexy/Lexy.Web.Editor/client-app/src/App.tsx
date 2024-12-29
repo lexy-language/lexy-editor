@@ -8,12 +8,12 @@ import FileNew from "./pages/FileNew";
 import FileOpen from "./pages/FileOpen";
 import EditorPage from "./pages/EditorPage";
 import HomePage from "./pages/HomePage";
-import { EditorPageContextProvider } from "./context/EditorPageContext";
+import { EditorContextProvider } from "./context/editorContext";
 
 function App() {
   return (
     <div style={{ height: '100vh', background: '#EEE' }}>
-      <EditorPageContextProvider>
+      <EditorContextProvider>
         <EditorBar />
         <Routes>
           <Route path='/' element={<HomePage/>} />
@@ -24,7 +24,7 @@ function App() {
           </Route>
           <Route path='/editor' element={<EditorPage/>} />
         </Routes>
-      </EditorPageContextProvider>
+      </EditorContextProvider>
     </div>
   );
 }

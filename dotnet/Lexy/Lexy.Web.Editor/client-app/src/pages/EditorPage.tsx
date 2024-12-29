@@ -1,14 +1,9 @@
-import React, {FunctionComponent, useState} from 'react';
-import Editor, { DiffEditor, useMonaco, loader } from '@monaco-editor/react';
+import React from 'react';
 import Paper from '@mui/material/Paper';
-import Container from "@mui/material/Container";
-import Box from "@mui/material/Box";
-import Grid from "@mui/material/Grid2";
-import Stack from "@mui/material/Stack";
-import {makeStyles, styled} from '@mui/material/styles';
-import {Edit} from "@mui/icons-material";
+import Grid from '@mui/material/Grid2';
+import {styled} from '@mui/material/styles';
 import {Button, ButtonGroup} from "@mui/material";
-import {BottomContainer, LeftContainer, MainContainer, useContext} from '../context/EditorPageContext';
+import {BottomContainer, LeftContainer, MainContainer, useContext} from '../context/editorContext';
 
 import Explorer from '../controls/Explorer';
 import Structure from '../controls/Structure';
@@ -43,9 +38,6 @@ const PaperContainer = styled(FullHeightPaper)`
   position: relative;
 `;
 
-const LeftContentBox = styled(Box)`
-`;
-
 const LeftBottomButtonGroup = styled(ButtonGroup)`
   position: absolute;
   bottom: 0;
@@ -53,6 +45,23 @@ const LeftBottomButtonGroup = styled(ButtonGroup)`
 `;
 
 
+function optionButtonsGroup<T>(values: {Name: string, Value: T}[], currentValue: T, setValue: (item: T) => void) {
+  return <LeftBottomButtonGroup variant="text" aria-label="Basic button group">
+    {optionButtons(values, currentValue, setValue)}
+  </LeftBottomButtonGroup>;
+}
+
+function optionButtons<T>(values: {Name: string, Value: T}[], currentValue: T, setValue: (item: T) => void) {
+  return values.map(value => <Button
+    variant={(value.Value == currentValue ? 'contained' : 'text')}
+    onClick={() => setValue(value.Value)}>
+    {value.Name}
+  </Button>);
+}
+
+function content<T>(values: {Value: T, Element: () => React.ReactNode}[], currentValue: T) {
+  return values.find(value => value.Value == currentValue)?.Element();
+}
 
 function EditorPage() {
   const {
@@ -61,85 +70,42 @@ function EditorPage() {
     bottomContainer, setBottomContainer
   } = useContext();
 
-  function leftContent() {
-    switch (leftContainer) {
-      case LeftContainer.Explorer:
-        return <Explorer />;
-      case LeftContainer.Structure:
-        return <Structure />;
-    }
-  }
-
-  function mainContent() {
-    switch (mainContainer) {
-      case MainContainer.Source:
-        return <SourceEditor />;
-      case MainContainer.Run:
-        return <RunFunction />;
-      case MainContainer.Table:
-        return <EditTable />;
-    }
-  }
-
-  function bottomContent() {
-    switch (bottomContainer) {
-      case BottomContainer.Testing:
-        return <Testing />;
-      case BottomContainer.Logging:
-        return <Logging />;
-    }
-  }
-
   const leftOptions = [
-    { Name: 'Explorer', Value: LeftContainer.Explorer },
-    { Name: 'Structure', Value: LeftContainer.Structure },
-  ];
-  const mainOptions = [
-    { Name: 'Source Code', Value: MainContainer.Source },
-    { Name: 'Run Function', Value: MainContainer.Run },
-    { Name: 'Edit Table', Value: MainContainer.Table },
-  ];
-  const bottomOptions = [
-    { Name: 'Compilation Loggig', Value: BottomContainer.Logging },
-    { Name: 'Test Logging', Value: BottomContainer.Testing },
+    { Name: 'Explorer', Value: LeftContainer.Explorer, Element: () => <Explorer /> },
+    { Name: 'Structure', Value: LeftContainer.Structure, Element: () => <Structure />  },
   ];
 
-  function optionButtons<T>(values: {Name: string, Value: T}[], currentValue: T, setValue: (item: T) => void) {
-    return values.map(value => <Button
-      variant={(value.Value == currentValue ? 'contained' : 'text')}
-      onClick={() => setValue(value.Value)}>
-      {value.Name}
-    </Button>);
-  }
+  const mainOptions = [
+    { Name: 'Source Code', Value: MainContainer.Source, Element: () => <SourceEditor /> },
+    { Name: 'Run Function', Value: MainContainer.Run, Element: () => <RunFunction /> },
+    { Name: 'Edit Table', Value: MainContainer.Table, Element: () => <EditTable /> },
+  ];
+
+  const bottomOptions = [
+    { Name: 'Compilation Loggig', Value: BottomContainer.Logging, Element: () => <Testing />  },
+    { Name: 'Test Logging', Value: BottomContainer.Testing, Element: () => <Logging />  },
+  ];
 
   return (
     <>
       <GridFullHeight container>
         <GridItem size={4}>
           <PaperContainer>
-            <LeftContentBox>
-              {leftContent()}
-            </LeftContentBox>
-            <LeftBottomButtonGroup variant="text" aria-label="Basic button group">
-              {optionButtons(leftOptions, leftContainer, setLeftContainer)}
-            </LeftBottomButtonGroup>
+            {content(leftOptions, leftContainer)}
+            {optionButtonsGroup(leftOptions, leftContainer, setLeftContainer)}
           </PaperContainer>
         </GridItem>
         <GridItem size={8} >
           <PaperContainer>
-            {mainContent()}
-            <LeftBottomButtonGroup variant="text" aria-label="Basic button group">
-              {optionButtons(mainOptions, mainContainer, setMainContainer)}
-            </LeftBottomButtonGroup>
+            {content(mainOptions, mainContainer)}
+            {optionButtonsGroup(mainOptions, mainContainer, setMainContainer)}
           </PaperContainer>
         </GridItem>
       </GridFullHeight>
       <ToolPanel>
         <PaperContainer>
-          {bottomContent()}
-          <LeftBottomButtonGroup variant="text" aria-label="Basic button group">
-            {optionButtons(bottomOptions, bottomContainer, setBottomContainer)}
-          </LeftBottomButtonGroup>
+          {content(bottomOptions, bottomContainer)}
+          {optionButtonsGroup(bottomOptions, bottomContainer, setBottomContainer)}
         </PaperContainer>
       </ToolPanel>
     </>
