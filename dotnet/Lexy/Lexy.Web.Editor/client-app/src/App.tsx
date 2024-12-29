@@ -1,26 +1,30 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
-import { CodeiumEditor } from "@codeium/react-code-editor";
+import { Route, Routes } from 'react-router-dom';
+
+import EditorBar from "./EditorBar";
+import FilePage from "./pages/FilePage";
+import FileExamples from "./pages/FileExamples";
+import FileNew from "./pages/FileNew";
+import FileOpen from "./pages/FileOpen";
+import EditorPage from "./pages/EditorPage";
+import HomePage from "./pages/HomePage";
+import { EditorPageContextProvider } from "./context/EditorPageContext";
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload. Test
-        </p>
-        <CodeiumEditor language="python" theme="" />
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div style={{ height: '100vh', background: '#EEE' }}>
+      <EditorPageContextProvider>
+        <EditorBar />
+        <Routes>
+          <Route path='/' element={<HomePage/>} />
+          <Route path='/file' element={<FilePage/>}>
+            <Route path="examples" element={<FileExamples />} />
+            <Route path="new" element={<FileNew />} />
+            <Route path="open" element={<FileOpen />} />
+          </Route>
+          <Route path='/editor' element={<EditorPage/>} />
+        </Routes>
+      </EditorPageContextProvider>
     </div>
   );
 }
