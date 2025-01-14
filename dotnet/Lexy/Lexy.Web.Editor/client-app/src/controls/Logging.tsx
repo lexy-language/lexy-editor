@@ -7,12 +7,21 @@ import Grid from "@mui/material/Grid2";
 import Stack from "@mui/material/Stack";
 import {makeStyles, styled} from '@mui/material/styles';
 import {Edit} from "@mui/icons-material";
-import {MenuItem, MenuList} from "@mui/material";
+import {CircularProgress, MenuItem, MenuList} from "@mui/material";
+import {Loading, useContext} from "../context/editorContext";
+
 
 function Logging() {
-  return (
-    <div>Logging</div>
-  );
+
+  const {
+    currentFileErrors,
+  } = useContext();
+
+  if (currentFileErrors.isLoading) {
+    return <CircularProgress/>;
+  }
+  const logs = currentFileErrors.map(log => <div>{log}</div>);
+  return <div>{logs}</div>;
 }
 
 export default Logging;

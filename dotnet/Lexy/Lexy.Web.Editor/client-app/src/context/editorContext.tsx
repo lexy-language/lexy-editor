@@ -1,6 +1,7 @@
 import createContext from "./createContext"
 import React, {useEffect, useState} from 'react';
 import {getProjectFiles, getFileDetails, ProjectFileDetails, ProjectFolder, ProjectFile} from "../api/project";
+import {compileCurrentFile} from "../api/parser";
 
 export enum LeftContainer {
   Explorer,
@@ -19,6 +20,7 @@ export enum BottomContainer {
 }
 
 export class Loading {
+  isLoading = true;
 }
 
 export type EditorState = {
@@ -33,6 +35,9 @@ export type EditorState = {
 
   currentFileDetails: ProjectFileDetails | null | Loading;
   setCurrentFileDetails: React.Dispatch<React.SetStateAction<ProjectFileDetails | null | Loading>>;
+
+  currentFileErrors: Array<string>;
+  setCurrentFileErrors: React.Dispatch<Array<string>>;
 
   leftContainer: LeftContainer;
   setLeftContainer: React.Dispatch<React.SetStateAction<LeftContainer>>;
@@ -57,6 +62,7 @@ export const EditorContextProvider = ({ children }: ContextProviderProps) => {
 
   const [currentFile, setCurrentFile] = useState<ProjectFile | null>(null);
   const [currentFileDetails, setCurrentFileDetails] = useState<ProjectFileDetails | null | Loading>(null);
+  const [currentFileErrors, setCurrentFileErrors] = useState<Array<string>>([]);
 
   const [leftContainer, setLeftContainer] = useState(LeftContainer.Explorer);
   const [mainContainer, setMainContainer] = useState(MainContainer.Source);
@@ -68,6 +74,7 @@ export const EditorContextProvider = ({ children }: ContextProviderProps) => {
 
     currentFile, setCurrentFile,
     currentFileDetails, setCurrentFileDetails,
+    currentFileErrors, setCurrentFileErrors,
 
     leftContainer, setLeftContainer,
     mainContainer, setMainContainer,
@@ -91,6 +98,15 @@ export const EditorContextProvider = ({ children }: ContextProviderProps) => {
   useEffect(() => {
     setCurrentProject("test");
   }, []);
+
+  useEffect(() => {
+    if (!!currentFileDetails && !currentFileDetails.isLoading) {
+      const errors = compileCurrentFile(currentFileDetails.name, currentFileDetails.code);
+      setCurrentFileErrors(errors);
+    } else {
+      setCurrentFileErrors([]);
+    }
+  }, [currentFileDetails]);
 
   return <Provider value={value}>{children}</Provider>;
 };

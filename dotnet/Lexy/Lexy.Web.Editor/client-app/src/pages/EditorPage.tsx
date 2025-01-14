@@ -24,8 +24,7 @@ const GridItem = styled(Grid)`
 
 const ToolPanel = styled(Grid)`
   height: 200px;
-  padding: 8px;
-  padding-top: 0px;
+  padding: 0px 8px 8px;
 `;
 
 const FullHeightPaper = styled(Paper)`
@@ -45,22 +44,23 @@ const LeftBottomButtonGroup = styled(ButtonGroup)`
 `;
 
 
-function optionButtonsGroup<T>(values: {Name: string, Value: T}[], currentValue: T, setValue: (item: T) => void) {
+function optionButtonsGroup<T>(values: {name: string, value: T}[], currentValue: T, setValue: (item: T) => void) {
   return <LeftBottomButtonGroup variant="text" aria-label="Basic button group">
     {optionButtons(values, currentValue, setValue)}
   </LeftBottomButtonGroup>;
 }
 
-function optionButtons<T>(values: {Name: string, Value: T}[], currentValue: T, setValue: (item: T) => void) {
+function optionButtons<T>(values: {name: string, value: T}[], currentValue: T, setValue: (item: T) => void) {
   return values.map(value => <Button
-    variant={(value.Value == currentValue ? 'contained' : 'text')}
-    onClick={() => setValue(value.Value)}>
-    {value.Name}
+    key={value.name}
+    variant={(value.value == currentValue ? 'contained' : 'text')}
+    onClick={() => setValue(value.value)}>
+    {value.name}
   </Button>);
 }
 
-function content<T>(values: {Value: T, Element: () => React.ReactNode}[], currentValue: T) {
-  return values.find(value => value.Value == currentValue)?.Element();
+function content<T>(values: {value: T, element: () => React.ReactNode}[], currentValue: T) {
+  return values.find(value => value.value == currentValue)?.element();
 }
 
 function EditorPage() {
@@ -71,19 +71,19 @@ function EditorPage() {
   } = useContext();
 
   const leftOptions = [
-    { Name: 'Explorer', Value: LeftContainer.Explorer, Element: () => <Explorer /> },
-    { Name: 'Structure', Value: LeftContainer.Structure, Element: () => <Structure />  },
+    { name: 'Explorer', value: LeftContainer.Explorer, element: () => <Explorer /> },
+    { name: 'Structure', value: LeftContainer.Structure, element: () => <Structure />  },
   ];
 
   const mainOptions = [
-    { Name: 'Source Code', Value: MainContainer.Source, Element: () => <SourceEditor /> },
-    { Name: 'Run Function', Value: MainContainer.Run, Element: () => <RunFunction /> },
-    { Name: 'Edit Table', Value: MainContainer.Table, Element: () => <EditTable /> },
+    { name: 'Source Code', value: MainContainer.Source, element: () => <SourceEditor /> },
+    { name: 'Run Function', value: MainContainer.Run, element: () => <RunFunction /> },
+    { name: 'Edit Table', value: MainContainer.Table, element: () => <EditTable /> },
   ];
 
   const bottomOptions = [
-    { Name: 'Compilation Loggig', Value: BottomContainer.Logging, Element: () => <Testing />  },
-    { Name: 'Test Logging', Value: BottomContainer.Testing, Element: () => <Logging />  },
+    { name: 'Compilation Loggig', value: BottomContainer.Logging, element: () => <Testing />  },
+    { name: 'Test Logging', value: BottomContainer.Testing, element: () => <Logging />  },
   ];
 
   return (

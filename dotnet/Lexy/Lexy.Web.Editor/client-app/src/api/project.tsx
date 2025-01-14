@@ -27,3 +27,5 @@ export async function getFileDetails(projectName: string, identifier: string, se
   const data = await response.json();
   setProjectFileDetails(data);
 }
+
+//todo return promise

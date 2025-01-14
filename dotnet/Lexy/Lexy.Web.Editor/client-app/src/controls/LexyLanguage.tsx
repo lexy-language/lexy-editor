@@ -1,8 +1,11 @@
 
 /* eslint-disable quotes */
 
-export const options = {
-  lineNumbers: false,
+import {editor} from "monaco-editor";
+import IStandaloneEditorConstructionOptions = editor.IStandaloneEditorConstructionOptions;
+
+export const options: IStandaloneEditorConstructionOptions = {
+  lineNumbers: 'on',
   scrollBeyondLastLine: false,
   readOnly: false,
   fontSize: 12,
