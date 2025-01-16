@@ -1,27 +1,57 @@
 import React, {FunctionComponent} from 'react';
-import Editor, { DiffEditor, useMonaco, loader } from '@monaco-editor/react';
-import Paper from '@mui/material/Paper';
-import Container from "@mui/material/Container";
-import Box from "@mui/material/Box";
-import Grid from "@mui/material/Grid2";
-import Stack from "@mui/material/Stack";
-import {makeStyles, styled} from '@mui/material/styles';
-import {Edit} from "@mui/icons-material";
-import {CircularProgress, MenuItem, MenuList} from "@mui/material";
-import {Loading, useContext} from "../context/editorContext";
+import {CircularProgress, styled} from "@mui/material";
+import {useContext} from "../context/editorContext";
+import {isLoading} from "../context/loading";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import {where} from "lexy/dist/infrastructure/enumerableExtensions";
+import ListItemButton from "@mui/material/ListItemButton";
+import {LogEntry} from "lexy/dist/parser/parserLogger";
 
+const NoPaddingListItemButton = styled(ListItemButton)`
+  padding: 2px;
+`;
+
+interface LogItemProps {
+  logEntry: LogEntry
+}
+
+function LogItem(props: LogItemProps) {
+
+  const {
+    setEditorPosition,
+  } = useContext();
+
+  function setPosition() {
+    setEditorPosition({
+      lineNumber: props.logEntry.reference.lineNumber,
+      column: props.logEntry.reference.characterNumber,
+      source: "state"
+    })
+  }
+
+  return <ListItem disablePadding onClick={setPosition}>
+    <NoPaddingListItemButton style={props.logEntry.isError ? ({color: 'red'}) : ({})} >
+      {props.logEntry.message}
+    </NoPaddingListItemButton>
+  </ListItem>;
+}
 
 function Logging() {
 
   const {
-    currentFileErrors,
+    currentFileLogging,
   } = useContext();
 
-  if (currentFileErrors.isLoading) {
+  if (isLoading(currentFileLogging)) {
     return <CircularProgress/>;
   }
-  const logs = currentFileErrors.map(log => <div>{log}</div>);
-  return <div>{logs}</div>;
+
+  const errors = where(currentFileLogging, entry => entry.isError);
+  const sorted = errors.sort((left, right) => left.sortIndex - right.sortIndex);
+  const logs = sorted.map((entry, index) => <LogItem logEntry={entry} key={index} /> );
+
+  return <List disablePadding>{logs}</List>;
 }
 
 export default Logging;

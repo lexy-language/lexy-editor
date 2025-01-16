@@ -17,7 +17,9 @@
     "@types/jest": "^26.0.15",
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",
-    "monaco-editor": "^0.45.0",
+    "lexy": "file:libs/lexy-compiler-v0.0.7.tgz",
+    "moment": "^2.30.1",
+    "monaco-editor": "^0.36.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.28.1",
@@ -25,9 +27,7 @@
     "split-pane-react": "^0.1.3",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.2",
-    "web-vitals": "^1.0.1",
-    "moment": "^2.30.1",
-    "lexy": "file:libs"
+    "web-vitals": "^1.0.1"
   },
   "scripts": {
     "prestart": "node --loader ts-node/esm ./src/aspnetcore-https.ts && node --loader ts-node/esm ./src/aspnetcore-react.ts",
@@ -36,7 +36,8 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "setup": "ln -Fs /Users/timcools/_/Lexy/git/typescript/src /Users/timcools/_/Lexy/git/dotnet/Lexy/Lexy.Web.Editor/client-app/le",
-    "setup-win": "mklink /d /Users/timcools/_/Lexy/git/typescript/src src/lexy"
+    "setup-win": "mklink /d /Users/timcools/_/Lexy/git/typescript/src src/lexy",
+    "update-lexy": "cd ../../../../typescript/ && version=$(npm version patch) && tsc && yarn pack && cd ../dotnet/Lexy/Lexy.Web.Editor/client-app/ && rm -r -f node_modules/lexy && rm -r -f node_modules/.cache && cp ../../../../typescript/lexy-compiler-${version}.tgz libs && yarn add lexy@file:libs/lexy-compiler-${version}.tgz"
   },
   "eslintConfig": {
     "extends": [

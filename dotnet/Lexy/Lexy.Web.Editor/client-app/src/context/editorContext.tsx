@@ -1,7 +1,9 @@
 import createContext from "./createContext"
 import React, {useEffect, useState} from 'react';
-import {getProjectFiles, getFileDetails, ProjectFileDetails, ProjectFolder, ProjectFile} from "../api/project";
+import {getFileDetails, getProjectFiles, ProjectFile, ProjectFileDetails, ProjectFolder} from "../api/project";
 import {compileCurrentFile} from "../api/parser";
+import {isLoading, Loading} from "./loading";
+import {LogEntry} from "lexy/dist/parser/parserLogger";
 
 export enum LeftContainer {
   Explorer,
@@ -19,8 +21,10 @@ export enum BottomContainer {
   Testing
 }
 
-export class Loading {
-  isLoading = true;
+export type EditorPosition = {
+  lineNumber: number,
+  column: number,
+  source: "editor" | "state"
 }
 
 export type EditorState = {
@@ -28,7 +32,7 @@ export type EditorState = {
   setCurrentProject: React.Dispatch<React.SetStateAction<string>>;
 
   projectFiles: ProjectFolder | null | Loading;
-  setProjectFiles: React.Dispatch<React.SetStateAction<ProjectFolder | null>>;
+  setProjectFiles: React.Dispatch<React.SetStateAction<ProjectFolder | null | Loading>>;
 
   currentFile: ProjectFile | null;
   setCurrentFile: React.Dispatch<React.SetStateAction<ProjectFile | null>>;
@@ -36,8 +40,11 @@ export type EditorState = {
   currentFileDetails: ProjectFileDetails | null | Loading;
   setCurrentFileDetails: React.Dispatch<React.SetStateAction<ProjectFileDetails | null | Loading>>;
 
-  currentFileErrors: Array<string>;
-  setCurrentFileErrors: React.Dispatch<Array<string>>;
+  currentFileLogging: Array<LogEntry> | Loading;
+  setCurrentFileLogging: React.Dispatch<Array<LogEntry> | Loading>;
+
+  editorPosition: EditorPosition | null;
+  setEditorPosition: React.Dispatch<EditorPosition | null>;
 
   leftContainer: LeftContainer;
   setLeftContainer: React.Dispatch<React.SetStateAction<LeftContainer>>;
@@ -55,6 +62,7 @@ type ContextProviderProps = {
   children: React.ReactNode;
 };
 
+
 export const EditorContextProvider = ({ children }: ContextProviderProps) => {
 
   const [currentProject, setCurrentProject] = useState('test');
@@ -62,7 +70,9 @@ export const EditorContextProvider = ({ children }: ContextProviderProps) => {
 
   const [currentFile, setCurrentFile] = useState<ProjectFile | null>(null);
   const [currentFileDetails, setCurrentFileDetails] = useState<ProjectFileDetails | null | Loading>(null);
-  const [currentFileErrors, setCurrentFileErrors] = useState<Array<string>>([]);
+  const [currentFileLogging, setCurrentFileLogging] = useState<Array<LogEntry> | Loading>([]);
+
+  const [editorPosition, setEditorPosition] = useState<EditorPosition | null>(null);
 
   const [leftContainer, setLeftContainer] = useState(LeftContainer.Explorer);
   const [mainContainer, setMainContainer] = useState(MainContainer.Source);
@@ -74,7 +84,9 @@ export const EditorContextProvider = ({ children }: ContextProviderProps) => {
 
     currentFile, setCurrentFile,
     currentFileDetails, setCurrentFileDetails,
-    currentFileErrors, setCurrentFileErrors,
+    currentFileLogging, setCurrentFileLogging,
+
+    editorPosition, setEditorPosition,
 
     leftContainer, setLeftContainer,
     mainContainer, setMainContainer,
@@ -100,11 +112,11 @@ export const EditorContextProvider = ({ children }: ContextProviderProps) => {
   }, []);
 
   useEffect(() => {
-    if (!!currentFileDetails && !currentFileDetails.isLoading) {
+    if (currentFileDetails != null && !isLoading(currentFileDetails)) {
       const errors = compileCurrentFile(currentFileDetails.name, currentFileDetails.code);
-      setCurrentFileErrors(errors);
+      setCurrentFileLogging(errors);
     } else {
-      setCurrentFileErrors([]);
+      setCurrentFileLogging([]);
     }
   }, [currentFileDetails]);
 

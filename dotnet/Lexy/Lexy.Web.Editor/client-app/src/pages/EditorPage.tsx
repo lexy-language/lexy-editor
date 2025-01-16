@@ -82,8 +82,8 @@ function EditorPage() {
   ];
 
   const bottomOptions = [
-    { name: 'Compilation Loggig', value: BottomContainer.Logging, element: () => <Testing />  },
-    { name: 'Test Logging', value: BottomContainer.Testing, element: () => <Logging />  },
+    { name: 'Compilation Loggig', value: BottomContainer.Logging, element: () => <Logging /> },
+    { name: 'Test Logging', value: BottomContainer.Testing, element: () => <Testing /> },
   ];
 
   return (

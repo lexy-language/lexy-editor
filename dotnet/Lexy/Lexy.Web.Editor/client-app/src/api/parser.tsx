@@ -1,9 +1,5 @@
-import {ConsoleLogger} from "lexy /infrastructure/logger"
-import {LexyParser} from "parser/lexyParser"
-import {Tokenizer} from "parser/tokens/tokenizer"
-import {IFileSystem} from "parser/IFileSystem";
-
-const baseLogger = new ConsoleLogger();
+import {ConsoleLogger, createParser, IFileSystem, ILogger, LogLevel} from "lexy";
+import {LogEntry} from "lexy/dist/parser/parserLogger";
 
 class WebFileSystem implements IFileSystem {
   readAllLines(fileName: string): Array<string> {
@@ -57,12 +53,30 @@ class WebFileSystem implements IFileSystem {
   }
 }
 
-const expressionFactory = new ExpressionFactory();
-const fileSystem = new WebFileSystem();
-const tokenizer = new Tokenizer();
-const lexyParser = new LexyParser(baseLogger, tokenizer, fileSystem, expressionFactory);
+class DummyLogger implements ILogger {
 
-export function compileCurrentFile(fileName: string, code: string[]): string[] {
-  const {rootNodes, logger} = lexyParser.parse(code, fileName, false);
-  return logger.errorMessages();
+  isEnabled(level: LogLevel): boolean {
+    return false;
+  }
+
+  logDebug(message: string): void {
+  }
+
+  logError(message: string): void {
+  }
+
+  logInformation(message: string): void {
+  }
+}
+
+
+const baseLogger = new DummyLogger();
+const fileSystem = new WebFileSystem();
+const lexyParser = createParser(baseLogger, fileSystem);
+//const lexyCompiler = creatCompiler(baseLogger, baseLogger);
+
+export function compileCurrentFile(fileName: string, code: string): LogEntry[] {
+  const lines = code.split("\n");
+  const {rootNodes, logger} = lexyParser.parse(lines, fileName, false);
+  return logger.entries;
 }
