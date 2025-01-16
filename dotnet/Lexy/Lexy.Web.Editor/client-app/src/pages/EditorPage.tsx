@@ -12,6 +12,7 @@ import RunFunction from '../controls/RunFunction';
 import EditTable from '../controls/EditTable';
 import Testing from '../controls/Testing';
 import Logging from '../controls/Logging';
+import Box from "@mui/material/Box";
 
 const GridFullHeight = styled(Grid)`
   height: calc(100% - 264px);
@@ -29,25 +30,24 @@ const ToolPanel = styled(Grid)`
 
 const FullHeightPaper = styled(Paper)`
   height: 100%;
-  overflow-y: scroll;
   padding: 8px;
 `;
 
-const PaperContainer = styled(FullHeightPaper)`
-  position: relative;
+const TopPart = styled(Box)`
+  height: calc(100% - 44px);
+  padding: 0;
+  overflow-y: scroll;
 `;
 
-const LeftBottomButtonGroup = styled(ButtonGroup)`
-  position: absolute;
-  bottom: 0;
-  left: 0;
+const BottomPart = styled(Box)`
+  height: 44px;
+  padding: 8px 0 0;
 `;
-
 
 function optionButtonsGroup<T>(values: {name: string, value: T}[], currentValue: T, setValue: (item: T) => void) {
-  return <LeftBottomButtonGroup variant="text" aria-label="Basic button group">
+  return <BottomPart>
     {optionButtons(values, currentValue, setValue)}
-  </LeftBottomButtonGroup>;
+  </BottomPart>;
 }
 
 function optionButtons<T>(values: {name: string, value: T}[], currentValue: T, setValue: (item: T) => void) {
@@ -60,7 +60,9 @@ function optionButtons<T>(values: {name: string, value: T}[], currentValue: T, s
 }
 
 function content<T>(values: {value: T, element: () => React.ReactNode}[], currentValue: T) {
-  return values.find(value => value.value == currentValue)?.element();
+  return <TopPart>
+    {values.find(value => value.value == currentValue)?.element()}
+  </TopPart>;
 }
 
 function EditorPage() {
@@ -90,23 +92,23 @@ function EditorPage() {
     <>
       <GridFullHeight container>
         <GridItem size={4}>
-          <PaperContainer>
+          <FullHeightPaper>
             {content(leftOptions, leftContainer)}
             {optionButtonsGroup(leftOptions, leftContainer, setLeftContainer)}
-          </PaperContainer>
+          </FullHeightPaper>
         </GridItem>
-        <GridItem size={8} >
-          <PaperContainer>
+        <GridItem size={8}>
+          <FullHeightPaper>
             {content(mainOptions, mainContainer)}
             {optionButtonsGroup(mainOptions, mainContainer, setMainContainer)}
-          </PaperContainer>
+          </FullHeightPaper>
         </GridItem>
       </GridFullHeight>
       <ToolPanel>
-        <PaperContainer>
+        <FullHeightPaper>
           {content(bottomOptions, bottomContainer)}
           {optionButtonsGroup(bottomOptions, bottomContainer, setBottomContainer)}
-        </PaperContainer>
+        </FullHeightPaper>
       </ToolPanel>
     </>
   );

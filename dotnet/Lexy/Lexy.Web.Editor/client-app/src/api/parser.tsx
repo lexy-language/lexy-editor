@@ -1,5 +1,7 @@
 import {ConsoleLogger, createParser, IFileSystem, ILogger, LogLevel} from "lexy";
-import {LogEntry} from "lexy/dist/parser/parserLogger";
+import {IParserLogger, LogEntry} from "lexy/dist/parser/parserLogger";
+import {INode} from "lexy/dist/language/node";
+import {IRootNode} from "lexy/dist/language/rootNode";
 
 class WebFileSystem implements IFileSystem {
   readAllLines(fileName: string): Array<string> {
@@ -69,14 +71,18 @@ class DummyLogger implements ILogger {
   }
 }
 
+export type CompileResult = {
+  logging: Array<LogEntry>;
+  nodes: Array<IRootNode>;
+}
 
 const baseLogger = new DummyLogger();
 const fileSystem = new WebFileSystem();
 const lexyParser = createParser(baseLogger, fileSystem);
 //const lexyCompiler = creatCompiler(baseLogger, baseLogger);
 
-export function compileCurrentFile(fileName: string, code: string): LogEntry[] {
+export function compileCurrentFile(fileName: string, code: string): CompileResult {
   const lines = code.split("\n");
   const {rootNodes, logger} = lexyParser.parse(lines, fileName, false);
-  return logger.entries;
+  return {logging: logger.entries, nodes: rootNodes.asArray()}
 }

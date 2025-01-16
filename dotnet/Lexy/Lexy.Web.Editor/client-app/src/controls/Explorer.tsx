@@ -12,7 +12,7 @@ import FolderIcon from '@mui/icons-material/Folder';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import {CircularProgress, styled} from "@mui/material";
 import Box from "@mui/material/Box";
-import {Loading} from "../context/loading";
+import {isLoading} from "../context/loading";
 
 const indentValue = 16;
 const fileIndentValue = 30;
@@ -26,10 +26,13 @@ const NoPaddingListItemIcon = styled(ListItemIcon)`
   min-width: 30px
 `;
 
-function FolderItem(props: { folder: ProjectFolder, currentFile: ProjectFile | null, indent: number, setCurrentFile: (file: ProjectFile | null) => void }) {
+function FolderItem(props: {folder: ProjectFolder, currentFile: ProjectFile | null, indent: number, setCurrentFile: (file: ProjectFile | null) => void, parent: Array<string>}) {
 
-  const {folder, currentFile, indent, setCurrentFile} = props;
-  const [open, setOpen] = React.useState(false);
+  const {folder, currentFile, indent, setCurrentFile, parent} = props;
+  const path = [...parent, folder.name];
+  const {projectFilesTreeState, setProjectFilesTreeState} = useContext();
+  const open = projectFilesTreeState.isOpen(path);
+  const setOpen = (value: boolean) => setProjectFilesTreeState(projectFilesTreeState.setOpen(path, value));
 
   return (
     <>
@@ -48,7 +51,8 @@ function FolderItem(props: { folder: ProjectFolder, currentFile: ProjectFile | n
       {open && folder.folders ? folder.folders.map(folder => <FolderItem key={folder.name} folder={folder}
                                                                          indent={indent + 1}
                                                                          currentFile={currentFile}
-                                                                         setCurrentFile={setCurrentFile} />) : []}
+                                                                         setCurrentFile={setCurrentFile}
+                                                                         parent={path} />) : []}
       {open && folder.files ? folder.files.map(file => <FileItem key={file.name} file={file}
                                                                  indent={indent + 1}
                                                                  currentFile={currentFile}
@@ -57,7 +61,7 @@ function FolderItem(props: { folder: ProjectFolder, currentFile: ProjectFile | n
   );
 }
 
-function FileItem(props: { file: ProjectFile, currentFile: ProjectFile | null, indent: number, setCurrentFile: (file: ProjectFile) => void }) {
+function FileItem(props: {file: ProjectFile, currentFile: ProjectFile | null, indent: number, setCurrentFile: (file: ProjectFile) => void}) {
 
   const {file, currentFile, indent, setCurrentFile} = props;
 
@@ -86,10 +90,10 @@ function Explorer() {
     if (projectFiles == null) {
       return <Box>No project loaded.</Box>;
     }
-    if (projectFiles instanceof Loading) {
+    if (isLoading(projectFiles)) {
       return <CircularProgress/>;
     }
-    return <FolderItem folder={projectFiles as ProjectFolder} indent={0} currentFile={currentFile} setCurrentFile={setCurrentFile}/>;
+    return <FolderItem folder={projectFiles as ProjectFolder} indent={0} currentFile={currentFile} setCurrentFile={setCurrentFile} parent={[]}/>;
   }
 
   return (

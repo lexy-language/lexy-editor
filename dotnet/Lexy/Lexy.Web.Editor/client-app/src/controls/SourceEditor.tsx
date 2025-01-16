@@ -9,8 +9,8 @@ import {editor} from "monaco-editor";
 import Box from "@mui/material/Box";
 import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
 import {where} from "lexy/dist/infrastructure/enumerableExtensions";
-import setModelMarkers = editor.setModelMarkers;
 
+const space = ' '.charCodeAt(0);
 const languageId = 'lexy';
 
 function SourceEditor() {
@@ -18,13 +18,13 @@ function SourceEditor() {
   const monaco = useMonaco();
   const editorRef = useRef<IStandaloneCodeEditor | null>(null);
   const {
-    currentFileDetails,
-    setCurrentFileDetails,
+    currentFileCode,
+    setCurrentFileCode,
     currentFileLogging,
     editorPosition,
     setEditorPosition
   } = useContext();
-  const [rerenderMarkers, setRerenderMarkers] = useState(new Date());
+  const [editorMounter, setEditorMounted] = useState(false);
 
   useEffect(() => {
     if (!monaco) return;
@@ -44,9 +44,32 @@ function SourceEditor() {
       lineNumber: editorPosition.lineNumber,
       column: editorPosition.column
     });
-    editorRef.current?.revealLine(editorPosition.lineNumber);
+    editorRef.current?.revealLineInCenter(editorPosition.lineNumber);
     editorRef.current?.focus()
   }, [editorPosition]);
+
+  useEffect(() => {
+    if (!editorRef.current || currentFileCode == null || isLoading(currentFileCode) || currentFileCode.source == "editor") return;
+    editorRef.current?.setValue(currentFileCode.code);
+    editorRef.current?.revealLine(1);
+  }, [currentFileCode]);
+
+  useEffect(setMarkers, [currentFileLogging])
+
+  useEffect(() => {
+    if (!editorRef.current || currentFileCode == null || isLoading(currentFileCode)) return;
+    editorRef.current?.setValue(currentFileCode.code);
+    editorRef.current?.revealLine(1);
+    setMarkers();
+  }, [editorMounter])
+
+  function getEndOfToken(lineContent: string, characterNumber: number): number {
+    for (let index = characterNumber+1; index < lineContent.length ; index ++) {
+      const value = lineContent.charCodeAt(index);
+      if (value == space) return index;
+    }
+    return lineContent.length;
+  }
 
   function setMarkers() {
     if (!editorRef.current) return;
@@ -57,36 +80,32 @@ function SourceEditor() {
 
     const markers = where(currentFileLogging, entry => entry.isError)
       .map(entry => {
-        const word = model.getWordAtPosition({
-          lineNumber: entry.reference.lineNumber,
-          column: entry.reference.characterNumber
-        });
+        const lineContent = model.getLineContent(entry.reference.lineNumber);
+        const column = getEndOfToken(lineContent, entry.reference.characterNumber);
         return {
           message: entry.message,
           severity: monaco.MarkerSeverity.Error,
           startLineNumber: entry.reference.lineNumber,
           startColumn: entry.reference.characterNumber,
           endLineNumber: entry.reference.lineNumber,
-          endColumn: word != null ? word.endColumn : entry.reference.characterNumber + 1,
+          endColumn: column + 1,
         }
       });
 
     monaco.editor.setModelMarkers(model, "owner", markers);
   }
 
-  useEffect(setMarkers, [currentFileLogging, rerenderMarkers])
-
   function handleEditorChange(value: string | undefined) {
     if (!value) return;
-    const details = currentFileDetails != null
-      ? {...currentFileDetails, code: value}
-      : {name: "untitled", identifier: "untitled", code: value,};
-    setCurrentFileDetails(details);
+    const details = currentFileCode != null && !isLoading(currentFileCode)
+      ? {name: currentFileCode.name, identifier: currentFileCode.identifier, code: value, source: "editor"}
+      : {name: "untitled", identifier: "untitled", code: value, source: "editor"};
+    setCurrentFileCode(details);
   }
 
   function handleEditorDidMount(editor: IStandaloneCodeEditor){
     editorRef.current = editor;
-    setRerenderMarkers(new Date());
+    setEditorMounted(true);
 
     editor.onDidChangeCursorPosition(event => {
       setEditorPosition({
@@ -97,14 +116,15 @@ function SourceEditor() {
     });
   }
 
-  if (currentFileDetails instanceof Loading) {
-    return <CircularProgress/>;
-  }
-  if (!currentFileDetails) {
+  if (!currentFileCode) {
     return <Box>No file selected</Box>;
   }
 
-  return <MonacoEditor value={currentFileDetails.code} language={languageId} theme={"light"}
+  if (isLoading(currentFileCode)) {
+    return <CircularProgress/>;
+  }
+
+  return <MonacoEditor language={languageId} theme={"light"}
                        onChange={handleEditorChange} onMount={handleEditorDidMount} />
 }
 
