@@ -1,4 +1,4 @@
-export class TreeNodeSate {
+export class TreeNodeState {
 
   private readonly state: { [key: string]: boolean }
 
@@ -7,18 +7,18 @@ export class TreeNodeSate {
   }
 
   public isOpen(path: Array<string>): boolean {
-    const fullPath = TreeNodeSate.fullPath(path);
+    const fullPath = TreeNodeState.fullPath(path);
     const value = this.state[fullPath];
     return !!value;
   }
 
-  public setOpen(path: Array<string>, open: boolean): TreeNodeSate {
-    const fullPath = TreeNodeSate.fullPath(path);
+  public setOpen(path: Array<string>, open: boolean): TreeNodeState {
+    const fullPath = TreeNodeState.fullPath(path);
     const newState = {
       ...this.state,
       [fullPath]: open
     }
-    return new TreeNodeSate(newState);
+    return new TreeNodeState(newState);
   }
 
   private static fullPath(path: Array<string>) {

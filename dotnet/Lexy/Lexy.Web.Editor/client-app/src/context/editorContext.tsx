@@ -1,11 +1,13 @@
 import createContext from "./createContext"
 import React, {useEffect, useState} from 'react';
 import {getFileDetails, getProjectFiles, ProjectFile, ProjectFolder} from "../api/project";
-import {compileCurrentFile} from "../api/parser";
+import {parseFile} from "../api/parser";
 import {isLoading, Loading} from "./loading";
 import {LogEntry} from "lexy/dist/parser/parserLogger";
 import {createStructure, StructureNode} from "./structure";
-import {TreeNodeSate} from "./treeNodeSate";
+import {TreeNodeState} from "./treeNodeState";
+import {ExecuteFunctionState} from "./executeFunctionState";
+import {IRootNode} from "lexy/dist/language/rootNode";
 
 export enum LeftContainer {
   Explorer,
@@ -36,15 +38,15 @@ export interface ProjectFileCode {
   source: string;
 }
 
-export type EditorState = {
+export interface EditorState {
   currentProject: string;
   setCurrentProject: React.Dispatch<React.SetStateAction<string>>;
 
   projectFiles: ProjectFolder | null | Loading;
   setProjectFiles: React.Dispatch<React.SetStateAction<ProjectFolder | null | Loading>>;
 
-  projectFilesTreeState: TreeNodeSate;
-  setProjectFilesTreeState: React.Dispatch<React.SetStateAction<TreeNodeSate>>;
+  projectFilesTreeState: TreeNodeState;
+  setProjectFilesTreeState: React.Dispatch<React.SetStateAction<TreeNodeState>>;
 
   currentFile: ProjectFile | null;
   setCurrentFile: React.Dispatch<React.SetStateAction<ProjectFile | null>>;
@@ -55,14 +57,20 @@ export type EditorState = {
   currentFileLogging: Array<LogEntry> | Loading;
   setCurrentFileLogging: React.Dispatch<React.SetStateAction<Array<LogEntry> | Loading>>;
 
+  nodes: Array<IRootNode> | Loading;
+  setNodes: React.Dispatch<React.SetStateAction<Array<IRootNode> | Loading>>;
+
   structure: Array<StructureNode> | null;
   setStructure: React.Dispatch<React.SetStateAction<Array<StructureNode> | null>>;
 
   currentStructureNode: StructureNode | null;
   setCurrentStructureNode:React.Dispatch<React.SetStateAction<StructureNode | null>>;
 
-  structureTreeState: TreeNodeSate;
-  setStructureTreeState: React.Dispatch<React.SetStateAction<TreeNodeSate>>;
+  structureTreeState: TreeNodeState;
+  setStructureTreeState: React.Dispatch<React.SetStateAction<TreeNodeState>>;
+
+  executeFunction: ExecuteFunctionState;
+  setExecuteFunction: React.Dispatch<React.SetStateAction<ExecuteFunctionState>>;
 
   editorPosition: EditorPosition | null;
   setEditorPosition: React.Dispatch<React.SetStateAction<EditorPosition | null>>;
@@ -87,15 +95,18 @@ export const EditorContextProvider = ({ children }: ContextProviderProps) => {
 
   const [currentProject, setCurrentProject] = useState('test');
   const [projectFiles, setProjectFiles] = useState<ProjectFolder | null | Loading>(null);
-  const [projectFilesTreeState, setProjectFilesTreeState] = useState<TreeNodeSate>(new TreeNodeSate());
+  const [projectFilesTreeState, setProjectFilesTreeState] = useState<TreeNodeState>(new TreeNodeState());
 
   const [currentFile, setCurrentFile] = useState<ProjectFile | null>(null);
   const [currentFileCode, setCurrentFileCode] = useState<ProjectFileCode | null | Loading>(null);
   const [currentFileLogging, setCurrentFileLogging] = useState<Array<LogEntry> | Loading>([]);
+  const [nodes, setNodes] = useState<Array<IRootNode> | Loading>([]);
 
   const [structure, setStructure] = useState<Array<StructureNode> | null>(null);
   const [currentStructureNode, setCurrentStructureNode] = useState<StructureNode | null>(null);
-  const [structureTreeState, setStructureTreeState] = useState<TreeNodeSate>(new TreeNodeSate());
+  const [structureTreeState, setStructureTreeState] = useState<TreeNodeState>(new TreeNodeState());
+
+  const [executeFunction, setExecuteFunction] = useState<ExecuteFunctionState>(new ExecuteFunctionState());
 
   const [editorPosition, setEditorPosition] = useState<EditorPosition | null>(null);
 
@@ -111,10 +122,13 @@ export const EditorContextProvider = ({ children }: ContextProviderProps) => {
     currentFile, setCurrentFile,
     currentFileCode, setCurrentFileCode,
     currentFileLogging, setCurrentFileLogging,
+    nodes, setNodes,
 
     structure, setStructure,
     currentStructureNode, setCurrentStructureNode,
     structureTreeState, setStructureTreeState,
+
+    executeFunction, setExecuteFunction,
 
     editorPosition, setEditorPosition,
 
@@ -149,11 +163,13 @@ export const EditorContextProvider = ({ children }: ContextProviderProps) => {
 
   useEffect(() => {
     if (currentFileCode != null && !isLoading(currentFileCode)) {
-      const {logging, nodes} = compileCurrentFile(currentFileCode.name, currentFileCode.code);
+      const {logging, nodes} = parseFile(currentFileCode.name, currentFileCode.code);
       setCurrentFileLogging(logging);
+      setNodes(nodes);
       setStructure(createStructure(nodes));
     } else {
       setCurrentFileLogging([]);
+      setNodes([]);
       setStructure([]);
     }
   }, [currentFileCode]);

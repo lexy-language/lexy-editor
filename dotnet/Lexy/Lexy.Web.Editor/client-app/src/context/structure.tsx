@@ -34,9 +34,11 @@ export enum NodeKind {
 
 export type StructureNode = {
   name: string;
-  type: NodeKind;
+  kind: NodeKind;
+  nodeType: NodeType;
   reference: SourceReference;
   children: Array<StructureNode>;
+  node: INode;
 }
 
 function mapType(variableType: VariableType | null | undefined): NodeKind  {
@@ -155,9 +157,11 @@ function mapNode(node: INode): StructureNode | null {
 
   return {
     name: name,
-    type: kind,
+    kind: kind,
+    children: children,
     reference: node.reference,
-    children: children
+    nodeType: node.nodeType,
+    node: node
   }
 }
 

@@ -9,6 +9,8 @@ import FileNew from "./pages/FileNew";
 import FileOpen from "./pages/FileOpen";
 import HomePage from "./pages/HomePage";
 import { EditorContextProvider } from "./context/editorContext";
+import {CircularProgress} from "@mui/material";
+import LoadingPage from "./pages/LoadingPage";
 
 const EditorPage = lazy(() => import('./pages/EditorPage'));
 
@@ -38,9 +40,7 @@ function App() {
   });
 
   function withLoader(content: JSX.Element) {
-    return <Suspense
-      fallback={<div>Editor is loading please wait...</div>}
-    >
+    return <Suspense fallback={<LoadingPage />}>
       {content}
     </Suspense>
   }

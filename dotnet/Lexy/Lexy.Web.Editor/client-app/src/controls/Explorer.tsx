@@ -37,13 +37,12 @@ function FolderItem(props: {folder: ProjectFolder, currentFile: ProjectFile | nu
   return (
     <>
       <ListItem disablePadding>
-        <NoPaddingListItemButton onClick={() => setOpen(!open)}
-                                 style={indent > 0 ? ({marginLeft: (indentValue * indent) + 'px'}) : ({})}>
-          <NoPaddingListItemIcon>
-            {open ? <KeyboardArrowDownIcon/> : <KeyboardArrowRightIcon/>}
+        <NoPaddingListItemButton style={indent > 0 ? ({marginLeft: (indentValue * indent) + 'px'}) : ({})}>
+          <NoPaddingListItemIcon onClick={() => setOpen(!open)}>
+            {open ? <KeyboardArrowDownIcon fontSize={"small"} /> : <KeyboardArrowRightIcon fontSize={"small"} />}
           </NoPaddingListItemIcon>
           <NoPaddingListItemIcon>
-            <FolderIcon/>
+            <FolderIcon fontSize={"small"} />
           </NoPaddingListItemIcon>
           <ListItemText primary={folder.name}/>
         </NoPaddingListItemButton>
@@ -70,7 +69,7 @@ function FileItem(props: {file: ProjectFile, currentFile: ProjectFile | null, in
       <NoPaddingListItemButton
         style={indent > 0 ? ({marginLeft: fileIndentValue + (indentValue * indent) + 'px'}) : ({})}>
         <NoPaddingListItemIcon>
-          <InsertDriveFileIcon/>
+          <InsertDriveFileIcon fontSize={"small"} />
         </NoPaddingListItemIcon>
         <ListItemText primary={file.name}/>
       </NoPaddingListItemButton>
