@@ -1,6 +1,15 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import Box from "@mui/material/Box";
-import {Button, CircularProgress, Divider, FormGroup, TextField, Typography} from "@mui/material";
+import {
+  Button,
+  CircularProgress,
+  Divider,
+  FormControl,
+  FormGroup, InputLabel, MenuItem, Select,
+  SelectChangeEvent,
+  TextField,
+  Typography
+} from "@mui/material";
 import {useContext} from "../context/editorContext";
 import {isLoading} from "../context/loading";
 import {StructureNode} from "../context/structure";
@@ -12,86 +21,112 @@ import {TypeNames} from "lexy/dist/language/variableTypes/typeNames";
 import {VariableTypeName} from "lexy/dist/language/variableTypes/variableTypeName";
 import {asPrimitiveType} from "lexy/dist/language/variableTypes/primitiveType";
 import {DatePicker, LocalizationProvider} from "@mui/x-date-pickers";
-import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";
 import {compileNodes} from "../api/parser";
+import {Scenario} from "lexy/dist/language/scenarios/scenario";
+import {AdapterDateFns} from "@mui/x-date-pickers/AdapterDateFnsV3";
+
+const MainBox = styled(Box)`
+  padding: 16px 8px;
+`;
+
+const SelectBox = styled(Box)`
+  margin-bottom: 24px;
+`;
+
+const FieldBox = styled(Box)`
+  margin-bottom: 24px;
+`;
 
 const ParameterTextField = styled(TextField)`
-  width: 400px;
-  margin-bottom: 16px;
+  width: 100%;
+`;
+
+const ParameterDatePicker = styled(DatePicker)`
+  width: 100%;
 `;
 
 const ResultsTextField = styled(TextField)`
-  width: 400px;
-  margin-bottom: 16px;
+  width: 100%;
 `;
 
 const ExecuteButton = styled(Button)`
-  width: 400px;
+  width: 100%;
 `;
 
 function RunFunction() {
 
   function renderParameter(parameter: VariableDefinition) {
 
-    function valueChanged(event: any) {
-      setExecuteFunction(executeFunction.setParameter(parameter.name, event.target.value));
+    function valueChanged(value: any) {
+      setExecuteFunction(executeFunction.setParameter(parameter.name, value));
     }
 
     function numberValueChanged(event: any) {
       setExecuteFunction(executeFunction.setParameter(parameter.name, parseInt(event.target.value)));
     }
 
-    if (parameter.variableType?.variableTypeName === VariableTypeName.PrimitiveType ) {
+    if (parameter.variableType?.variableTypeName === VariableTypeName.PrimitiveType) {
       const primitiveType = asPrimitiveType(parameter.variableType);
 
       let value = executeFunction.getParameter(parameter.name);
       if (primitiveType?.type == TypeNames.string) {
-        return <ParameterTextField id={parameter.name} label={parameter.name} variant="outlined"
+        return <ParameterTextField label={parameter.name} variant="outlined"
                                    value={value} onChange={valueChanged}/>;
       }
       if (primitiveType?.type == TypeNames.number) {
-        return <ParameterTextField id={parameter.name} label={parameter.name} variant="outlined"
+        return <ParameterTextField label={parameter.name} variant="outlined"
                                    type="number"
                                    value={!!value ? value : ''} onChange={numberValueChanged}/>;
       }
       if (primitiveType?.type == TypeNames.date) {
-        return <LocalizationProvider dateAdapter={AdapterDayjs}>
-          <DatePicker label={parameter.name}
-                      value={value} onChange={valueChanged}/>
+        return <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <ParameterDatePicker label={parameter.name} value={value} onChange={valueChanged}/>
         </LocalizationProvider>;
       }
     }
   }
 
-  function renderParameters() {
+  function renderParameters(functionNode: Function) {
     const elements: Array<JSX.Element> = [];
     if (!functionNode.parameters?.variables) return elements;
-    for (const parameter of functionNode.parameters?.variables) {
+    for (let index = 0; index < functionNode.parameters?.variables.length; index++){
+      const parameter = functionNode.parameters?.variables[index];
       const element = renderParameter(parameter);
       if (!!element) {
-        elements.push(element);
+        elements.push(<FieldBox key={index++}>{element}</FieldBox>);
       }
     }
     return elements;
   }
 
-  function renderResults() {
+  function renderResults(functionNode: Function) {
     const elements: Array<JSX.Element> = [];
     if (!functionNode.results?.variables) return elements;
-    for (const result of functionNode.results?.variables) {
+    for (let index = 0; index < functionNode.results?.variables.length; index++){
+      const result = functionNode.results?.variables[index];
       let value = executeFunction.getResult(result.name);
-      elements.push(<ResultsTextField disabled id={result.name} label={result.name} variant="outlined" value={!!value ? value : ""}  />)
+      elements.push(<FieldBox key={index}>
+        <ResultsTextField disabled label={result.name}
+                          variant="outlined" value={value != null ? value : ""}/>
+      </FieldBox>)
     }
     return elements;
   }
 
   function renderError() {
-    if (!executeFunction.error) return [];
+    if (executeFunction == null || !executeFunction.error) return [];
     return <Box>{executeFunction.error}</Box>;
   }
 
   function execute() {
     if (isLoading(nodes)) return;
+
+    const node = currentStructureNode as StructureNode;
+    const functionNode = getFunctionNode(node);
+    if (functionNode == null) {
+      setExecuteFunction(executeFunction.setError(`Couldn't find function: '${node?.name}'`))
+      return;
+    }
 
     const result = compileNodes(nodes)
     const executable = result.getFunction(functionNode);
@@ -106,37 +141,114 @@ function RunFunction() {
   }
 
   const {
+    structure,
     currentStructureNode,
+    setCurrentStructureNode,
     executeFunction,
     setExecuteFunction,
     nodes
   } = useContext();
 
-  if (currentStructureNode == null) {
-    return <Box>Select function in the structure to execute it.</Box>
-  }
+  useEffect(() => {
+    if (structure == null) return;
+
+    for (const node of structure) {
+      const functionNode = getFunctionNode(node);
+      if (functionNode != null) {
+        setCurrentStructureNode(node);
+        console.log("setCurrentStructureNode: " + node.name);
+        return;
+      }
+    }
+    setCurrentStructureNode(null);
+  }, [structure])
+
   if (isLoading(currentStructureNode)) {
-    return <CircularProgress />;
+    return <CircularProgress/>;
   }
 
-  const node = currentStructureNode as StructureNode;
-  if (node.nodeType !== NodeType.Function) {
-    return <Box>Select function in the structure to execute it.</Box>
+  function getFunctionNode(node: StructureNode | null): Function | null {
+    return node == null
+      ? null
+      : node.nodeType == NodeType.Function
+        ? node.node as Function
+        : node.nodeType == NodeType.Scenario
+          ? (node.node as Scenario).functionNode
+          : null;
   }
 
-  const functionNode = node.node as Function;
+  function content() {
+    if (node == null || functionNode == null) {
+      return <Box>Select function to execute it.</Box>
+    }
 
-  return (
-    <FormGroup>
-      <Typography variant="h5" gutterBottom>
-        Execute Function: {node.name}
-      </Typography>
-      <Divider />
-      {renderParameters()}
-      {renderResults()}
+    return <FormGroup>
+      {renderParameters(functionNode)}
+      {renderResults(functionNode)}
       <ExecuteButton variant="outlined" onClick={execute}>Execute</ExecuteButton>
       {renderError()}
-    </FormGroup>
+    </FormGroup>;
+  }
+
+  function getFunction(name: string): StructureNode | null {
+    if (structure == null) return null;
+    for (const node of structure) {
+      const functionNode = getFunctionNode(node);
+      if (functionNode != null && functionNode.name.value == name) {
+        return node;
+      }
+    }
+    return null;
+  }
+
+  const handleChange = (event: SelectChangeEvent) => {
+    if (structure == null) return;
+    const functionNode = getFunction(event.target.value);
+    if (functionNode != null) {
+      setCurrentStructureNode(functionNode);
+    }
+  };
+
+  function functionsMenuItems() {
+    if (structure == null) return []
+    const result: JSX.Element[] = [];
+    structure.forEach(node => {
+      const functionNode = getFunctionNode(node);
+      if (functionNode != null) {
+        const functionName = functionNode.name.value;
+        result.push(<MenuItem key={functionName} value={functionName}>{functionName}</MenuItem>)
+      }
+    });
+    return result;
+  }
+
+  const node = currentStructureNode as StructureNode | null;
+  const functionNode = getFunctionNode(currentStructureNode);
+  const currentNodeName = functionNode != null ? functionNode.name.value : "";
+  console.log("currentNodeName: " + currentNodeName);
+  const menuItems = functionsMenuItems();
+
+  if (structure == null || menuItems.length == 0) {
+    return <Box>No functions found in file. Add Function: to the code, or select a file with functions.</Box>
+  }
+
+  return (
+    <MainBox>
+      <SelectBox>
+        <FormControl fullWidth>
+          <InputLabel id="label-select-function">Function</InputLabel>
+          <Select
+            labelId="label-select-function"
+            id="select-function"
+            value={currentNodeName}
+            label="Function"
+            onChange={handleChange}>
+            {menuItems}
+          </Select>
+        </FormControl>
+      </SelectBox>
+      {content()}
+    </MainBox>
   );
 }
 

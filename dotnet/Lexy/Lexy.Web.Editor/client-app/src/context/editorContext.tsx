@@ -8,6 +8,8 @@ import {createStructure, StructureNode} from "./structure";
 import {TreeNodeState} from "./treeNodeState";
 import {ExecuteFunctionState} from "./executeFunctionState";
 import {IRootNode} from "lexy/dist/language/rootNode";
+import {SourceReference} from "lexy/dist/parser/sourceReference";
+import {SourceFile} from "lexy/dist/parser/sourceFile";
 
 export enum LeftContainer {
   Explorer,
@@ -163,14 +165,23 @@ export const EditorContextProvider = ({ children }: ContextProviderProps) => {
 
   useEffect(() => {
     if (currentFileCode != null && !isLoading(currentFileCode)) {
-      const {logging, nodes} = parseFile(currentFileCode.name, currentFileCode.code);
-      setCurrentFileLogging(logging);
-      setNodes(nodes);
-      setStructure(createStructure(nodes));
+      try {
+        const {logging, nodes} = parseFile(currentFileCode.name, currentFileCode.code);
+        setCurrentFileLogging(logging);
+        setNodes(nodes);
+        setStructure(createStructure(nodes));
+        setCurrentStructureNode(null);
+      } catch (error: any) {
+        setCurrentFileLogging([new LogEntry(new SourceReference(new SourceFile("parsing") , 1, 1), null, true, "Parsing error occurred:" + error.stack)]);
+        setNodes([]);
+        setStructure([]);
+        setCurrentStructureNode(null);
+      }
     } else {
       setCurrentFileLogging([]);
       setNodes([]);
       setStructure([]);
+      setCurrentStructureNode(null);
     }
   }, [currentFileCode]);
 

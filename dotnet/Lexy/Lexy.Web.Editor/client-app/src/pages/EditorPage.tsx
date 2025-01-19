@@ -31,12 +31,13 @@ const ToolPanel = styled(Grid)`
 const FullHeightPaper = styled(Paper)`
   height: 100%;
   padding: 8px;
+  overflow-y: auto;
 `;
 
 const TopPart = styled(Box)`
   height: calc(100% - 44px);
   padding: 0;
-  overflow-y: scroll;
+  overflow-y: auto;
 `;
 
 const BottomPart = styled(Box)`
@@ -79,7 +80,6 @@ function EditorPage() {
 
   const mainOptions = [
     { name: 'Source Code', value: MainContainer.Source, element: () => <SourceEditor /> },
-    { name: 'Run Function', value: MainContainer.Run, element: () => <RunFunction /> },
     { name: 'Edit Table', value: MainContainer.Table, element: () => <EditTable /> },
   ];
 
@@ -91,16 +91,23 @@ function EditorPage() {
   return (
     <>
       <GridFullHeight container>
-        <GridItem size={4}>
+        <GridItem size={3}>
           <FullHeightPaper>
             {content(leftOptions, leftContainer)}
             {optionButtonsGroup(leftOptions, leftContainer, setLeftContainer)}
           </FullHeightPaper>
         </GridItem>
-        <GridItem size={8}>
+        <GridItem size={6}>
           <FullHeightPaper>
             {content(mainOptions, mainContainer)}
             {optionButtonsGroup(mainOptions, mainContainer, setMainContainer)}
+          </FullHeightPaper>
+        </GridItem>
+        <GridItem size={3}>
+          <FullHeightPaper>
+            <TopPart>
+              <RunFunction />
+            </TopPart>
           </FullHeightPaper>
         </GridItem>
       </GridFullHeight>

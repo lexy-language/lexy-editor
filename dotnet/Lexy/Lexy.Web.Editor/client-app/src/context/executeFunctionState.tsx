@@ -17,7 +17,7 @@ export class ExecuteFunctionState {
   }
 
   public getParameter(name: string): any {
-    return this.parameters[name];
+    return this.parameters[name] !== undefined ? this.parameters[name] : "";
   }
 
   public setParameter(name: string, value: any): ExecuteFunctionState {
@@ -38,5 +38,9 @@ export class ExecuteFunctionState {
 
   public setError(error: string): ExecuteFunctionState {
     return new ExecuteFunctionState(this.parameters, {}, error);
+  }
+
+  public reset(): ExecuteFunctionState {
+    return new ExecuteFunctionState();
   }
 }
