@@ -4,10 +4,16 @@ export class ExecuteFunctionState {
 
   private readonly parameters: VariableState;
   private readonly results: VariableState;
+  private readonly errorValue: string | null;
 
-  public constructor(parameters: VariableState | null = null, results: VariableState | null = null) {
+  public get error(): string | null {
+    return this.errorValue;
+  }
+
+  public constructor(parameters: VariableState | null = null, results: VariableState | null = null, error: string | null = null) {
     this.parameters = parameters != null ? parameters : {};
     this.results = results != null ? results : {};
+    this.errorValue = error;
   }
 
   public getParameter(name: string): any {
@@ -28,5 +34,9 @@ export class ExecuteFunctionState {
 
   public setResults(results: any): ExecuteFunctionState {
     return new ExecuteFunctionState(this.parameters, {...results});
+  }
+
+  public setError(error: string): ExecuteFunctionState {
+    return new ExecuteFunctionState(this.parameters, {}, error);
   }
 }

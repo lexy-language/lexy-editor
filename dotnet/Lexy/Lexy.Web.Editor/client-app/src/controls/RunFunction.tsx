@@ -85,16 +85,24 @@ function RunFunction() {
     return elements;
   }
 
+  function renderError() {
+    if (!executeFunction.error) return [];
+    return <Box>{executeFunction.error}</Box>;
+  }
+
   function execute() {
     if (isLoading(nodes)) return;
 
     const result = compileNodes(nodes)
-    const context = result.createContext();
     const executable = result.getFunction(functionNode);
     const parameters = executeFunction.getParameters();
-    const results = executable.run(context, parameters);
 
-    setExecuteFunction(executeFunction.setResults(results.value))
+    try {
+      const results = executable.run(parameters);
+      setExecuteFunction(executeFunction.setResults(results.value))
+    } catch (error: any) {
+      setExecuteFunction(executeFunction.setError(error.toString()))
+    }
   }
 
   const {
@@ -127,6 +135,7 @@ function RunFunction() {
       {renderParameters()}
       {renderResults()}
       <ExecuteButton variant="outlined" onClick={execute}>Execute</ExecuteButton>
+      {renderError()}
     </FormGroup>
   );
 }
