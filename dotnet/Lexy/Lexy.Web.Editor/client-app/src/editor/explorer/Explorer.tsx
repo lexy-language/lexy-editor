@@ -1,6 +1,6 @@
 import React from 'react';
-import {useContext} from '../context/editorContext';
-import {ProjectFile, ProjectFolder} from "../api/project";
+import {useContext} from '../../context/editorContext';
+import {ProjectFile, ProjectFolder} from "../../api/project";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
@@ -12,7 +12,7 @@ import FolderIcon from '@mui/icons-material/Folder';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import {CircularProgress, styled} from "@mui/material";
 import Box from "@mui/material/Box";
-import {isLoading} from "../context/loading";
+import {isLoading} from "../../context/loading";
 
 const indentValue = 16;
 const fileIndentValue = 30;

@@ -1,4 +1,4 @@
-import {NodeKind, StructureNode} from "../context/structure";
+import {NodeKind, StructureNode} from "../../context/structure";
 import CodeIcon from "@mui/icons-material/Code";
 import RuleIcon from "@mui/icons-material/Rule";
 import GridOnIcon from "@mui/icons-material/GridOn";
@@ -12,7 +12,7 @@ import FormatQuoteIcon from "@mui/icons-material/FormatQuote";
 import QuestionMarkIcon from "@mui/icons-material/QuestionMark";
 import React from "react";
 import {NodeType} from "lexy/dist/language/nodeType";
-import {MainContainer, useContext} from "../context/editorContext";
+import {MainContainer, useContext} from "../../context/editorContext";
 import {Menu, MenuItem, styled} from "@mui/material";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
@@ -33,7 +33,13 @@ const NoPaddingListItemIcon = styled(ListItemIcon)`
   min-width: 30px
 `;
 
-export function TreeNode(props: { node: StructureNode, indent: number, parent: Array<string> }) {
+type TreeNodeProps = {
+  node: StructureNode,
+  indent: number,
+  parent: Array<string>
+}
+
+export function TreeNode(props: TreeNodeProps) {
 
   function icon(type: NodeKind) {
     switch (type) {

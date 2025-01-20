@@ -3,13 +3,18 @@ import React, {useEffect, useState} from 'react';
 import {getFileDetails, getProjectFiles, ProjectFile, ProjectFolder} from "../api/project";
 import {parseFile} from "../api/parser";
 import {isLoading, Loading} from "./loading";
-import {LogEntry} from "lexy/dist/parser/parserLogger";
+import {IParserLogger, LogEntry} from "lexy/dist/parser/parserLogger";
 import {createStructure, StructureNode} from "./structure";
 import {TreeNodeState} from "./treeNodeState";
 import {ExecuteFunctionState} from "./executeFunctionState";
 import {IRootNode} from "lexy/dist/language/rootNode";
 import {SourceReference} from "lexy/dist/parser/sourceReference";
 import {SourceFile} from "lexy/dist/parser/sourceFile";
+import {firstOrDefault} from "lexy/dist/infrastructure/enumerableExtensions";
+import {runScenarios} from "./runScenarios";
+import {MemoryLogEntry} from "../api/loggers";
+import {WebFileSystem} from "./webFileSystem";
+import {ProjectState} from "./projectState";
 
 export enum LeftContainer {
   Explorer,
@@ -41,8 +46,8 @@ export interface ProjectFileCode {
 }
 
 export interface EditorState {
-  currentProject: string;
-  setCurrentProject: React.Dispatch<React.SetStateAction<string>>;
+  currentProject: ProjectState;
+  setCurrentProject: React.Dispatch<React.SetStateAction<ProjectState>>;
 
   projectFiles: ProjectFolder | null | Loading;
   setProjectFiles: React.Dispatch<React.SetStateAction<ProjectFolder | null | Loading>>;
@@ -59,6 +64,12 @@ export interface EditorState {
   currentFileLogging: Array<LogEntry> | Loading;
   setCurrentFileLogging: React.Dispatch<React.SetStateAction<Array<LogEntry> | Loading>>;
 
+  parserLogging: IParserLogger | null | Loading;
+  setParserLogging: React.Dispatch<React.SetStateAction<IParserLogger | null | Loading>>;
+
+  testingLogging: ReadonlyArray<MemoryLogEntry> | Loading;
+  setTestingLogging: React.Dispatch<React.SetStateAction<ReadonlyArray<MemoryLogEntry> | Loading>>;
+
   nodes: Array<IRootNode> | Loading;
   setNodes: React.Dispatch<React.SetStateAction<Array<IRootNode> | Loading>>;
 
@@ -66,7 +77,7 @@ export interface EditorState {
   setStructure: React.Dispatch<React.SetStateAction<Array<StructureNode> | null>>;
 
   currentStructureNode: StructureNode | null;
-  setCurrentStructureNode:React.Dispatch<React.SetStateAction<StructureNode | null>>;
+  setCurrentStructureNode: React.Dispatch<React.SetStateAction<StructureNode | null>>;
 
   structureTreeState: TreeNodeState;
   setStructureTreeState: React.Dispatch<React.SetStateAction<TreeNodeState>>;
@@ -93,15 +104,17 @@ type ContextProviderProps = {
   children: React.ReactNode;
 };
 
-export const EditorContextProvider = ({ children }: ContextProviderProps) => {
+export const EditorContextProvider = ({children}: ContextProviderProps) => {
 
-  const [currentProject, setCurrentProject] = useState('test');
+  const [currentProject, setCurrentProject] = useState(new ProjectState());
   const [projectFiles, setProjectFiles] = useState<ProjectFolder | null | Loading>(null);
   const [projectFilesTreeState, setProjectFilesTreeState] = useState<TreeNodeState>(new TreeNodeState());
 
   const [currentFile, setCurrentFile] = useState<ProjectFile | null>(null);
   const [currentFileCode, setCurrentFileCode] = useState<ProjectFileCode | null | Loading>(null);
   const [currentFileLogging, setCurrentFileLogging] = useState<Array<LogEntry> | Loading>([]);
+  const [testingLogging, setTestingLogging] = useState<ReadonlyArray<MemoryLogEntry> | Loading>([]);
+  const [parserLogging, setParserLogging] = useState<IParserLogger | null | Loading>(null);
   const [nodes, setNodes] = useState<Array<IRootNode> | Loading>([]);
 
   const [structure, setStructure] = useState<Array<StructureNode> | null>(null);
@@ -126,6 +139,9 @@ export const EditorContextProvider = ({ children }: ContextProviderProps) => {
     currentFileLogging, setCurrentFileLogging,
     nodes, setNodes,
 
+    testingLogging, setTestingLogging,
+    parserLogging, setParserLogging,
+
     structure, setStructure,
     currentStructureNode, setCurrentStructureNode,
     structureTreeState, setStructureTreeState,
@@ -139,41 +155,74 @@ export const EditorContextProvider = ({ children }: ContextProviderProps) => {
     bottomContainer, setBottomContainer
   };
 
-  useEffect(() => {
-    getProjectFiles(currentProject, setProjectFiles)
-      .catch(console.error);
-  }, [currentProject]);
+  function openIntroductionFoldersAndSelectFirstFile(data: ProjectFolder): {tree: TreeNodeState, file: ProjectFile | null}  {
+    let tree = new TreeNodeState();
+    tree = tree.setOpen([data.name], true)
+    let file: ProjectFile | null = null;
+    for (const folder of data.folders) {
+      if (folder.name != "Introduction") continue;
+      tree = tree.setOpen([data.name, folder.name], true)
+      if (file == null) {
+        file = firstOrDefault(folder.files);
+      }
+    }
+    return {tree: tree, file: file};
+  }
 
   useEffect(() => {
-    if (currentFile) {
-      getFileDetails(currentProject, currentFile.identifier, value => {
+    getProjectFiles(currentProject.name)
+      .then(data => {
+        setProjectFiles(data);
+        const state = openIntroductionFoldersAndSelectFirstFile(data);
+        setProjectFilesTreeState(state.tree)
+        setCurrentFile(state.file)
+      })
+      .catch(console.error);
+  }, [currentProject.name]);
+
+  useEffect(() => {
+    if (!currentFile) {
+      setCurrentFileCode(null);
+      return;
+    }
+
+    getFileDetails(currentProject.name, currentFile.identifier)
+      .then(data => {
         setCurrentFileCode({
-          code: value.code,
-          identifier: value.identifier,
-          name: value.name,
+          code: data.code,
+          identifier: data.identifier,
+          name: data.name,
           source: "state"
         });
-      }).catch(console.error);
-    } else {
-      setCurrentFileCode(null);
-    }
+      })
+      .catch(console.error);
   }, [currentFile]);
 
   useEffect(() => {
-    setCurrentProject("test");
+    if (currentFileCode == null || isLoading(currentFileCode)) return;
+    setCurrentProject(currentProject.setFile(currentFileCode.identifier.split("|"), currentFileCode.code));
+  }, [currentFileCode])
+
+  useEffect(() => {
+    setCurrentProject(currentProject.setName("Introduction"));
   }, []);
 
   useEffect(() => {
-    if (currentFileCode != null && !isLoading(currentFileCode)) {
+    if (currentFileCode != null && currentFile != null && !isLoading(currentFileCode)) {
       try {
-        const {logging, nodes} = parseFile(currentFileCode.name, currentFileCode.code);
+        const currentFolder = currentFile.identifier.split("|");
+        currentFolder.splice(currentFolder.length - 1, 1)
+        const fileSystem = new WebFileSystem(currentFolder, currentProject);
+        const {logging, nodes, logger} = parseFile(currentFileCode.name, currentFileCode.code, fileSystem);
         setCurrentFileLogging(logging);
         setNodes(nodes);
+        setParserLogging(logger);
         setStructure(createStructure(nodes));
         setCurrentStructureNode(null);
       } catch (error: any) {
-        setCurrentFileLogging([new LogEntry(new SourceReference(new SourceFile("parsing") , 1, 1), null, true, "Parsing error occurred:" + error.stack)]);
+        setCurrentFileLogging([new LogEntry(new SourceReference(new SourceFile("parsing"), 1, 1), null, true, "Parsing error occurred:" + error.stack)]);
         setNodes([]);
+        setParserLogging(null);
         setStructure([]);
         setCurrentStructureNode(null);
       }
@@ -182,8 +231,15 @@ export const EditorContextProvider = ({ children }: ContextProviderProps) => {
       setNodes([]);
       setStructure([]);
       setCurrentStructureNode(null);
+      setParserLogging(null);
     }
   }, [currentFileCode]);
+
+  useEffect(() => {
+    if (currentFile == null || nodes == null || isLoading(nodes)) return;
+    if (parserLogging == null || isLoading(parserLogging)) return;
+    runScenarios(currentFile.name, nodes, parserLogging, setTestingLogging);
+  }, [structure])
 
   return <Provider value={value}>{children}</Provider>;
 };

@@ -10,9 +10,9 @@ import {
   TextField,
   Typography
 } from "@mui/material";
-import {useContext} from "../context/editorContext";
-import {isLoading} from "../context/loading";
-import {StructureNode} from "../context/structure";
+import {useContext} from "../../context/editorContext";
+import {isLoading} from "../../context/loading";
+import {StructureNode} from "../../context/structure";
 import {Function} from "lexy/dist/language/functions/function";
 import {styled} from "@mui/material/styles";
 import {NodeType} from "lexy/dist/language/nodeType";
@@ -21,7 +21,7 @@ import {TypeNames} from "lexy/dist/language/variableTypes/typeNames";
 import {VariableTypeName} from "lexy/dist/language/variableTypes/variableTypeName";
 import {asPrimitiveType} from "lexy/dist/language/variableTypes/primitiveType";
 import {DatePicker, LocalizationProvider} from "@mui/x-date-pickers";
-import {compileNodes} from "../api/parser";
+import {compileNodes} from "../../api/parser";
 import {Scenario} from "lexy/dist/language/scenarios/scenario";
 import {AdapterDateFns} from "@mui/x-date-pickers/AdapterDateFnsV3";
 
@@ -156,7 +156,6 @@ function RunFunction() {
       const functionNode = getFunctionNode(node);
       if (functionNode != null) {
         setCurrentStructureNode(node);
-        console.log("setCurrentStructureNode: " + node.name);
         return;
       }
     }
@@ -225,7 +224,6 @@ function RunFunction() {
   const node = currentStructureNode as StructureNode | null;
   const functionNode = getFunctionNode(currentStructureNode);
   const currentNodeName = functionNode != null ? functionNode.name.value : "";
-  console.log("currentNodeName: " + currentNodeName);
   const menuItems = functionsMenuItems();
 
   if (structure == null || menuItems.length == 0) {

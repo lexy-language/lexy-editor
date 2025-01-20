@@ -1,13 +1,10 @@
 import React from 'react';
-import {useContext} from '../context/editorContext';
+import {useContext} from '../../context/editorContext';
 import List from "@mui/material/List";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import {CircularProgress, styled} from "@mui/material";
+import {CircularProgress} from "@mui/material";
 import Box from "@mui/material/Box";
-import {isLoading} from "../context/loading";
+import {isLoading} from "../../context/loading";
 import {TreeNode} from "./TreeNode";
-
 
 function Structure() {
 

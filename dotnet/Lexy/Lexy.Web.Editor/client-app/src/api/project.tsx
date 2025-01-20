@@ -16,16 +16,16 @@ export interface ProjectFileDetails {
   code: string;
 }
 
-export async function getProjectFiles(projectName: string, setProjectFiles: (value: ProjectFolder) => void) {
+export async function getProjectFiles(projectName: string): Promise<ProjectFolder> {
   const response = await fetch(`/api/project/${projectName}/file`);
   const data = await response.json();
-  setProjectFiles(data);
+  return data;
 }
 
-export async function getFileDetails(projectName: string, identifier: string, setProjectFileDetails: (value: ProjectFileDetails) => void) {
+export async function getFileDetails(projectName: string, identifier: string): Promise<ProjectFileDetails> {
   const response = await fetch(`/api/project/${projectName}/file/${identifier}`);
   const data = await response.json();
-  setProjectFileDetails(data);
+  return data;
 }
 
 //todo return promise

@@ -2,17 +2,17 @@ import React from 'react';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid2';
 import {styled} from '@mui/material/styles';
-import {Button, ButtonGroup} from "@mui/material";
-import {BottomContainer, LeftContainer, MainContainer, useContext} from '../context/editorContext';
+import {Button} from "@mui/material";
+import {BottomContainer, LeftContainer, MainContainer, useContext} from '../../context/editorContext';
 
-import Explorer from '../controls/Explorer';
-import Structure from '../controls/Structure';
-import SourceEditor from '../controls/SourceEditor';
-import RunFunction from '../controls/RunFunction';
-import EditTable from '../controls/EditTable';
-import Testing from '../controls/Testing';
-import Logging from '../controls/Logging';
+import Explorer from '../explorer/Explorer';
+import Structure from '../structure/Structure';
+import SourceEditor from '../sourceEditor/SourceEditor';
+import RunFunction from '../runFunction/RunFunction';
+import Testing from '../testing/Testing';
+import Logging from '../logging/Logging';
 import Box from "@mui/material/Box";
+import {isLoading} from "../../context/loading";
 
 const GridFullHeight = styled(Grid)`
   height: calc(100% - 264px);
@@ -70,7 +70,8 @@ function EditorPage() {
   const {
     leftContainer, setLeftContainer,
     mainContainer, setMainContainer,
-    bottomContainer, setBottomContainer
+    bottomContainer, setBottomContainer,
+    testingLogging
   } = useContext();
 
   const leftOptions = [
@@ -80,13 +81,14 @@ function EditorPage() {
 
   const mainOptions = [
     { name: 'Source Code', value: MainContainer.Source, element: () => <SourceEditor /> },
-    { name: 'Edit Table', value: MainContainer.Table, element: () => <EditTable /> },
   ];
 
-  const bottomOptions = [
-    { name: 'Compilation Loggig', value: BottomContainer.Logging, element: () => <Logging /> },
-    { name: 'Test Logging', value: BottomContainer.Testing, element: () => <Testing /> },
+  const bottomOptions = (scenarios: number) => [
+    { name: 'Compilation Logging', value: BottomContainer.Logging, element: () => <Logging /> },
+    { name: 'Test Logging (' + scenarios + ")", value: BottomContainer.Testing, element: () => <Testing /> },
   ];
+
+  const scenarios = testingLogging != null && !isLoading(testingLogging) ? testingLogging.length : 0;
 
   return (
     <>
@@ -113,8 +115,8 @@ function EditorPage() {
       </GridFullHeight>
       <ToolPanel>
         <FullHeightPaper>
-          {content(bottomOptions, bottomContainer)}
-          {optionButtonsGroup(bottomOptions, bottomContainer, setBottomContainer)}
+          {content(bottomOptions(scenarios), bottomContainer)}
+          {optionButtonsGroup(bottomOptions(scenarios), bottomContainer, setBottomContainer)}
         </FullHeightPaper>
       </ToolPanel>
     </>

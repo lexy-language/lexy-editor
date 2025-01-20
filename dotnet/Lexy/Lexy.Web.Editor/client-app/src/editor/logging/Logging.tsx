@@ -1,7 +1,7 @@
-import React, {FunctionComponent} from 'react';
+import React from 'react';
 import {CircularProgress, styled} from "@mui/material";
-import {useContext} from "../context/editorContext";
-import {isLoading} from "../context/loading";
+import {useContext} from "../../context/editorContext";
+import {isLoading} from "../../context/loading";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import {where} from "lexy/dist/infrastructure/enumerableExtensions";
@@ -20,19 +20,24 @@ function LogItem(props: LogItemProps) {
 
   const {
     setEditorPosition,
+    currentFile
   } = useContext();
+  const {logEntry} = props;
 
   function setPosition() {
+    if (currentFile != null && !isLoading(currentFile) && currentFile.name != logEntry.reference.file.fileName) {
+      return;
+    }
     setEditorPosition({
-      lineNumber: props.logEntry.reference.lineNumber,
-      column: props.logEntry.reference.characterNumber,
+      lineNumber: logEntry.reference.lineNumber,
+      column: logEntry.reference.characterNumber,
       source: "state"
     })
   }
 
   return <ListItem disablePadding onClick={setPosition}>
-    <NoPaddingListItemButton style={props.logEntry.isError ? ({color: 'red'}) : ({})} >
-      {props.logEntry.message}
+    <NoPaddingListItemButton style={logEntry.isError ? ({color: 'red'}) : ({})} >
+      {logEntry.message}
     </NoPaddingListItemButton>
   </ListItem>;
 }
@@ -48,7 +53,7 @@ function Logging() {
   }
 
   const errors = where(currentFileLogging, entry => entry.isError);
-  const sorted = errors.sort((left, right) => left.sortIndex - right.sortIndex);
+  const sorted = errors.sort((left, right) => left.sortIndex < right.sortIndex ? -1 : 1);
   const logs = sorted.map((entry, index) => <LogItem logEntry={entry} key={index} /> );
 
   return <List disablePadding>{logs}</List>;
