@@ -185,6 +185,7 @@ export const EditorContextProvider = ({children}: ContextProviderProps) => {
       setCurrentFileCode(null);
       return;
     }
+    setExecuteFunction(executeFunction.reset());
 
     getFileDetails(currentProject.name, currentFile.identifier)
       .then(data => {
@@ -240,6 +241,10 @@ export const EditorContextProvider = ({children}: ContextProviderProps) => {
     if (parserLogging == null || isLoading(parserLogging)) return;
     runScenarios(currentFile.name, nodes, parserLogging, setTestingLogging);
   }, [structure])
+
+  useEffect(() => {
+    setExecuteFunction(executeFunction.reset());
+  }, [currentStructureNode])
 
   return <Provider value={value}>{children}</Provider>;
 };

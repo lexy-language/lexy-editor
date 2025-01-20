@@ -3,12 +3,9 @@ import Box from "@mui/material/Box";
 import {
   Button,
   CircularProgress,
-  Divider,
   FormControl,
   FormGroup, InputLabel, MenuItem, Select,
   SelectChangeEvent,
-  TextField,
-  Typography
 } from "@mui/material";
 import {useContext} from "../../context/editorContext";
 import {isLoading} from "../../context/loading";
@@ -16,14 +13,12 @@ import {StructureNode} from "../../context/structure";
 import {Function} from "lexy/dist/language/functions/function";
 import {styled} from "@mui/material/styles";
 import {NodeType} from "lexy/dist/language/nodeType";
-import {VariableDefinition} from "lexy/dist/language/variableDefinition";
-import {TypeNames} from "lexy/dist/language/variableTypes/typeNames";
-import {VariableTypeName} from "lexy/dist/language/variableTypes/variableTypeName";
-import {asPrimitiveType} from "lexy/dist/language/variableTypes/primitiveType";
-import {DatePicker, LocalizationProvider} from "@mui/x-date-pickers";
 import {compileNodes} from "../../api/parser";
 import {Scenario} from "lexy/dist/language/scenarios/scenario";
-import {AdapterDateFns} from "@mui/x-date-pickers/AdapterDateFnsV3";
+import ParameterFields from "./ParameterFields";
+import ResultFields from "./ResultFields";
+import IndentFields from "./IndentFields";
+import {BuiltInDateFunctions} from "lexy/dist/runTime/builtInDateFunctions";
 
 const MainBox = styled(Box)`
   padding: 16px 8px;
@@ -33,89 +28,31 @@ const SelectBox = styled(Box)`
   margin-bottom: 24px;
 `;
 
-const FieldBox = styled(Box)`
-  margin-bottom: 24px;
-`;
-
-const ParameterTextField = styled(TextField)`
-  width: 100%;
-`;
-
-const ParameterDatePicker = styled(DatePicker)`
-  width: 100%;
-`;
-
-const ResultsTextField = styled(TextField)`
-  width: 100%;
-`;
-
 const ExecuteButton = styled(Button)`
   width: 100%;
+  margin-top: 24px;
+`;
+
+const Feedback = styled(Box)`
+  margin-top: 2px;
+  margin-bottom: 24px;
+  font-size: .8rem;
+`;
+
+const Error = styled(Box)`
+  margin-top: 8px;
+  margin-bottom: 24px;
+  font-size: 1rem;
+  color: crimson;
 `;
 
 function RunFunction() {
 
-  function renderParameter(parameter: VariableDefinition) {
-
-    function valueChanged(value: any) {
-      setExecuteFunction(executeFunction.setParameter(parameter.name, value));
-    }
-
-    function numberValueChanged(event: any) {
-      setExecuteFunction(executeFunction.setParameter(parameter.name, parseInt(event.target.value)));
-    }
-
-    if (parameter.variableType?.variableTypeName === VariableTypeName.PrimitiveType) {
-      const primitiveType = asPrimitiveType(parameter.variableType);
-
-      let value = executeFunction.getParameter(parameter.name);
-      if (primitiveType?.type == TypeNames.string) {
-        return <ParameterTextField label={parameter.name} variant="outlined"
-                                   value={value} onChange={valueChanged}/>;
-      }
-      if (primitiveType?.type == TypeNames.number) {
-        return <ParameterTextField label={parameter.name} variant="outlined"
-                                   type="number"
-                                   value={!!value ? value : ''} onChange={numberValueChanged}/>;
-      }
-      if (primitiveType?.type == TypeNames.date) {
-        return <LocalizationProvider dateAdapter={AdapterDateFns}>
-          <ParameterDatePicker label={parameter.name} value={value} onChange={valueChanged}/>
-        </LocalizationProvider>;
-      }
-    }
-  }
-
-  function renderParameters(functionNode: Function) {
-    const elements: Array<JSX.Element> = [];
-    if (!functionNode.parameters?.variables) return elements;
-    for (let index = 0; index < functionNode.parameters?.variables.length; index++){
-      const parameter = functionNode.parameters?.variables[index];
-      const element = renderParameter(parameter);
-      if (!!element) {
-        elements.push(<FieldBox key={index++}>{element}</FieldBox>);
-      }
-    }
-    return elements;
-  }
-
-  function renderResults(functionNode: Function) {
-    const elements: Array<JSX.Element> = [];
-    if (!functionNode.results?.variables) return elements;
-    for (let index = 0; index < functionNode.results?.variables.length; index++){
-      const result = functionNode.results?.variables[index];
-      let value = executeFunction.getResult(result.name);
-      elements.push(<FieldBox key={index}>
-        <ResultsTextField disabled label={result.name}
-                          variant="outlined" value={value != null ? value : ""}/>
-      </FieldBox>)
-    }
-    return elements;
-  }
-
   function renderError() {
     if (executeFunction == null || !executeFunction.error) return [];
-    return <Box>{executeFunction.error}</Box>;
+    return <Error>
+      {executeFunction.error.split('\n').map((value, index) => <div key={index}>{value}</div>)}
+    </Error>;
   }
 
   function execute() {
@@ -128,13 +65,14 @@ function RunFunction() {
       return;
     }
 
-    const result = compileNodes(nodes)
-    const executable = result.getFunction(functionNode);
-    const parameters = executeFunction.getParameters();
-
+    const startTime = new Date();
     try {
+      const result = compileNodes(nodes)
+      const executable = result.getFunction(functionNode);
+      const parameters = executeFunction.getParameters();
       const results = executable.run(parameters);
-      setExecuteFunction(executeFunction.setResults(results.value))
+      const elapsed = BuiltInDateFunctions.milliseconds(new Date(), startTime);
+      setExecuteFunction(executeFunction.setResults(results.value, elapsed));
     } catch (error: any) {
       setExecuteFunction(executeFunction.setError(error.toString()))
     }
@@ -180,12 +118,18 @@ function RunFunction() {
     if (node == null || functionNode == null) {
       return <Box>Select function to execute it.</Box>
     }
+    const results = executeFunction.getResults();
 
     return <FormGroup>
-      {renderParameters(functionNode)}
-      {renderResults(functionNode)}
-      <ExecuteButton variant="outlined" onClick={execute}>Execute</ExecuteButton>
+      <IndentFields name={"Parameters"} title={true}>
+        <ParameterFields variables={functionNode.parameters?.variables} />
+      </IndentFields>
+      <ExecuteButton variant="contained" onClick={execute}>Execute</ExecuteButton>
+      {executeFunction.elapsed != null ? <Feedback>Execution time: {executeFunction.elapsed}ms</Feedback> : <></>}
       {renderError()}
+      {results != null ? <IndentFields name={"Results"} title={true}>
+        <ResultFields values={results} />
+      </IndentFields> : <></>}
     </FormGroup>;
   }
 
@@ -234,12 +178,11 @@ function RunFunction() {
     <MainBox>
       <SelectBox>
         <FormControl fullWidth>
-          <InputLabel id="label-select-function">Function</InputLabel>
+          <InputLabel id="label-select-function">Execute Function</InputLabel>
           <Select
             labelId="label-select-function"
-            id="select-function"
             value={currentNodeName}
-            label="Function"
+            label="Execute Function"
             onChange={handleChange}>
             {menuItems}
           </Select>

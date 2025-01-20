@@ -26,6 +26,7 @@ function LogItem(props: LogItemProps) {
 
   function setPosition() {
     if (currentFile != null && !isLoading(currentFile) && currentFile.name != logEntry.reference.file.fileName) {
+      //todo navigate to different file: logEntry.reference.file.fileName
       return;
     }
     setEditorPosition({
