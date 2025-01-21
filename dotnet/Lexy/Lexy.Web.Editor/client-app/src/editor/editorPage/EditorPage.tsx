@@ -13,6 +13,8 @@ import Testing from '../testing/Testing';
 import Logging from '../logging/Logging';
 import Box from "@mui/material/Box";
 import {isLoading} from "../../context/loading";
+import {count} from "lexy/dist/infrastructure/enumerableExtensions";
+import {SpecificationsLogEntry} from "lexy/dist/specifications/specificationRunnerContext";
 
 const GridFullHeight = styled(Grid)`
   height: calc(100% - 264px);
@@ -83,12 +85,24 @@ function EditorPage() {
     { name: 'Source Code', value: MainContainer.Source, element: () => <SourceEditor /> },
   ];
 
-  const bottomOptions = (scenarios: number) => [
+  const bottomOptions = (suffix: string) => [
     { name: 'Compilation Logging', value: BottomContainer.Logging, element: () => <Logging /> },
-    { name: 'Test Logging (' + scenarios + ")", value: BottomContainer.Testing, element: () => <Testing /> },
+    { name: 'Test Logging' + suffix, value: BottomContainer.Testing, element: () => <Testing /> },
   ];
 
-  const scenarios = testingLogging != null && !isLoading(testingLogging) ? testingLogging.length : 0;
+  function getScenariosSuffix() {
+    if (!(testingLogging != null && !isLoading(testingLogging))) {
+      return '';
+    }
+
+    const logging = testingLogging as SpecificationsLogEntry[];
+    const errors = count(logging, entry => !entry.isError && entry.node != null);
+    const scenarios = count(logging, entry => entry.node != null);
+
+    return ` (${errors}/${scenarios})`;
+  }
+
+  const scenariosSuffix = getScenariosSuffix();
 
   return (
     <>
@@ -115,8 +129,8 @@ function EditorPage() {
       </GridFullHeight>
       <ToolPanel>
         <FullHeightPaper>
-          {content(bottomOptions(scenarios), bottomContainer)}
-          {optionButtonsGroup(bottomOptions(scenarios), bottomContainer, setBottomContainer)}
+          {content(bottomOptions(scenariosSuffix), bottomContainer)}
+          {optionButtonsGroup(bottomOptions(scenariosSuffix), bottomContainer, setBottomContainer)}
         </FullHeightPaper>
       </ToolPanel>
     </>

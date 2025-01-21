@@ -12,6 +12,11 @@ const NoPaddingListItemButton = styled(ListItemButton)`
   padding: 2px;
 `;
 
+const LoggingList = styled(List)`
+  font-family: Menlo, Monaco, "Courier New", monospace;
+  font-size: 12px;
+`;
+
 interface LogItemProps {
   logEntry: LogEntry
 }
@@ -57,7 +62,7 @@ function Logging() {
   const sorted = errors.sort((left, right) => left.sortIndex < right.sortIndex ? -1 : 1);
   const logs = sorted.map((entry, index) => <LogItem logEntry={entry} key={index} /> );
 
-  return <List disablePadding>{logs}</List>;
+  return <LoggingList disablePadding>{logs}</LoggingList>;
 }
 
 export default Logging;

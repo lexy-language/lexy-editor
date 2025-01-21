@@ -15,6 +15,7 @@ import {runScenarios} from "./runScenarios";
 import {MemoryLogEntry} from "../api/loggers";
 import {WebFileSystem} from "./webFileSystem";
 import {ProjectState} from "./projectState";
+import {SpecificationsLogEntry} from "lexy/dist/specifications/specificationRunnerContext";
 
 export enum LeftContainer {
   Explorer,
@@ -67,8 +68,8 @@ export interface EditorState {
   parserLogging: IParserLogger | null | Loading;
   setParserLogging: React.Dispatch<React.SetStateAction<IParserLogger | null | Loading>>;
 
-  testingLogging: ReadonlyArray<MemoryLogEntry> | Loading;
-  setTestingLogging: React.Dispatch<React.SetStateAction<ReadonlyArray<MemoryLogEntry> | Loading>>;
+  testingLogging: ReadonlyArray<SpecificationsLogEntry> | Loading;
+  setTestingLogging: React.Dispatch<React.SetStateAction<ReadonlyArray<SpecificationsLogEntry> | Loading>>;
 
   nodes: Array<IRootNode> | Loading;
   setNodes: React.Dispatch<React.SetStateAction<Array<IRootNode> | Loading>>;
@@ -113,7 +114,7 @@ export const EditorContextProvider = ({children}: ContextProviderProps) => {
   const [currentFile, setCurrentFile] = useState<ProjectFile | null>(null);
   const [currentFileCode, setCurrentFileCode] = useState<ProjectFileCode | null | Loading>(null);
   const [currentFileLogging, setCurrentFileLogging] = useState<Array<LogEntry> | Loading>([]);
-  const [testingLogging, setTestingLogging] = useState<ReadonlyArray<MemoryLogEntry> | Loading>([]);
+  const [testingLogging, setTestingLogging] = useState<ReadonlyArray<SpecificationsLogEntry> | Loading>([]);
   const [parserLogging, setParserLogging] = useState<IParserLogger | null | Loading>(null);
   const [nodes, setNodes] = useState<Array<IRootNode> | Loading>([]);
 

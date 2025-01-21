@@ -15,7 +15,6 @@ import {DatePicker, LocalizationProvider} from "@mui/x-date-pickers";
 import {AdapterDateFns} from "@mui/x-date-pickers/AdapterDateFnsV3";
 import {Assert} from "lexy";
 import {asEnumType} from "lexy/dist/language/variableTypes/enumType";
-import {firstOrDefault} from "lexy/dist/infrastructure/enumerableExtensions";
 import ParameterFields from "./ParameterFields";
 import {asCustomType} from "lexy/dist/language/variableTypes/customType";
 import IndentFields from "./IndentFields";
@@ -35,7 +34,9 @@ const ParameterDatePicker = styled(DatePicker)`
 `;
 
 const FieldBox = styled(Box)`
-  margin-bottom: 24px;
+  &:not(:last-child) {
+    margin-bottom: 24px;
+  }
 `;
 
 type ParameterFieldProps = {
@@ -72,7 +73,7 @@ export default function ParameterField(props: ParameterFieldProps) {
   function getParameterOrDefault() {
     let value = executeFunction.getParameter(path);
     if (value == undefined) {
-      value = null;
+      value = "";
     }
     return value;
   }

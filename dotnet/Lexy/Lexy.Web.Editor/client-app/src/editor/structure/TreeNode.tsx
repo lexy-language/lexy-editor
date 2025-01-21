@@ -166,7 +166,6 @@ export function TreeNode(props: TreeNodeProps) {
       </ListItem>
       {children}
       <Menu
-        id="node-menu"
         anchorEl={anchorEl}
         open={menuItems.length > 0 && openMenu}
         onClose={handleCloseMenu}

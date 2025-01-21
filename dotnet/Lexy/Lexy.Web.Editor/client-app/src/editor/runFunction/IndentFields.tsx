@@ -1,9 +1,6 @@
 import React from 'react';
-import Box from "@mui/material/Box";
 import {styled} from "@mui/material/styles";
 import Stack from "@mui/material/Stack";
-import {TextField} from "@mui/material";
-import {useContext} from "../../context/editorContext";
 import Typography from "@mui/material/Typography";
 
 const Indent = styled('div')`
@@ -18,6 +15,7 @@ const PaddingTop = styled('div')`
 
 const CustomTypeBox = styled('div')`
   width: 100%;
+  margin-bottom: 24px;
 `;
 
 const FullWidthStack = styled(Stack)`
@@ -30,11 +28,10 @@ type IndentFields = {
   children: React.ReactNode;
 }
 
-export default function IndentFields({
-    name,
-    title = false,
-    children
-  }: IndentFields) {
+export default function IndentFields(props: IndentFields) {
+
+  const {name, title = false, children} = props;
+
   return <CustomTypeBox key={name}>
     <Typography variant="subtitle1" fontWeight={title ? "bolder" : 'normal'} fontSize={title ? '1.3rem' : '1rem'}>
       {name}

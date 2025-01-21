@@ -5,17 +5,14 @@ import Stack from "@mui/material/Stack";
 import {TextField} from "@mui/material";
 import IndentFields from "./IndentFields";
 
-const Indent = styled('div')`
-  width: 16px;
-  border-left: 2px solid #BBB;
-`;
-
 const FullWidthStack = styled(Stack)`
   width: 100%;
 `;
 
 const FieldBox = styled(Box)`
-  margin-bottom: 24px;
+  &:not(:last-child) {
+    margin-bottom: 24px;
+  }
 `;
 
 const ResultsTextField = styled(TextField)`
