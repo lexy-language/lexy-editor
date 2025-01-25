@@ -6,7 +6,7 @@ export class ProjectState {
 
   public constructor(name: string | null = null, files: { [key: string]: string } | null = null) {
     this.name = name ?? "Untitled";
-    this.files = files != null ? files : {};
+    this.files = files !== null ? files : {};
   }
 
   public file(path: Array<string>): string | undefined {

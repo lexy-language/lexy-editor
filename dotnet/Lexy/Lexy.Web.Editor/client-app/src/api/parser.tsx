@@ -3,11 +3,12 @@ import {IParserLogger, LogEntry} from "lexy/dist/parser/parserLogger";
 import {IRootNode} from "lexy/dist/language/rootNode";
 import {CompilerResult} from "lexy/dist/compiler/compilerResult";
 import {DummyLogger} from "./loggers";
+import {RootNodeList} from "lexy/dist/language/rootNodeList";
 
 export type CompileResult = {
   logger: IParserLogger;
   logging: Array<LogEntry>;
-  nodes: Array<IRootNode>;
+  nodes: RootNodeList;
 }
 
 const baseLogger = new DummyLogger();
@@ -16,7 +17,7 @@ export function parseFile(fileName: string, code: string, fileSystem: IFileSyste
   const lexyParser = createParser(baseLogger, fileSystem);
   const lines = code.split("\n");
   const {rootNodes, logger} = lexyParser.parse(lines, fileName, false);
-  return {logging: logger.entries, nodes: rootNodes.asArray(), logger: logger}
+  return {logging: logger.entries, nodes: rootNodes, logger: logger}
 }
 
 export function createLogger(): ILogger {

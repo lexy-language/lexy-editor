@@ -150,7 +150,7 @@ function getName(node: INode): {name: string, mapChildren: boolean, kind: NodeKi
 
 function mapNode(node: INode): StructureNode | null {
   const result = getName(node);
-  if (result == null) return null;
+  if (result === null) return null;
 
   const {name, mapChildren, kind} = result;
   const children = mapChildren ? createStructure(node.getChildren()) : [];
@@ -166,10 +166,10 @@ function mapNode(node: INode): StructureNode | null {
 }
 
 export function createStructure(nodes: Array<INode>): Array<StructureNode> {
-  const result = new Array<StructureNode>;
+  const result = new Array<StructureNode>();
   for (const node of nodes) {
     const structureNode = mapNode(node);
-    if (structureNode != null) {
+    if (structureNode !== null) {
       result.push(structureNode);
     }
   }

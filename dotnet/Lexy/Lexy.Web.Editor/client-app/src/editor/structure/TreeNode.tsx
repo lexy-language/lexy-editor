@@ -12,7 +12,7 @@ import FormatQuoteIcon from "@mui/icons-material/FormatQuote";
 import QuestionMarkIcon from "@mui/icons-material/QuestionMark";
 import React from "react";
 import {NodeType} from "lexy/dist/language/nodeType";
-import {MainContainer, useContext} from "../../context/editorContext";
+import {useContext} from "../../context/editorContext";
 import {Menu, MenuItem, styled} from "@mui/material";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
@@ -103,7 +103,6 @@ export function TreeNode(props: TreeNodeProps) {
     if (node.nodeType !== NodeType.Function) return [];
 
     const handleClickMenu = () => {
-      setMainContainer(MainContainer.Run);
       handleCloseMenu();
     };
 
@@ -138,7 +137,6 @@ export function TreeNode(props: TreeNodeProps) {
     setStructureTreeState,
     currentStructureNode,
     setCurrentStructureNode,
-    setMainContainer
   } = useContext();
   const openChildren = structureTreeState.isOpen(path);
   const setOpenChildren = (value: boolean) => setStructureTreeState(structureTreeState.setOpen(path, value));
@@ -153,7 +151,7 @@ export function TreeNode(props: TreeNodeProps) {
       <ListItem disablePadding onClick={onClick} onContextMenu={onClick}
                 style={currentStructureNode === node ? {background: '#EEE'} : {}}>
         <NoPaddingListItemButton onClick={() => setOpenChildren(!openChildren)}
-                                 style={indent > 0 ? ({marginLeft: (indentValue * indent) + 'px'}) : ({})}>
+                                 style={indent > 0 ? ({paddingLeft: (indentValue * indent) + 'px'}) : ({})}>
           <NoPaddingListItemIcon>
             {node.children.length === 0 ? <></>
               : openChildren ? <KeyboardArrowDownIcon fontSize="small"/> : <KeyboardArrowRightIcon fontSize="small"/>}

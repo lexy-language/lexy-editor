@@ -65,9 +65,9 @@ function FileItem(props: {file: ProjectFile, currentFile: ProjectFile | null, in
   const {file, currentFile, indent, setCurrentFile} = props;
 
   return (
-    <ListItem disablePadding onClick={() => setCurrentFile(file)} style={currentFile == file ? {background: '#EEE'} : {}}>
+    <ListItem disablePadding onClick={() => setCurrentFile(file)} style={currentFile === file ? {background: '#EEE'} : {}}>
       <NoPaddingListItemButton
-        style={indent > 0 ? ({marginLeft: fileIndentValue + (indentValue * indent) + 'px'}) : ({})}>
+        style={indent > 0 ? ({paddingLeft: fileIndentValue + (indentValue * indent) + 'px'}) : ({})}>
         <NoPaddingListItemIcon>
           <InsertDriveFileIcon fontSize={"small"} />
         </NoPaddingListItemIcon>
@@ -86,7 +86,7 @@ function Explorer() {
   } = useContext();
 
   function content() {
-    if (projectFiles == null) {
+    if (projectFiles === null) {
       return <Box>No project loaded.</Box>;
     }
     if (isLoading(projectFiles)) {

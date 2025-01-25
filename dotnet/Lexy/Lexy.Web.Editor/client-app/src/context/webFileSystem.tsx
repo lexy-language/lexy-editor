@@ -1,6 +1,5 @@
 import {IFileSystem} from "lexy";
 import {ProjectState} from "./projectState";
-import {forEach} from "lexy/dist/infrastructure/enumerableExtensions";
 
 export class WebFileSystem implements IFileSystem {
 
@@ -17,7 +16,7 @@ export class WebFileSystem implements IFileSystem {
     const parts = fullFile.split("/");
     this.removeFirst(parts);
     const data = this.currentProject.file(parts);
-    if (data == undefined) {
+    if (data === undefined) {
       throw new Error("Couldn't load: " + fileName);
     }
     return data.split("\n");
@@ -40,7 +39,7 @@ export class WebFileSystem implements IFileSystem {
     const parts = fileName.split("/");
     const folder = [...this.currentFolder];
     for (const part of parts) {
-      if (part == "..") {
+      if (part === "..") {
         this.removeLast(folder);
       } else {
         folder.push(part)
@@ -61,14 +60,14 @@ export class WebFileSystem implements IFileSystem {
 
   combine(fullPath: string, fileName: string): string {
     console.log("combine: " + fullPath + " & " + fileName);
-    if (fullPath.length == 0) return fileName;
+    if (fullPath.length === 0) return fileName;
     const parts = fullPath.split("/");
-    if (parts[parts.length - 1].length == 0) this.removeLast(parts);
+    if (parts[parts.length - 1].length === 0) this.removeLast(parts);
 
     const fileParts = fileName.split("/");
 
     for (const part of fileParts) {
-      if (part == "..") {
+      if (part === "..") {
         this.removeLast(parts);
       } else {
         parts.push(part)
@@ -80,7 +79,7 @@ export class WebFileSystem implements IFileSystem {
   fileExists(fileName: string): boolean {
     console.log("fileExists: " + fileName);
     const parts = fileName.split("/");
-    if (parts[0].length == 0) this.removeFirst(parts);
+    if (parts[0].length === 0) this.removeFirst(parts);
     const data = this.currentProject.file(parts);
     return !!data;
   }

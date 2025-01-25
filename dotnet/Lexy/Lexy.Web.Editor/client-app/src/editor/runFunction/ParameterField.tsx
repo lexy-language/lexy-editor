@@ -17,8 +17,8 @@ import {Assert} from "lexy";
 import {asEnumType} from "lexy/dist/language/variableTypes/enumType";
 import ParameterFields from "./ParameterFields";
 import {asCustomType} from "lexy/dist/language/variableTypes/customType";
-import IndentFields from "./IndentFields";
-import {VariableReference} from "lexy/dist/language/variableReference";
+import IndentFields from "../indentFields/IndentFields";
+import {VariablePath} from "lexy/dist/language/variablePath";
 import Box from "@mui/material/Box";
 
 const ParameterTextField = styled(TextField)`
@@ -40,7 +40,7 @@ const FieldBox = styled(Box)`
 `;
 
 type ParameterFieldProps = {
-  parent?: VariableReference
+  parent?: VariablePath
   parameter: VariableDefinition;
 }
 
@@ -48,7 +48,7 @@ export default function ParameterField(props: ParameterFieldProps) {
 
   const {parameter, parent} = props;
   const {executeFunction, setExecuteFunction} = useContext();
-  const path = parent != null ? parent.append([parameter.name]) : new VariableReference([parameter.name]);
+  const path = !!parent ? parent.append([parameter.name]) : new VariablePath([parameter.name]);
 
   function enumValueChanged(event: any) {
     return setExecuteFunction(executeFunction.setParameter(path, event.target.value));
@@ -72,7 +72,7 @@ export default function ParameterField(props: ParameterFieldProps) {
 
   function getParameterOrDefault() {
     let value = executeFunction.getParameter(path);
-    if (value == undefined) {
+    if (value === undefined) {
       value = "";
     }
     return value;
@@ -80,23 +80,23 @@ export default function ParameterField(props: ParameterFieldProps) {
 
   function renderPrimitiveType() {
     const primitiveType = Assert.notNull(asPrimitiveType(parameter.variableType), "primitiveType");
-    if (primitiveType.type == TypeNames.string) {
+    if (primitiveType.type === TypeNames.string) {
       const value = getParameterOrDefault();
       return <ParameterTextField label={parameter.name} variant="outlined"
                                  value={value} onChange={stringValueChanged}/>;
     }
-    if (primitiveType.type == TypeNames.number) {
+    if (primitiveType.type === TypeNames.number) {
       const value = getParameterOrDefault();
       return <ParameterTextField label={parameter.name} variant="outlined"
                                  type="number"
                                  value={!!value ? value : ''} onChange={numberValueChanged}/>;
     }
-    if (primitiveType.type == TypeNames.boolean) {
+    if (primitiveType.type === TypeNames.boolean) {
       const value = getParameterOrDefault();
       return <FormControlLabel control={<Checkbox value={value} onChange={booleanValueChanged}/>}
                                label={parameter.name}/>
     }
-    if (primitiveType.type == TypeNames.date) {
+    if (primitiveType.type === TypeNames.date) {
       const value = getParameterOrDefault();
       return <LocalizationProvider dateAdapter={AdapterDateFns}>
         <ParameterDatePicker label={parameter.name} value={value} onChange={dateValueChanged}

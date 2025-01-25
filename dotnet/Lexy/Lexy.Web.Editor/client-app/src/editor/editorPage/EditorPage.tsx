@@ -3,8 +3,8 @@ import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid2';
 import {styled} from '@mui/material/styles';
 import {Button} from "@mui/material";
-import {BottomContainer, LeftContainer, MainContainer, useContext} from '../../context/editorContext';
-
+import {BottomContainer, LayoutState, LeftContainer, MainContainer} from '../../context/layoutState';
+import {useContext} from '../../context/editorContext';
 import Explorer from '../explorer/Explorer';
 import Structure from '../structure/Structure';
 import SourceEditor from '../sourceEditor/SourceEditor';
@@ -15,6 +15,7 @@ import Box from "@mui/material/Box";
 import {isLoading} from "../../context/loading";
 import {count} from "lexy/dist/infrastructure/enumerableExtensions";
 import {SpecificationsLogEntry} from "lexy/dist/specifications/specificationRunnerContext";
+import ExecutionLogging from "../executionLogging/ExecutionLogging";
 
 const GridFullHeight = styled(Grid)`
   height: calc(100% - 264px);
@@ -27,7 +28,7 @@ const GridItem = styled(Grid)`
 
 const ToolPanel = styled(Grid)`
   height: 200px;
-  padding: 0px 8px 8px;
+  padding: 0 8px 8px;
 `;
 
 const FullHeightPaper = styled(Paper)`
@@ -47,32 +48,28 @@ const BottomPart = styled(Box)`
   padding: 8px 0 0;
 `;
 
-function optionButtonsGroup<T>(values: {name: string, value: T}[], currentValue: T, setValue: (item: T) => void) {
+function OptionButtonsGroup<T>(values: {name: string, value: T}[], currentValue: T, setValue: (item: T) => void) {
   return <BottomPart>
-    {optionButtons(values, currentValue, setValue)}
+    {values.map(value => <Button
+      key={value.name}
+      variant={(value.value === currentValue ? 'contained' : 'text')}
+      onClick={() => setValue(value.value)}>
+      {value.name}
+    </Button>)}
   </BottomPart>;
-}
-
-function optionButtons<T>(values: {name: string, value: T}[], currentValue: T, setValue: (item: T) => void) {
-  return values.map(value => <Button
-    key={value.name}
-    variant={(value.value == currentValue ? 'contained' : 'text')}
-    onClick={() => setValue(value.value)}>
-    {value.name}
-  </Button>);
 }
 
 function content<T>(values: {value: T, element: () => React.ReactNode}[], currentValue: T) {
   return <TopPart>
-    {values.find(value => value.value == currentValue)?.element()}
+    {values.find(value => value.value === currentValue)?.element()}
   </TopPart>;
 }
 
 function EditorPage() {
+
   const {
-    leftContainer, setLeftContainer,
-    mainContainer, setMainContainer,
-    bottomContainer, setBottomContainer,
+    layout,
+    setLayout,
     testingLogging
   } = useContext();
 
@@ -83,6 +80,7 @@ function EditorPage() {
 
   const mainOptions = [
     { name: 'Source Code', value: MainContainer.Source, element: () => <SourceEditor /> },
+    { name: 'Execution Logging', value: MainContainer.ExecutionLogging, element: () => <ExecutionLogging /> },
   ];
 
   const bottomOptions = (suffix: string) => [
@@ -91,15 +89,19 @@ function EditorPage() {
   ];
 
   function getScenariosSuffix() {
-    if (!(testingLogging != null && !isLoading(testingLogging))) {
+    if (!(testingLogging !== null && !isLoading(testingLogging))) {
       return '';
     }
 
     const logging = testingLogging as SpecificationsLogEntry[];
-    const errors = count(logging, entry => !entry.isError && entry.node != null);
-    const scenarios = count(logging, entry => entry.node != null);
+    const errors = count(logging, entry => !entry.isError && entry.node !== null);
+    const scenarios = count(logging, entry => entry.node !== null);
 
     return ` (${errors}/${scenarios})`;
+  }
+
+  function setValue<T>(setLayoutValue: (layout: LayoutState, item: T) => LayoutState) {
+    return (value: T) => setLayout(layout => setLayoutValue(layout, value));
   }
 
   const scenariosSuffix = getScenariosSuffix();
@@ -109,14 +111,14 @@ function EditorPage() {
       <GridFullHeight container>
         <GridItem size={3}>
           <FullHeightPaper>
-            {content(leftOptions, leftContainer)}
-            {optionButtonsGroup(leftOptions, leftContainer, setLeftContainer)}
+            {content(leftOptions, layout.leftContainer)}
+            {OptionButtonsGroup(leftOptions, layout.leftContainer, setValue<LeftContainer>((layout, value) => layout.setLeftContainer(value)))}
           </FullHeightPaper>
         </GridItem>
         <GridItem size={6}>
           <FullHeightPaper>
-            {content(mainOptions, mainContainer)}
-            {optionButtonsGroup(mainOptions, mainContainer, setMainContainer)}
+            {content(mainOptions, layout.mainContainer)}
+            {OptionButtonsGroup(mainOptions, layout.mainContainer, setValue<MainContainer>((layout, value) => layout.setMainContainer(value)))}
           </FullHeightPaper>
         </GridItem>
         <GridItem size={3}>
@@ -129,8 +131,8 @@ function EditorPage() {
       </GridFullHeight>
       <ToolPanel>
         <FullHeightPaper>
-          {content(bottomOptions(scenariosSuffix), bottomContainer)}
-          {optionButtonsGroup(bottomOptions(scenariosSuffix), bottomContainer, setBottomContainer)}
+          {content(bottomOptions(scenariosSuffix), layout.bottomContainer)}
+          {OptionButtonsGroup(bottomOptions(scenariosSuffix), layout.bottomContainer, setValue<BottomContainer>((layout, value) => layout.setBottomContainer(value)))}
         </FullHeightPaper>
       </ToolPanel>
     </>

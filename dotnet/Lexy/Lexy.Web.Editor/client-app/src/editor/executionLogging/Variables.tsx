@@ -1,12 +1,12 @@
 import React from 'react';
 import Box from "@mui/material/Box";
 import {styled} from "@mui/material/styles";
-import Stack from "@mui/material/Stack";
-import {TextField} from "@mui/material";
+import {Grid2, TextField} from "@mui/material";
 import IndentFields from "../indentFields/IndentFields";
 
-const FullWidthStack = styled(Stack)`
-  width: 100%;
+const MainGrid = styled(Grid2)`
+  margin-top: 8px;
+  margin-bottom: 8px;
 `;
 
 const FieldBox = styled(Box)`
@@ -19,16 +19,16 @@ const ResultsTextField = styled(TextField)`
   width: 100%;
 `;
 
-type ResultFieldsProps = {
+type VariablesProps = {
   values: any;
 };
 
-export default function ResultFields(props: ResultFieldsProps) {
+export default function Variables(props: VariablesProps) {
 
   const {values} = props;
-  const keys = values !== null ? Object.keys(values) : null;
+  const keys = !!values ? Object.keys(values) : null;
   if (values === null || keys === null || keys.length === 0) {
-    return <FieldBox>No result variables defined</FieldBox>;
+    return <FieldBox>No variables defined</FieldBox>;
   }
 
   const elements: Array<JSX.Element> = [];
@@ -42,14 +42,18 @@ export default function ResultFields(props: ResultFieldsProps) {
   }
 
   function renderField(value: any, resultKey: string) {
-    if (value === null || isValueType((value))) {
-      return <FieldBox key={resultKey}>
-        <ResultsTextField disabled label={resultKey} variant="outlined" value={value !== null ? value : ""}/>
-      </FieldBox>;
+    if (!value || isValueType(value)) {
+      return <Grid2 size={3}>
+        <FieldBox key={resultKey}>
+          <ResultsTextField disabled label={resultKey} variant="outlined" value={value !== null ? value : ""}/>
+        </FieldBox>
+      </Grid2>;
     } else {
-      return <IndentFields key={resultKey} name={resultKey}>
-        <ResultFields values={value}/>
-      </IndentFields>;
+      return <Grid2 size={12}>
+        <IndentFields key={resultKey} name={resultKey}>
+          <Variables values={value}/>
+        </IndentFields>
+      </Grid2>;
     }
   }
 
@@ -58,5 +62,5 @@ export default function ResultFields(props: ResultFieldsProps) {
     elements.push(renderField(value, resultKey));
   }
 
-  return <FullWidthStack>{elements}</FullWidthStack>;
+  return <MainGrid container spacing={2} >{elements}</MainGrid>;
 }

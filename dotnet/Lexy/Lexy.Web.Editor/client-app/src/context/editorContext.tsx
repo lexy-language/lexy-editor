@@ -7,31 +7,16 @@ import {IParserLogger, LogEntry} from "lexy/dist/parser/parserLogger";
 import {createStructure, StructureNode} from "./structure";
 import {TreeNodeState} from "./treeNodeState";
 import {ExecuteFunctionState} from "./executeFunctionState";
-import {IRootNode} from "lexy/dist/language/rootNode";
 import {SourceReference} from "lexy/dist/parser/sourceReference";
 import {SourceFile} from "lexy/dist/parser/sourceFile";
 import {firstOrDefault} from "lexy/dist/infrastructure/enumerableExtensions";
 import {runScenarios} from "./runScenarios";
-import {MemoryLogEntry} from "../api/loggers";
 import {WebFileSystem} from "./webFileSystem";
 import {ProjectState} from "./projectState";
 import {SpecificationsLogEntry} from "lexy/dist/specifications/specificationRunnerContext";
-
-export enum LeftContainer {
-  Explorer,
-  Structure
-}
-
-export enum MainContainer {
-  Source,
-  Run,
-  Table
-}
-
-export enum BottomContainer {
-  Logging,
-  Testing
-}
+import {ExecutionLoggingState} from "./executionLoggingState";
+import {RootNodeList} from "lexy/dist/language/rootNodeList";
+import {LayoutState} from "./layoutState";
 
 export type EditorPosition = {
   lineNumber: number;
@@ -71,8 +56,8 @@ export interface EditorState {
   testingLogging: ReadonlyArray<SpecificationsLogEntry> | Loading;
   setTestingLogging: React.Dispatch<React.SetStateAction<ReadonlyArray<SpecificationsLogEntry> | Loading>>;
 
-  nodes: Array<IRootNode> | Loading;
-  setNodes: React.Dispatch<React.SetStateAction<Array<IRootNode> | Loading>>;
+  nodes: RootNodeList | Loading;
+  setNodes: React.Dispatch<React.SetStateAction<RootNodeList | Loading>>;
 
   structure: Array<StructureNode> | null;
   setStructure: React.Dispatch<React.SetStateAction<Array<StructureNode> | null>>;
@@ -86,17 +71,17 @@ export interface EditorState {
   executeFunction: ExecuteFunctionState;
   setExecuteFunction: React.Dispatch<React.SetStateAction<ExecuteFunctionState>>;
 
+  executionLoggingTreeState: TreeNodeState;
+  setExecutionLoggingTreeState: React.Dispatch<React.SetStateAction<TreeNodeState>>;
+
+  executionLogging: ExecutionLoggingState;
+  setExecutionLogging: React.Dispatch<React.SetStateAction<ExecutionLoggingState>>;
+
   editorPosition: EditorPosition | null;
   setEditorPosition: React.Dispatch<React.SetStateAction<EditorPosition | null>>;
 
-  leftContainer: LeftContainer;
-  setLeftContainer: React.Dispatch<React.SetStateAction<LeftContainer>>;
-
-  mainContainer: MainContainer;
-  setMainContainer: React.Dispatch<React.SetStateAction<MainContainer>>;
-
-  bottomContainer: BottomContainer;
-  setBottomContainer: React.Dispatch<React.SetStateAction<BottomContainer>>;
+  layout: LayoutState;
+  setLayout: React.Dispatch<React.SetStateAction<LayoutState>>;
 }
 
 export const [useContext, Provider] = createContext<EditorState>();
@@ -116,7 +101,7 @@ export const EditorContextProvider = ({children}: ContextProviderProps) => {
   const [currentFileLogging, setCurrentFileLogging] = useState<Array<LogEntry> | Loading>([]);
   const [testingLogging, setTestingLogging] = useState<ReadonlyArray<SpecificationsLogEntry> | Loading>([]);
   const [parserLogging, setParserLogging] = useState<IParserLogger | null | Loading>(null);
-  const [nodes, setNodes] = useState<Array<IRootNode> | Loading>([]);
+  const [nodes, setNodes] = useState<RootNodeList | Loading>(new RootNodeList([]));
 
   const [structure, setStructure] = useState<Array<StructureNode> | null>(null);
   const [currentStructureNode, setCurrentStructureNode] = useState<StructureNode | null>(null);
@@ -124,11 +109,12 @@ export const EditorContextProvider = ({children}: ContextProviderProps) => {
 
   const [executeFunction, setExecuteFunction] = useState<ExecuteFunctionState>(new ExecuteFunctionState());
 
+  const [executionLoggingTreeState, setExecutionLoggingTreeState] = useState<TreeNodeState>(new TreeNodeState());
+  const [executionLogging, setExecutionLogging] = useState<ExecutionLoggingState>(new ExecutionLoggingState());
+
   const [editorPosition, setEditorPosition] = useState<EditorPosition | null>(null);
 
-  const [leftContainer, setLeftContainer] = useState(LeftContainer.Explorer);
-  const [mainContainer, setMainContainer] = useState(MainContainer.Source);
-  const [bottomContainer, setBottomContainer] = useState(BottomContainer.Logging);
+  const [layout, setLayout] = useState(LayoutState.defaultState());
 
   const value = {
     currentProject, setCurrentProject,
@@ -145,15 +131,16 @@ export const EditorContextProvider = ({children}: ContextProviderProps) => {
 
     structure, setStructure,
     currentStructureNode, setCurrentStructureNode,
+
+    executionLoggingTreeState, setExecutionLoggingTreeState,
     structureTreeState, setStructureTreeState,
 
     executeFunction, setExecuteFunction,
+    executionLogging, setExecutionLogging,
 
     editorPosition, setEditorPosition,
 
-    leftContainer, setLeftContainer,
-    mainContainer, setMainContainer,
-    bottomContainer, setBottomContainer
+    layout, setLayout,
   };
 
   function openIntroductionFoldersAndSelectFirstFile(data: ProjectFolder): {tree: TreeNodeState, file: ProjectFile | null}  {
@@ -161,9 +148,9 @@ export const EditorContextProvider = ({children}: ContextProviderProps) => {
     tree = tree.setOpen([data.name], true)
     let file: ProjectFile | null = null;
     for (const folder of data.folders) {
-      if (folder.name != "Introduction") continue;
+      if (folder.name !== "Introduction") continue;
       tree = tree.setOpen([data.name, folder.name], true)
-      if (file == null) {
+      if (file === null) {
         file = firstOrDefault(folder.files);
       }
     }
@@ -186,7 +173,8 @@ export const EditorContextProvider = ({children}: ContextProviderProps) => {
       setCurrentFileCode(null);
       return;
     }
-    setExecuteFunction(executeFunction.reset());
+    setExecuteFunction(executeFunction => executeFunction.reset());
+    setExecutionLogging(executionLogging => executionLogging.reset());
 
     getFileDetails(currentProject.name, currentFile.identifier)
       .then(data => {
@@ -198,19 +186,19 @@ export const EditorContextProvider = ({children}: ContextProviderProps) => {
         });
       })
       .catch(console.error);
-  }, [currentFile]);
+  }, [currentProject.name, currentFile]);
 
   useEffect(() => {
-    if (currentFileCode == null || isLoading(currentFileCode)) return;
-    setCurrentProject(currentProject.setFile(currentFileCode.identifier.split("|"), currentFileCode.code));
+    if (currentFileCode === null || isLoading(currentFileCode)) return;
+    setCurrentProject(currentProject => currentProject.setFile(currentFileCode.identifier.split("|"), currentFileCode.code));
   }, [currentFileCode])
 
   useEffect(() => {
-    setCurrentProject(currentProject.setName("Introduction"));
+    setCurrentProject(currentProject => currentProject.setName("Introduction"));
   }, []);
 
   useEffect(() => {
-    if (currentFileCode != null && currentFile != null && !isLoading(currentFileCode)) {
+    if (currentFileCode !== null && currentFile !== null && !isLoading(currentFileCode)) {
       try {
         const currentFolder = currentFile.identifier.split("|");
         currentFolder.splice(currentFolder.length - 1, 1)
@@ -219,33 +207,39 @@ export const EditorContextProvider = ({children}: ContextProviderProps) => {
         setCurrentFileLogging(logging);
         setNodes(nodes);
         setParserLogging(logger);
-        setStructure(createStructure(nodes));
+        setStructure(createStructure(nodes.asArray()));
         setCurrentStructureNode(null);
       } catch (error: any) {
         setCurrentFileLogging([new LogEntry(new SourceReference(new SourceFile("parsing"), 1, 1), null, true, "Parsing error occurred:" + error.stack)]);
-        setNodes([]);
+        setNodes(new RootNodeList());
         setParserLogging(null);
         setStructure([]);
         setCurrentStructureNode(null);
       }
     } else {
       setCurrentFileLogging([]);
-      setNodes([]);
+      setNodes(new RootNodeList());
       setStructure([]);
       setCurrentStructureNode(null);
       setParserLogging(null);
     }
-  }, [currentFileCode]);
+  }, [currentFileCode, currentFile, currentProject]);
 
   useEffect(() => {
-    if (currentFile == null || nodes == null || isLoading(nodes)) return;
-    if (parserLogging == null || isLoading(parserLogging)) return;
-    runScenarios(currentFile.name, nodes, parserLogging, setTestingLogging);
-  }, [structure])
+    if (currentFile === null || nodes === null || isLoading(nodes)) return;
+    if (parserLogging === null || isLoading(parserLogging)) return;
+    runScenarios(currentFile.name, nodes.asArray(), parserLogging, setTestingLogging);
+  }, [structure, currentFile, nodes, parserLogging])
 
   useEffect(() => {
-    setExecuteFunction(executeFunction.reset());
+    setExecuteFunction(executeFunction => executeFunction.reset());
   }, [currentStructureNode])
 
-  return <Provider value={value}>{children}</Provider>;
+  useEffect(() => {
+    console.log("useEffect-" + JSON.stringify(currentFile));
+  }, [currentFile])
+
+  return <Provider value={value}>
+    {children}
+  </Provider>;
 };

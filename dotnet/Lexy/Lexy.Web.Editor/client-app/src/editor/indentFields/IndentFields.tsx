@@ -22,13 +22,13 @@ const FullWidthStack = styled(Stack)`
   width: 100%;
 `;
 
-type IndentFields = {
+type IndentFieldsProps = {
   name: string;
   title?: boolean;
   children: React.ReactNode;
 }
 
-export default function IndentFields(props: IndentFields) {
+export default function IndentFields(props: IndentFieldsProps) {
 
   const {name, title = false, children} = props;
 

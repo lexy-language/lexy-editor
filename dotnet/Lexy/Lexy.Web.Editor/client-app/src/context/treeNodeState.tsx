@@ -3,7 +3,7 @@ export class TreeNodeState {
   private readonly state: { [key: string]: boolean }
 
   public constructor(state: { [key: string]: boolean } | null = null) {
-    this.state = state != null ? state : {};
+    this.state = state !== null ? state : {};
   }
 
   public isOpen(path: Array<string>): boolean {
@@ -23,6 +23,10 @@ export class TreeNodeState {
 
   private static fullPath(path: Array<string>) {
     return path.join("|");
+  }
+
+  public reset(): TreeNodeState {
+    return new TreeNodeState();
   }
 }
 

@@ -1,4 +1,4 @@
-import {VariableReference} from "lexy/dist/language/variableReference";
+import {VariablePath} from "lexy/dist/language/variablePath";
 
 type VariableState = { [key: string]: any };
 
@@ -14,17 +14,17 @@ export class ExecuteFunctionState {
                      results: VariableState | null = null,
                      error: string | null = null,
                      elapsed: number | null = null) {
-    this.parameters = parameters != null ? parameters : {};
+    this.parameters = parameters !== null ? parameters : {};
     this.results = results;
     this.error = error;
     this.elapsed = elapsed;
   }
 
-  public getParameter(variable: VariableReference): any {
+  public getParameter(variable: VariablePath): any {
     let reference = variable;
     let valueObject = this.parameters;
     while (reference.hasChildIdentifiers) {
-      if (valueObject[reference.parentIdentifier] == undefined) {
+      if (valueObject[reference.parentIdentifier] === undefined) {
         return undefined;
       }
       valueObject = valueObject[reference.parentIdentifier];
@@ -33,12 +33,12 @@ export class ExecuteFunctionState {
     return valueObject[reference.parentIdentifier];
   }
 
-  public setParameter(variable: VariableReference, value: any): ExecuteFunctionState {
+  public setParameter(variable: VariablePath, value: any): ExecuteFunctionState {
     let reference = variable;
     let newParameters = {...this.parameters};
     let valueObject = newParameters;
     while (reference.hasChildIdentifiers) {
-      if (valueObject[reference.parentIdentifier] == undefined) {
+      if (valueObject[reference.parentIdentifier] === undefined) {
         valueObject[reference.parentIdentifier] = {};
       }
       valueObject = valueObject[reference.parentIdentifier];

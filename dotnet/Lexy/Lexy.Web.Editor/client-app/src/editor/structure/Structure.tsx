@@ -12,7 +12,7 @@ function Structure() {
 
   function content() {
 
-    if (structure == null) {
+    if (structure === null) {
       return <Box>No structure.</Box>;
     }
 
@@ -23,7 +23,7 @@ function Structure() {
     const result = [];
     for (let index = 0 ; index < structure.length ; index ++) {
       const node = structure[index];
-      if (node != null) {
+      if (node !== null) {
         result.push(<TreeNode node={node} indent={0} key={index} parent={[]}/>);
       }
     }

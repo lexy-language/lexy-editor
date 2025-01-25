@@ -1,28 +1,17 @@
-import React, {FunctionComponent} from 'react';
-import Editor, { DiffEditor, useMonaco, loader } from '@monaco-editor/react';
-import Paper from '@mui/material/Paper';
-import Container from "@mui/material/Container";
-import Box from "@mui/material/Box";
-import Grid from "@mui/material/Grid2";
-import Stack from "@mui/material/Stack";
-import {makeStyles, styled} from '@mui/material/styles';
-import {Edit} from "@mui/icons-material";
-import {MenuItem, MenuList} from "@mui/material";
+import React from 'react';
+import {styled} from "@mui/material/styles";
 
-const GridFullHeight = styled(Grid)`
-  height: calc(100% - 264px);
+const TextBox = styled('div')`
+  padding: 16px;
 `;
 
-const GridItem = styled(Grid)`
-  height: 100%;
-  padding: 8px;
-`;
-
-function FileNew() {
-
+export default function FileNew() {
   return (
-    <div>FileNew</div>
+    <TextBox>
+      Not yet implemented. This will create a new project. Each project should have a dedicated git repository.
+      New versions of a law can be implemented and tested on different branches and
+      merged into the main branch once the law is taken into order.
+      <TextBox>Select Go to introduction... in to top right corner to start the introdution.</TextBox>
+    </TextBox>
   );
 }
-
-export default FileNew;

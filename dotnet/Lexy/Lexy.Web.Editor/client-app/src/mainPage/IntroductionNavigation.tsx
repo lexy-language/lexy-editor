@@ -9,6 +9,8 @@ import {useContext} from "../context/editorContext";
 import {ProjectFile, ProjectFolder} from "../api/project";
 import {firstOrDefault} from "lexy/dist/infrastructure/enumerableExtensions";
 import {isLoading} from "../context/loading";
+import {useNavigate} from "react-router";
+import {useLocation } from 'react-router-dom';
 
 const Introduction = styled('div')(({theme}) => ({
   position: 'relative',
@@ -25,6 +27,7 @@ const IntroductionFile = styled('div')`
   text-align: center;
   padding: 8px 16px;
   flex-grow: 1;
+  cursor: pointer;
 `;
 
 type CurrentFileBoxProps = {
@@ -45,13 +48,22 @@ function CurrentFileBox(props: CurrentFileBoxProps) {
   const open = Boolean(anchorEl);
   const {currentFile, setCurrentFile} = useContext();
   const {fileIndex, introductionFiles} = props;
+  const navigate = useNavigate();
+  const location = useLocation(); // React Hook
 
-  if (introductionFiles == null || introductionFiles.length == 0) {
+  if (introductionFiles === null || introductionFiles.length === 0) {
     return <IntroductionFile>Introduction not found!</IntroductionFile>;
   }
 
-  if (fileIndex < 0 || currentFile == null) {
-    return <IntroductionFile onClick={() => setCurrentFile(introductionFiles[0])}>
+  function goToIntroduction() {
+    if (!introductionFiles || introductionFiles.length === 0) return;
+    setCurrentFile(introductionFiles[0]);
+    navigate("/editor");
+  }
+
+  console.log(location.pathname)
+  if (fileIndex < 0 || currentFile === null || location.pathname !== "/editor") {
+    return <IntroductionFile onClick={() => goToIntroduction()}>
       Go to introduction...
     </IntroductionFile>;
   }
@@ -81,26 +93,26 @@ export default function IntroductionNavigation() {
   const [introductionFiles, setIntroductionFiles] = useState<Array<ProjectFile> | null>([]);
 
   useEffect(() => {
-    if (projectFiles == null || isLoading(projectFiles)) return;
+    if (projectFiles === null || isLoading(projectFiles)) return;
     const project = projectFiles as ProjectFolder;
-    const introductionFolder = firstOrDefault(project.folders, folder => folder.name == "Introduction");
-    if (introductionFolder == null) return;
+    const introductionFolder = firstOrDefault(project.folders, folder => folder.name === "Introduction");
+    if (introductionFolder === null) return;
     setIntroductionFiles(introductionFolder.files);
   }, [projectFiles])
 
   function previous() {
-    if (introductionFiles == null) return;
+    if (introductionFiles === null) return;
     setCurrentFile(introductionFiles[fileIndex - 1]);
   }
 
   function next() {
-    if (introductionFiles == null) return;
+    if (introductionFiles === null) return;
     setCurrentFile(introductionFiles[fileIndex + 1]);
   }
 
-  const fileIndex = currentFile != null && introductionFiles != null ? introductionFiles.indexOf(currentFile) : -1;
+  const fileIndex = currentFile !== null && introductionFiles !== null ? introductionFiles.indexOf(currentFile) : -1;
   const previousDisabled = fileIndex <= 0;
-  const nextDisabled = introductionFiles == null || fileIndex >= introductionFiles.length - 1;
+  const nextDisabled = introductionFiles === null || fileIndex >= introductionFiles.length - 1;
 
   return <Introduction>
     <Stack direction="row">
