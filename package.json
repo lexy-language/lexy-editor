@@ -20,7 +20,7 @@
     "@types/react-dom": "^17.0.0",
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.13",
-    "lexy": "file:libs/lexy-compiler-v0.0.46.tgz",
+    "lexy": "file:libs/lexy-compiler-v0.0.49.tgz",
     "moment": "^2.30.1",
     "monaco-editor": "^0.36.1",
     "react": "^18.3.1",
@@ -38,7 +38,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "update-lexy": "cd ../../../../typescript/ && version=$(npm version patch) && tsc && yarn pack && cd ../dotnet/Lexy/Lexy.Web.Editor/client-app/ && rm -r -f node_modules/lexy && rm -r -f node_modules/.cache && cp ../../../../typescript/lexy-compiler-${version}.tgz libs && yarn add lexy@file:libs/lexy-compiler-${version}.tgz"
+    "update-lexy": "cd ../lexy-typescript/ && version=$(npm version patch) && tsc && yarn pack && cd ../lexy-editor/src/ && rm -r -f node_modules/lexy && rm -r -f node_modules/.cache && cp ../../lexy-typescript/lexy-compiler-${version}.tgz ../libs && yarn add lexy@file:libs/lexy-compiler-${version}.tgz"
   },
   "eslintConfig": {
     "extends": [
@@ -59,7 +59,7 @@
     ]
   },
   "devDependencies": {
-    "@types/node": "^16.11.12",
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11"
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "@types/node": "^16.11.12"
   }
 }

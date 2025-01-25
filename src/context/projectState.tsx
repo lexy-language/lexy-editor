@@ -5,26 +5,20 @@ export class ProjectState {
   public readonly name: string;
 
   public constructor(name: string | null = null, files: { [key: string]: string } | null = null) {
-    this.name = name ?? "Untitled";
+    this.name = name ?? "Introduction";
     this.files = files !== null ? files : {};
   }
 
-  public file(path: Array<string>): string | undefined {
-    const fullPath = ProjectState.fullPath(path);
-    return this.files[fullPath];
+  public file(identifier: string): string | undefined {
+    return this.files[identifier];
   }
 
-  public setFile(path: Array<string>, file: string): ProjectState {
-    const fullPath = ProjectState.fullPath(path);
+  public setFile(identifier: string, file: string): ProjectState {
     const newFiles = {
       ...this.files,
-      [fullPath]: file
+      [identifier]: file
     }
     return new ProjectState(this.name, newFiles);
-  }
-
-  private static fullPath(path: Array<string>) {
-    return path.join("|");
   }
 
   setName(name: string) {

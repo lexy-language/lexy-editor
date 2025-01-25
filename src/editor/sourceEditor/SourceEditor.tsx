@@ -19,6 +19,7 @@ export default function SourceEditor() {
   const {
     currentFileCode,
     setCurrentFileCode,
+    setCurrentProject,
     currentFileLogging,
     editorPosition,
     setEditorPosition
@@ -67,12 +68,18 @@ export default function SourceEditor() {
     return lineContent.length;
   }
 
-  function handleEditorChange(value: string | undefined) {
+  function handleEditorChange(value: string | undefined, second: any) {
     if (!value) return;
-    const details = currentFileCode !== null && !isLoading(currentFileCode)
-      ? {name: currentFileCode.name, identifier: currentFileCode.identifier, code: value, source: "editor"}
-      : {name: "untitled", identifier: "untitled", code: value, source: "editor"};
+    console.log("handleEditorChange")
+    if (!currentFileCode || isLoading(currentFileCode)) return;
+    if (currentFileCode.code == value) return;
+
+    let details = {name: currentFileCode.name, identifier: currentFileCode.identifier, code: value, source: "editor"};
     setCurrentFileCode(details);
+
+    setCurrentProject(state => {
+      return state.setFile(details.identifier, value);
+    });
   }
 
   function handleEditorDidMount(editor: IStandaloneCodeEditor){

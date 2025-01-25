@@ -37,7 +37,7 @@ type CurrentFileBoxProps = {
 
 function CurrentFileBox(props: CurrentFileBoxProps) {
 
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => setAnchorEl(event.currentTarget);
+  const handleClick = (event: React.MouseEvent<HTMLDivElement>) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
   const handleMenuItemClick = (file: ProjectFile) => () => {
     setCurrentFile(file);
@@ -61,7 +61,6 @@ function CurrentFileBox(props: CurrentFileBoxProps) {
     navigate("/editor");
   }
 
-  console.log(location.pathname)
   if (fileIndex < 0 || currentFile === null || location.pathname !== "/editor") {
     return <IntroductionFile onClick={() => goToIntroduction()}>
       Go to introduction...

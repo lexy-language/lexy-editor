@@ -1,6 +1,6 @@
 import createContext from "./createContext"
 import React, {useEffect, useState} from 'react';
-import {getFileDetails, getProjectFiles, ProjectFile, ProjectFolder} from "../api/project";
+import {getFileDetails, getProjectFiles, ProjectFile, ProjectFileDetails, ProjectFolder} from "../api/project";
 import {parseFile} from "../api/parser";
 import {isLoading, Loading} from "./loading";
 import {IParserLogger, LogEntry} from "lexy/dist/parser/parserLogger";
@@ -90,6 +90,8 @@ type ContextProviderProps = {
   children: React.ReactNode;
 };
 
+let valueCounter = 0;
+
 export const EditorContextProvider = ({children}: ContextProviderProps) => {
 
   const [currentProject, setCurrentProject] = useState(new ProjectState());
@@ -164,43 +166,43 @@ export const EditorContextProvider = ({children}: ContextProviderProps) => {
         const state = openIntroductionFoldersAndSelectFirstFile(data);
         setProjectFilesTreeState(state.tree)
         setCurrentFile(state.file)
+
+        //hack: load all code for all files in the project
+        //this works only when using the embedded lexy-language file (see api/project)
+        //this should be async in the background once working with an api
+        //pre loading of files in necessary in case files are included using the "include" keyword (see WebFileSystem)
+        let currentProjectState = currentProject;
+        function addCode(parent: ProjectFolder) {
+          for (const file of parent.files) {
+            let code = (file as ProjectFileDetails).code;
+            if (code) {
+              currentProjectState = currentProjectState.setFile(file.identifier, code);
+            }
+          }
+          for (const folder of parent.folders) {
+            addCode(folder);
+          }
+        }
+
+        addCode(data);
+        setCurrentProject(currentProjectState);
       })
       .catch(console.error);
   }, [currentProject.name]);
 
+
   useEffect(() => {
-    if (!currentFile) {
-      setCurrentFileCode(null);
-      return;
+    function emptyCurrentFileState() {
+      setNodes(new RootNodeList());
+      setStructure([]);
+      setParserLogging(null);
+      setStructure([]);
+      setCurrentStructureNode(null);
     }
-    setExecuteFunction(executeFunction => executeFunction.reset());
-    setExecutionLogging(executionLogging => executionLogging.reset());
 
-    getFileDetails(currentProject.name, currentFile.identifier)
-      .then(data => {
-        setCurrentFileCode({
-          code: data.code,
-          identifier: data.identifier,
-          name: data.name,
-          source: "state"
-        });
-      })
-      .catch(console.error);
-  }, [currentProject.name, currentFile]);
-
-  useEffect(() => {
-    if (currentFileCode === null || isLoading(currentFileCode)) return;
-    setCurrentProject(currentProject => currentProject.setFile(currentFileCode.identifier.split("|"), currentFileCode.code));
-  }, [currentFileCode])
-
-  useEffect(() => {
-    setCurrentProject(currentProject => currentProject.setName("Introduction"));
-  }, []);
-
-  useEffect(() => {
-    if (currentFileCode !== null && currentFile !== null && !isLoading(currentFileCode)) {
+    if (!!currentFileCode && !isLoading(currentFileCode)) {
       try {
-        const currentFolder = currentFile.identifier.split("|");
+        const currentFolder = currentFileCode.identifier.split("|");
         currentFolder.splice(currentFolder.length - 1, 1)
         const fileSystem = new WebFileSystem(currentFolder, currentProject);
         const {logging, nodes, logger} = parseFile(currentFileCode.name, currentFileCode.code, fileSystem);
@@ -211,19 +213,49 @@ export const EditorContextProvider = ({children}: ContextProviderProps) => {
         setCurrentStructureNode(null);
       } catch (error: any) {
         setCurrentFileLogging([new LogEntry(new SourceReference(new SourceFile("parsing"), 1, 1), null, true, "Parsing error occurred:" + error.stack)]);
-        setNodes(new RootNodeList());
-        setParserLogging(null);
-        setStructure([]);
-        setCurrentStructureNode(null);
+        emptyCurrentFileState();
       }
     } else {
       setCurrentFileLogging([]);
-      setNodes(new RootNodeList());
-      setStructure([]);
-      setCurrentStructureNode(null);
-      setParserLogging(null);
+      emptyCurrentFileState();
     }
-  }, [currentFileCode, currentFile, currentProject]);
+  }, [currentFileCode]);
+
+
+  useEffect(() => {
+
+    function setCodeFile(data: ProjectFileDetails) {
+      let currentFileCode = {
+        code: data.code,
+        identifier: data.identifier,
+        name: data.name,
+        source: "state"
+      };
+      setCurrentFileCode(currentFileCode);
+      setCurrentProject(state => state.setFile(currentFileCode.identifier, currentFileCode.code));
+    }
+
+    if (!currentFile) {
+      setCurrentFileCode(null);
+      return;
+    }
+    setExecuteFunction(executeFunction => executeFunction.reset());
+    setExecutionLogging(executionLogging => executionLogging.reset());
+
+    const codeFromCache = currentProject.file(currentFile.identifier);
+    if (codeFromCache) {
+      setCodeFile({
+        code: codeFromCache,
+        identifier: currentFile.identifier,
+        name: currentFile.name,
+      });
+      return;
+    }
+
+    getFileDetails(currentProject.name, currentFile.identifier)
+      .then(data => setCodeFile(data))
+      .catch(console.error);
+  }, [currentProject.name, currentFile]);
 
   useEffect(() => {
     if (currentFile === null || nodes === null || isLoading(nodes)) return;
@@ -236,8 +268,8 @@ export const EditorContextProvider = ({children}: ContextProviderProps) => {
   }, [currentStructureNode])
 
   useEffect(() => {
-    console.log("useEffect-" + JSON.stringify(currentFile));
-  }, [currentFile])
+    console.log("useEffect-currentProject.name");
+  }, [currentProject.name])
 
   return <Provider value={value}>
     {children}

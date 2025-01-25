@@ -15,7 +15,7 @@ export class WebFileSystem implements IFileSystem {
     const fullFile = this.isPathRooted(fileName) ? fileName : this.getFullPath(fileName);
     const parts = fullFile.split("/");
     this.removeFirst(parts);
-    const data = this.currentProject.file(parts);
+    const data = this.currentProject.file(parts.join("|"));
     if (data === undefined) {
       throw new Error("Couldn't load: " + fileName);
     }
@@ -27,7 +27,6 @@ export class WebFileSystem implements IFileSystem {
   }
 
   getDirectoryName(parentFullFileName: string): string {
-    console.log("getDirectoryName: " + parentFullFileName);
     const parts = parentFullFileName.split("/");
     this.removeLast(parts);
     return parts.length > 0 ? parts.join("/") : "";
@@ -46,7 +45,6 @@ export class WebFileSystem implements IFileSystem {
       }
     }
     const fullPath = folder.join("/");
-    console.log("getFullPath: " + fileName + " : " + fullPath);
     return "/" + fullPath;
   }
 
@@ -59,7 +57,6 @@ export class WebFileSystem implements IFileSystem {
   }
 
   combine(fullPath: string, fileName: string): string {
-    console.log("combine: " + fullPath + " & " + fileName);
     if (fullPath.length === 0) return fileName;
     const parts = fullPath.split("/");
     if (parts[parts.length - 1].length === 0) this.removeLast(parts);
@@ -77,10 +74,9 @@ export class WebFileSystem implements IFileSystem {
   }
 
   fileExists(fileName: string): boolean {
-    console.log("fileExists: " + fileName);
     const parts = fileName.split("/");
     if (parts[0].length === 0) this.removeFirst(parts);
-    const data = this.currentProject.file(parts);
+    const data = this.currentProject.file(parts.join('|'));
     return !!data;
   }
 
@@ -89,17 +85,14 @@ export class WebFileSystem implements IFileSystem {
   }
 
   isPathRooted(folder: string): boolean {
-    console.log("isPathRooted" + folder);
     return folder.startsWith("/");
   }
 
   getDirectoryFiles(folder: string, filter: string): Array<string> {
-    console.log("getDirectoryFiles" + folder + "," + filter);
     return [];
   }
 
   getDirectories(folder: string): Array<string> {
-    console.log("getDirectories" + folder);
     return [];
   }
 }
