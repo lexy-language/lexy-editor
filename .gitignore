@@ -4,6 +4,8 @@ dist/
 /build/
 /dist/
 
+ .DS_Store
+ 
 bin/
 obj/
 /packages/
