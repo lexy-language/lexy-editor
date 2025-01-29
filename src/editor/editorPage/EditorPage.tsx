@@ -14,7 +14,7 @@ import Logging from '../logging/Logging';
 import Box from "@mui/material/Box";
 import {isLoading} from "../../context/loading";
 import {count} from "lexy/dist/infrastructure/enumerableExtensions";
-import {SpecificationsLogEntry} from "lexy/dist/specifications/specificationRunnerContext";
+import {SpecificationsLogEntry} from "lexy/dist/specifications/specificationsLogEntry";
 import ExecutionLogging from "../executionLogging/ExecutionLogging";
 
 const GridFullHeight = styled(Grid)`

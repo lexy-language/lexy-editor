@@ -6,7 +6,7 @@ import FilePage from "./files/FilePage";
 import FileExamples from "./files/FileExamples";
 import FileNew from "./files/FileNew";
 import FileOpen from "./files/FileOpen";
-import {EditorContextProvider} from "./context/editorContext";
+import {Contexts} from "./context/Contexts";
 import LoadingPage from "./pages/LoadingPage";
 import {hideResizeObserverLoopErrors} from "./mainPage/HideResizeObserverLoopErrors";
 
@@ -24,7 +24,7 @@ function App() {
 
   return (
     <div style={{ height: '100vh', background: '#EEE' }}>
-      <EditorContextProvider>
+      <Contexts>
         <EditorBar />
         <Routes>
           <Route path='/' element={<Navigate to="/editor" />}/>
@@ -35,7 +35,7 @@ function App() {
           </Route>
           <Route path='/editor' element={withLoader(<EditorPage/>)}/>
         </Routes>
-      </EditorContextProvider>
+      </Contexts>
     </div>
   );
 }

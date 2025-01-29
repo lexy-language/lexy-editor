@@ -1,4 +1,4 @@
-import {ExecutionLogEntry} from "lexy/dist/runTime/executionContext";
+import {ExecutionLogEntry} from "lexy/dist/runTime/executionLogEntry";
 
 export class ExecutionLoggingState {
 

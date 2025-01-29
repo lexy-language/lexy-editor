@@ -128,8 +128,8 @@ function getName(node: INode): {name: string, mapChildren: boolean, kind: NodeKi
       let member = Assert.notNull(asEnumMember(node), "enumMember");
       return {name: member.name, kind: NodeKind.EnumMember, mapChildren: false};
     }
-    case NodeType.ScenarioExpectError: {
-      return {name: "Expect Error", kind: NodeKind.Errors, mapChildren: false};
+    case NodeType.ScenarioExpectErrors: {
+      return {name: "Expect Errors", kind: NodeKind.Errors, mapChildren: false};
     }
     case NodeType.ScenarioExpectRootErrors: {
       return {name: "Expect Root Error", kind: NodeKind.Errors, mapChildren: false};

@@ -6,7 +6,7 @@ import {isLoading} from "../../context/loading";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
-import {SpecificationsLogEntry} from "lexy/dist/specifications/specificationRunnerContext";
+import {SpecificationsLogEntry} from "lexy/dist/specifications/specificationsLogEntry";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import ListItemIcon from "@mui/material/ListItemIcon";

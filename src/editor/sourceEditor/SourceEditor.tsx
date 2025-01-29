@@ -109,8 +109,8 @@ export default function SourceEditor() {
 
     const markers = where(currentFileLogging, entry => entry.isError && currentFileCode.name === entry.reference.file.fileName)
       .map(entry => {
-        const lineContent = model.getLineContent(entry.reference.lineNumber);
-        const column = getEndOfToken(lineContent, entry.reference.characterNumber);
+        const lineContent = entry.reference.lineNumber > 0 && entry.reference.lineNumber <= model.getLineCount() ? model.getLineContent(entry.reference.lineNumber) : null;
+        const column = lineContent ? getEndOfToken(lineContent, entry.reference.characterNumber) : 1;
         return {
           message: entry.message,
           severity: monaco.MarkerSeverity.Error,

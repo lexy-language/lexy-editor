@@ -7,7 +7,8 @@ import ListItem from "@mui/material/ListItem";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import ListItemButton from "@mui/material/ListItemButton";
-import {ExecutionLogEntry, LogVariables} from "lexy/dist/runTime/executionContext";
+import {LogVariables} from "lexy/dist/runTime/executionContext";
+import {ExecutionLogEntry} from "lexy/dist/runTime/executionLogEntry";
 import Stack from "@mui/material/Stack";
 import Variables from "./Variables";
 

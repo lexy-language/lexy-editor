@@ -13,10 +13,11 @@ import {firstOrDefault} from "lexy/dist/infrastructure/enumerableExtensions";
 import {runScenarios} from "./runScenarios";
 import {WebFileSystem} from "./webFileSystem";
 import {ProjectState} from "./projectState";
-import {SpecificationsLogEntry} from "lexy/dist/specifications/specificationRunnerContext";
+import {SpecificationsLogEntry} from "lexy/dist/specifications/specificationsLogEntry";
 import {ExecutionLoggingState} from "./executionLoggingState";
 import {RootNodeList} from "lexy/dist/language/rootNodeList";
 import {LayoutState} from "./layoutState";
+import {getLocalStorageCode, setLocalStorageCode} from "../api/codeStorage";
 
 export type EditorPosition = {
   lineNumber: number;
@@ -89,8 +90,6 @@ export const [useContext, Provider] = createContext<EditorState>();
 type ContextProviderProps = {
   children: React.ReactNode;
 };
-
-let valueCounter = 0;
 
 export const EditorContextProvider = ({children}: ContextProviderProps) => {
 
@@ -201,6 +200,10 @@ export const EditorContextProvider = ({children}: ContextProviderProps) => {
     }
 
     if (!!currentFileCode && !isLoading(currentFileCode)) {
+      if (currentFileCode.source === "editor") {
+        setLocalStorageCode(currentFileCode.identifier, currentFileCode.code)
+      }
+
       try {
         const currentFolder = currentFileCode.identifier.split("|");
         currentFolder.splice(currentFolder.length - 1, 1)
@@ -247,6 +250,16 @@ export const EditorContextProvider = ({children}: ContextProviderProps) => {
       setCodeFile({
         code: codeFromCache,
         identifier: currentFile.identifier,
+        name: currentFile.name
+      });
+      return;
+    }
+
+    const fromLocalStorage = getLocalStorageCode(currentFile.identifier);
+    if (fromLocalStorage) {
+      setCodeFile({
+        code: fromLocalStorage,
+        identifier: currentFile.identifier,
         name: currentFile.name,
       });
       return;
@@ -266,10 +279,6 @@ export const EditorContextProvider = ({children}: ContextProviderProps) => {
   useEffect(() => {
     setExecuteFunction(executeFunction => executeFunction.reset());
   }, [currentStructureNode])
-
-  useEffect(() => {
-    console.log("useEffect-currentProject.name");
-  }, [currentProject.name])
 
   return <Provider value={value}>
     {children}
