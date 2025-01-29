@@ -4,8 +4,8 @@ dist/
 /build/
 /dist/
 
- .DS_Store
- 
+.DS_Store
+
 bin/
 obj/
 /packages/
@@ -79,3 +79,4 @@ package-lock.json
 .eslintcache
 *v8.log
 /lib/
+/.env.development.local
