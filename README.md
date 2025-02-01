@@ -35,6 +35,7 @@ Check [lexy-language](https://github.com/lexy-language/lexy-language) for more i
 
 ## Todo's
 
+- [ ] Editor: add code completion for enum, table and complex type members
 - [ ] Editor: add a view to add/edit tables
 - [ ] Editor: add a view to add/edit scenarios based on the current parameter and result variables of a function
 - [ ] Editor: make a version that runs online as a public demo/playground/ide, and a version that can be used locally for editing files on the local filesystem
