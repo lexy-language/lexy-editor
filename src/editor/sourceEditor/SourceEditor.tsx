@@ -8,6 +8,7 @@ import {editor} from "monaco-editor";
 import Box from "@mui/material/Box";
 import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
 import {where} from "lexy/dist/infrastructure/enumerableExtensions";
+import IStandaloneEditorConstructionOptions = editor.IStandaloneEditorConstructionOptions;
 
 const space = ' '.charCodeAt(0);
 const languageId = 'lexy';
@@ -72,7 +73,7 @@ export default function SourceEditor() {
     if (!value) return;
     console.log("handleEditorChange")
     if (!currentFileCode || isLoading(currentFileCode)) return;
-    if (currentFileCode.code == value) return;
+    if (currentFileCode.code === value) return;
 
     let details = {name: currentFileCode.name, identifier: currentFileCode.identifier, code: value, source: "editor"};
     setCurrentFileCode(details);
@@ -84,6 +85,11 @@ export default function SourceEditor() {
 
   function handleEditorDidMount(editor: IStandaloneCodeEditor){
     editorRef.current = editor;
+    editorRef.current?.updateOptions({
+      scrollbar: {
+        horizontal: "hidden"
+      }
+    });
     setEditorMounted(true);
 
     editor.onDidChangeCursorPosition(event => {
@@ -138,6 +144,15 @@ export default function SourceEditor() {
     return <CircularProgress/>;
   }
 
+  const options: IStandaloneEditorConstructionOptions = {
+    scrollbar: {
+      horizontal: "hidden"
+    },
+
+    wordWrap: "on"
+  };
+
   return <MonacoEditor language={"yaml"} theme={"lexy-theme"}
-                       onChange={handleEditorChange} onMount={handleEditorDidMount} />
+                       onChange={handleEditorChange} onMount={handleEditorDidMount}
+                       options={options} />
 }
