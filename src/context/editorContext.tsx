@@ -187,8 +187,8 @@ export const EditorContextProvider = ({children}: ContextProviderProps) => {
         setCurrentProject(currentProjectState);
       })
       .catch(console.error);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentProject.name]);
-
 
   useEffect(() => {
     function emptyCurrentFileState() {
@@ -222,6 +222,7 @@ export const EditorContextProvider = ({children}: ContextProviderProps) => {
       setCurrentFileLogging([]);
       emptyCurrentFileState();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentFileCode]);
 
 
@@ -268,6 +269,7 @@ export const EditorContextProvider = ({children}: ContextProviderProps) => {
     getFileDetails(currentProject.name, currentFile.identifier)
       .then(data => setCodeFile(data))
       .catch(console.error);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentProject.name, currentFile]);
 
   useEffect(() => {

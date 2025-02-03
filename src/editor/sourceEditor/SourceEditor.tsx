@@ -134,6 +134,7 @@ export default function SourceEditor() {
   useEffect(showEditorPosition, [editorPosition]);
   useEffect(showCode, [currentFileCode]);
   useEffect(showMarkers, [currentFileLogging, monaco, currentFileCode])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(initializeEditorContent, [editorMounted])
 
   if (!currentFileCode) {

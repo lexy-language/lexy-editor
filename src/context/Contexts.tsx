@@ -1,6 +1,5 @@
 import React from 'react';
 import {EditorContextProvider} from "./editorContext";
-import StoreFileCodeInLocalStorage from "./StoreFileCodeInLocalStorage";
 
 type ContextsProps = {
   children: React.ReactNode;
@@ -8,8 +7,6 @@ type ContextsProps = {
 
 export const Contexts = ({children}: ContextsProps) => {
   return <EditorContextProvider>
-    <StoreFileCodeInLocalStorage>
-      {children}
-    </StoreFileCodeInLocalStorage>
+    {children}
   </EditorContextProvider>;
 };
