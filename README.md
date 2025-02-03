@@ -1,4 +1,6 @@
-# lexy-typescript
+# lexy-editor v0.1
+
+[![Build lexy-editor](https://github.com/lexy-language/lexy-editor/actions/workflows/build.yml/badge.svg)](https://github.com/lexy-language/lexy-editor/actions/workflows/build.yml)
 
 An editor/IDE for editing and executing [lexy-language](https://github.com/lexy-language/lexy-language) scripts.
 Check the [lexy-language](https://github.com/lexy-language/lexy-language) or the online [demo](https://lexy-language.github.io/lexy-editor/)
