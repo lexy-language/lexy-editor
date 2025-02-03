@@ -22,6 +22,11 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
 
+    - name: Update embedded lexy files
+      run: |
+        cd scripts
+        node update-lexy-language.js
+
     - name: Build
       run: |
         yarn install
