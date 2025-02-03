@@ -1,0 +1,2 @@
+Logo color: #004AAD
+Logo font: Leckerli One
