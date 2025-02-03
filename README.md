@@ -1,7 +1,7 @@
 # lexy-typescript
 
 An editor/IDE for editing and executing [lexy-language](https://github.com/lexy-language/lexy-language) scripts.
-Check the [lexy-language](https://github.com/lexy-language/lexy-language) or the online [demo](https://lexy-language.github.io/lexy-demo/)
+Check the [lexy-language](https://github.com/lexy-language/lexy-language) or the online [demo](https://lexy-language.github.io/lexy-editor/)
 to understand the philosophy and use cases of Lexy.
 
 Features:

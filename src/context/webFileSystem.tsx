@@ -95,4 +95,8 @@ export class WebFileSystem implements IFileSystem {
   getDirectories(folder: string): Array<string> {
     return [];
   }
+
+  logFolders(): string {
+    return "";
+  }
 }
