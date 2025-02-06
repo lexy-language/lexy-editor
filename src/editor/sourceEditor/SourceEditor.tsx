@@ -149,11 +149,14 @@ export default function SourceEditor() {
     scrollbar: {
       horizontal: "hidden"
     },
-
+    minimap: {
+      enabled: false,
+    },
     wordWrap: "on"
   };
+  const language = currentFileCode?.identifier.endsWith("lexy") ? "yaml" : undefined;
 
-  return <MonacoEditor language={"yaml"} theme={"lexy-theme"}
+  return <MonacoEditor language={language} theme={"lexy-theme"}
                        onChange={handleEditorChange} onMount={handleEditorDidMount}
                        options={options} />
 }

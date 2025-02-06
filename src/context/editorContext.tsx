@@ -9,7 +9,7 @@ import {TreeNodeState} from "./treeNodeState";
 import {ExecuteFunctionState} from "./executeFunctionState";
 import {SourceReference} from "lexy/dist/parser/sourceReference";
 import {SourceFile} from "lexy/dist/parser/sourceFile";
-import {firstOrDefault} from "lexy/dist/infrastructure/enumerableExtensions";
+import {firstOrDefault, where} from "lexy/dist/infrastructure/enumerableExtensions";
 import {runScenarios} from "./runScenarios";
 import {WebFileSystem} from "./webFileSystem";
 import {ProjectState} from "./projectState";
@@ -199,6 +199,16 @@ export const EditorContextProvider = ({children}: ContextProviderProps) => {
       setCurrentStructureNode(null);
     }
 
+    function errorOrSuccessful(logging: Array<LogEntry>, elapsed: number) {
+      const fileName = !isLoading(currentFileCode) && currentFileCode?.name !== undefined ? currentFileCode.name : "untitled";
+      const errors = where(logging, entry => entry.isError);
+      if (errors.length === 0) {
+        return [new LogEntry(new SourceReference(new SourceFile(fileName), 1, 1), null, false, `Compilation successful: ${fileName} (${elapsed}ms)`)];
+      }
+      errors.push(new LogEntry(new SourceReference(new SourceFile(fileName), 1, 1), null, false, `Compilation failed: ${fileName} (${elapsed}ms)`));
+      return errors;
+    }
+
     if (!!currentFileCode && !isLoading(currentFileCode)) {
       if (currentFileCode.source === "editor") {
         setLocalStorageCode(currentFileCode.identifier, currentFileCode.code)
@@ -208,8 +218,8 @@ export const EditorContextProvider = ({children}: ContextProviderProps) => {
         const currentFolder = currentFileCode.identifier.split("|");
         currentFolder.splice(currentFolder.length - 1, 1)
         const fileSystem = new WebFileSystem(currentFolder, currentProject);
-        const {logging, nodes, logger} = parseFile(currentFileCode.name, currentFileCode.code, fileSystem);
-        setCurrentFileLogging(logging);
+        const {logging, nodes, logger, elapsed} = parseFile(currentFileCode.name, currentFileCode.code, fileSystem);
+        setCurrentFileLogging(errorOrSuccessful(logging, elapsed));
         setNodes(nodes);
         setParserLogging(logger);
         setStructure(createStructure(nodes.asArray()));

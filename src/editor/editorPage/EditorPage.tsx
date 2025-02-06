@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid2';
 import {styled} from '@mui/material/styles';
@@ -16,6 +16,7 @@ import {isLoading} from "../../context/loading";
 import {count} from "lexy/dist/infrastructure/enumerableExtensions";
 import {SpecificationsLogEntry} from "lexy/dist/specifications/specificationsLogEntry";
 import ExecutionLogging from "../executionLogging/ExecutionLogging";
+import ViewEditor from "../viewEditor/ViewEditor";
 
 const GridFullHeight = styled(Grid)`
   height: calc(100% - 264px);
@@ -70,8 +71,10 @@ function EditorPage() {
   const {
     layout,
     setLayout,
-    testingLogging
+    testingLogging,
+    currentFileCode
   } = useContext();
+  const [lastShowView, setLastShowView] = useState<boolean>(false);
 
   const leftOptions = [
     { name: 'Explorer', value: LeftContainer.Explorer, element: () => <Explorer /> },
@@ -79,6 +82,7 @@ function EditorPage() {
   ];
 
   const mainOptions = [
+    { name: 'View', value: MainContainer.View, element: () => <ViewEditor /> },
     { name: 'Source Code', value: MainContainer.Source, element: () => <SourceEditor /> },
     { name: 'Execution Logging', value: MainContainer.ExecutionLogging, element: () => <ExecutionLogging /> },
   ];
@@ -104,7 +108,20 @@ function EditorPage() {
     return (value: T) => setLayout(layout => setLayoutValue(layout, value));
   }
 
+  const showView = currentFileCode !== null && !isLoading(currentFileCode) && currentFileCode.identifier.endsWith('.md');
+  if (lastShowView !== showView) {
+    setLastShowView(showView);
+  }
   const scenariosSuffix = getScenariosSuffix();
+  const mainOptionsFiltered = showView ? mainOptions : mainOptions.splice(1);
+  const mainContainer = showView || layout.mainContainer !== MainContainer.View ? layout.mainContainer : MainContainer.Source;
+
+  useEffect(() =>  {
+    if (showView && layout.mainContainer !== MainContainer.View) {
+      setLayout(layout => layout.setMainContainer(MainContainer.View));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastShowView]);
 
   return (
     <>
@@ -117,8 +134,8 @@ function EditorPage() {
         </GridItem>
         <GridItem size={6}>
           <FullHeightPaper>
-            {content(mainOptions, layout.mainContainer)}
-            {OptionButtonsGroup(mainOptions, layout.mainContainer, setValue<MainContainer>((layout, value) => layout.setMainContainer(value)))}
+            {content(mainOptionsFiltered, mainContainer)}
+            {OptionButtonsGroup(mainOptionsFiltered, mainContainer, setValue<MainContainer>((layout, value) => layout.setMainContainer(value)))}
           </FullHeightPaper>
         </GridItem>
         <GridItem size={3}>

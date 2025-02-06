@@ -4,7 +4,6 @@ import {useContext} from "../../context/editorContext";
 import {isLoading} from "../../context/loading";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
-import {where} from "lexy/dist/infrastructure/enumerableExtensions";
 import ListItemButton from "@mui/material/ListItemButton";
 import {LogEntry} from "lexy/dist/parser/parserLogger";
 
@@ -58,8 +57,7 @@ function Logging() {
     return <CircularProgress/>;
   }
 
-  const errors = where(currentFileLogging, entry => entry.isError);
-  const sorted = errors.sort((left, right) => left.sortIndex < right.sortIndex ? -1 : 1);
+  const sorted = currentFileLogging.sort((left, right) => left.sortIndex < right.sortIndex ? -1 : 1);
   const logs = sorted.map((entry, index) => <LogItem logEntry={entry} key={index} /> );
 
   return <LoggingList disablePadding>{logs}</LoggingList>;

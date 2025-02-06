@@ -17,7 +17,7 @@ const getFilesRecursively = (parent, directory) => {
       if (folder.files.length > 0 || folder.folders.length > 0) {
         parent.folders.push(folder)
       }
-    } else if (file.name.endsWith("lexy")) {
+    } else if (file.name.endsWith("lexy") || file.name.endsWith("md")) {
       console.log(absolute);
       const fileNode = {
         name: file.name,

@@ -41,6 +41,7 @@ Check [lexy-language](https://github.com/lexy-language/lexy-language) for more i
 - [ ] Editor: add a view to add/edit tables
 - [ ] Editor: add a view to add/edit scenarios based on the current parameter and result variables of a function
 - [ ] Editor: make a version that runs online as a public demo/playground/ide, and a version that can be used locally for editing files on the local filesystem
+- [ ] Packages: use npm package from npm repo. It would be nice if all tgz files were erased from the whole git-repository history! 
 - [ ] Version control: Implement usage of git branching to add versioning of lexy scripts
 - [ ] Integration: Add support for git submodules to support including existing lexy scripts
 - [ ] Deployment: Publish lexy-typescript as npm package 'lexy-compiler' and include it from the npm repository

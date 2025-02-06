@@ -4,6 +4,7 @@ export enum LeftContainer {
 }
 
 export enum MainContainer {
+  View,
   Source,
   ExecutionLogging,
 }
@@ -28,7 +29,7 @@ export class LayoutState {
   }
 
   public static defaultState(): LayoutState {
-    return new LayoutState(LeftContainer.Explorer, MainContainer.Source, BottomContainer.Logging);
+    return new LayoutState(LeftContainer.Explorer, MainContainer.View, BottomContainer.Logging);
   }
 
   public setLeftContainer(value: LeftContainer): LayoutState {
