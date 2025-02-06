@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.js": "https://lexy-language.github.io/lexy-editor/static/js/main.c25e240a.js",
-    "static/js/1569.46f716a7.chunk.js": "https://lexy-language.github.io/lexy-editor/static/js/1569.46f716a7.chunk.js",
+    "main.js": "https://lexy-language.github.io/lexy-editor/static/js/main.14d1cf13.js",
+    "static/js/2809.a85f112d.chunk.js": "https://lexy-language.github.io/lexy-editor/static/js/2809.a85f112d.chunk.js",
     "static/js/6453.29f9d67e.chunk.js": "https://lexy-language.github.io/lexy-editor/static/js/6453.29f9d67e.chunk.js",
     "static/js/9553.64ae2a3b.chunk.js": "https://lexy-language.github.io/lexy-editor/static/js/9553.64ae2a3b.chunk.js",
     "static/js/4473.aaeb3ab0.chunk.js": "https://lexy-language.github.io/lexy-editor/static/js/4473.aaeb3ab0.chunk.js",
@@ -85,12 +85,12 @@
     "static/js/1390.ca5665e4.chunk.js": "https://lexy-language.github.io/lexy-editor/static/js/1390.ca5665e4.chunk.js",
     "static/js/3852.cacc86f1.chunk.js": "https://lexy-language.github.io/lexy-editor/static/js/3852.cacc86f1.chunk.js",
     "static/js/2756.6f3e8b35.chunk.js": "https://lexy-language.github.io/lexy-editor/static/js/2756.6f3e8b35.chunk.js",
-    "static/css/6652.d4dfd1df.chunk.css": "https://lexy-language.github.io/lexy-editor/static/css/6652.d4dfd1df.chunk.css",
-    "static/js/6652.0b43cb90.chunk.js": "https://lexy-language.github.io/lexy-editor/static/js/6652.0b43cb90.chunk.js",
+    "static/css/2367.7614f9f1.chunk.css": "https://lexy-language.github.io/lexy-editor/static/css/2367.7614f9f1.chunk.css",
+    "static/js/2367.829203e2.chunk.js": "https://lexy-language.github.io/lexy-editor/static/js/2367.829203e2.chunk.js",
     "static/media/codicon.ttf": "https://lexy-language.github.io/lexy-editor/static/media/codicon.7064e66c3890a12c47b4.ttf",
     "index.html": "https://lexy-language.github.io/lexy-editor/index.html",
-    "main.c25e240a.js.map": "https://lexy-language.github.io/lexy-editor/static/js/main.c25e240a.js.map",
-    "1569.46f716a7.chunk.js.map": "https://lexy-language.github.io/lexy-editor/static/js/1569.46f716a7.chunk.js.map",
+    "main.14d1cf13.js.map": "https://lexy-language.github.io/lexy-editor/static/js/main.14d1cf13.js.map",
+    "2809.a85f112d.chunk.js.map": "https://lexy-language.github.io/lexy-editor/static/js/2809.a85f112d.chunk.js.map",
     "6453.29f9d67e.chunk.js.map": "https://lexy-language.github.io/lexy-editor/static/js/6453.29f9d67e.chunk.js.map",
     "9553.64ae2a3b.chunk.js.map": "https://lexy-language.github.io/lexy-editor/static/js/9553.64ae2a3b.chunk.js.map",
     "4473.aaeb3ab0.chunk.js.map": "https://lexy-language.github.io/lexy-editor/static/js/4473.aaeb3ab0.chunk.js.map",
@@ -174,10 +174,10 @@
     "1390.ca5665e4.chunk.js.map": "https://lexy-language.github.io/lexy-editor/static/js/1390.ca5665e4.chunk.js.map",
     "3852.cacc86f1.chunk.js.map": "https://lexy-language.github.io/lexy-editor/static/js/3852.cacc86f1.chunk.js.map",
     "2756.6f3e8b35.chunk.js.map": "https://lexy-language.github.io/lexy-editor/static/js/2756.6f3e8b35.chunk.js.map",
-    "6652.d4dfd1df.chunk.css.map": "https://lexy-language.github.io/lexy-editor/static/css/6652.d4dfd1df.chunk.css.map",
-    "6652.0b43cb90.chunk.js.map": "https://lexy-language.github.io/lexy-editor/static/js/6652.0b43cb90.chunk.js.map"
+    "2367.7614f9f1.chunk.css.map": "https://lexy-language.github.io/lexy-editor/static/css/2367.7614f9f1.chunk.css.map",
+    "2367.829203e2.chunk.js.map": "https://lexy-language.github.io/lexy-editor/static/js/2367.829203e2.chunk.js.map"
   },
   "entrypoints": [
-    "static/js/main.c25e240a.js"
+    "static/js/main.14d1cf13.js"
   ]
 }
