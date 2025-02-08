@@ -36,7 +36,7 @@ const root = {
   folders: []
 };
 
-getFilesRecursively(root, "../src/lexy-language/src");
+getFilesRecursively(root, "../src/lexy-language");
 
 console.log(JSON.stringify(root, null, 2));
 

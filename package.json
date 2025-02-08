@@ -41,7 +41,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "update-lexy": "cd ../lexy-typescript/ && version=$(npm version patch) && tsc && yarn pack && cd ../lexy-editor/src/ && rm -r -f node_modules/lexy && rm -r -f node_modules/.cache && cp ../../lexy-typescript/lexy-compiler-${version}.tgz ../libs && yarn add lexy@file:libs/lexy-compiler-${version}.tgz",
-    "update-specifications": "cd scripts && node update-lexy-language.js"
+    "update-specifications": "cd src/lexy-language && git pull && cd ../../scripts && node update-lexy-language.js"
   },
   "eslintConfig": {
     "extends": [

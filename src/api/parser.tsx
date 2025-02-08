@@ -16,23 +16,10 @@ export type CompileResult = {
 const baseLogger = new DummyLogger();
 
 export function parseFile(fileName: string, code: string, fileSystem: IFileSystem): CompileResult {
-  const lineFilter = fileName.endsWith('md') ? (() => {
-    let inCodeBlock = false;
-    const useLine = (line: string) => {
-      if (line === '```') {
-        inCodeBlock = !inCodeBlock;
-        return false;
-      }
-      return inCodeBlock;
-    };
-    return {
-      useLine: useLine
-    }
-  })() : undefined;
   const startTime = new Date();
   const lexyParser = createParser(baseLogger, fileSystem);
   const lines = code.split("\n");
-  const {rootNodes, logger} = lexyParser.parse(lines, fileName, {suppressException: true, lineFilter: lineFilter });
+  const {rootNodes, logger} = lexyParser.parse(lines, fileName, {suppressException: true});
   const elapsed = BuiltInDateFunctions.milliseconds(new Date(), startTime);
   return {logging: logger.entries, nodes: rootNodes, logger: logger, elapsed: elapsed}
 }
