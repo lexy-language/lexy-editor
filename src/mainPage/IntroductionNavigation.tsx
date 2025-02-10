@@ -7,7 +7,7 @@ import Stack from "@mui/material/Stack";
 import {useEffect, useState} from "react";
 import {useContext} from "../context/editorContext";
 import {ProjectFile, ProjectFolder} from "../api/project";
-import {firstOrDefault} from "lexy/dist/infrastructure/enumerableExtensions";
+import {firstOrDefault} from "lexy/dist/infrastructure/arrayFunctions";
 import {isLoading} from "../context/loading";
 import {useNavigate} from "react-router";
 import {useLocation } from 'react-router-dom';
@@ -94,7 +94,7 @@ export default function IntroductionNavigation() {
   useEffect(() => {
     if (projectFiles === null || isLoading(projectFiles)) return;
     const project = projectFiles as ProjectFolder;
-    const introductionFolder = firstOrDefault(project.folders, folder => folder.name === "Introduction");
+    const introductionFolder = firstOrDefault(project.folders, (folder: any) => folder.name === "Introduction");
     if (introductionFolder === null) return;
     setIntroductionFiles(introductionFolder.files);
   }, [projectFiles])

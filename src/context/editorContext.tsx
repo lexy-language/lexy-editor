@@ -9,7 +9,7 @@ import {TreeNodeState} from "./treeNodeState";
 import {ExecuteFunctionState} from "./executeFunctionState";
 import {SourceReference} from "lexy/dist/parser/sourceReference";
 import {SourceFile} from "lexy/dist/parser/sourceFile";
-import {firstOrDefault, where} from "lexy/dist/infrastructure/enumerableExtensions";
+import {firstOrDefault, where} from "lexy/dist/infrastructure/arrayFunctions";
 import {runScenarios} from "./runScenarios";
 import {WebFileSystem} from "./webFileSystem";
 import {ProjectState} from "./projectState";

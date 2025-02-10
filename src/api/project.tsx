@@ -1,4 +1,4 @@
-import {firstOrDefault} from "lexy/dist/infrastructure/enumerableExtensions";
+import {firstOrDefault} from "lexy/dist/infrastructure/arrayFunctions";
 
 // I didn't had the time to write a backend and I wanted to publish an SPA without the the need of a backend,
 // so for now I included the lexy introduction and example files as a JSON

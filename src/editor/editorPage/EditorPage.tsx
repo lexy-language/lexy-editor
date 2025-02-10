@@ -13,7 +13,7 @@ import Testing from '../testing/Testing';
 import Logging from '../logging/Logging';
 import Box from "@mui/material/Box";
 import {isLoading} from "../../context/loading";
-import {count} from "lexy/dist/infrastructure/enumerableExtensions";
+import {count} from "lexy/dist/infrastructure/arrayFunctions";
 import {SpecificationsLogEntry} from "lexy/dist/specifications/specificationsLogEntry";
 import ExecutionLogging from "../executionLogging/ExecutionLogging";
 import ViewEditor from "../viewEditor/ViewEditor";

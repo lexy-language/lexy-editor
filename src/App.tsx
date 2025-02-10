@@ -9,6 +9,7 @@ import FileOpen from "./files/FileOpen";
 import {Contexts} from "./context/Contexts";
 import LoadingPage from "./pages/LoadingPage";
 import {hideResizeObserverLoopErrors} from "./mainPage/HideResizeObserverLoopErrors";
+import OnlyDesktopModal from "./editor/onlyDesktopModal/OnlyDesktopModal";
 
 const EditorPage = lazy(() => import('./editor/editorPage/EditorPage'));
 
@@ -36,6 +37,7 @@ function App() {
           <Route path='/editor' element={withLoader(<EditorPage/>)}/>
         </Routes>
       </Contexts>
+      <OnlyDesktopModal />
     </div>
   );
 }

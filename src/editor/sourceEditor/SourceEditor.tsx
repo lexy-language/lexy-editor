@@ -7,7 +7,7 @@ import {isLoading} from "../../context/loading";
 import {editor} from "monaco-editor";
 import Box from "@mui/material/Box";
 import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
-import {where} from "lexy/dist/infrastructure/enumerableExtensions";
+import {where} from "lexy/dist/infrastructure/arrayFunctions";
 import IStandaloneEditorConstructionOptions = editor.IStandaloneEditorConstructionOptions;
 
 const space = ' '.charCodeAt(0);
