@@ -88,7 +88,7 @@ export class WebFileSystem implements IFileSystem {
     return folder.startsWith("/");
   }
 
-  getDirectoryFiles(folder: string, filter: string): Array<string> {
+  getDirectoryFiles(folder: string, extension: Array<string>): Array<string> {
     return [];
   }
 

@@ -21,6 +21,7 @@ import ListItem from "@mui/material/ListItem";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import ListItemButton from "@mui/material/ListItemButton";
+import {MainContainer} from "../../context/layoutState";
 
 const indentValue = 16;
 
@@ -88,6 +89,7 @@ export function TreeNode(props: TreeNodeProps) {
       column: node.reference.characterNumber,
       source: "state"
     });
+    setLayout(layout => layout.setMainContainer(MainContainer.Source));
     setCurrentStructureNode(node);
     if (event.type === 'contextmenu') {
       setAnchorEl(event.currentTarget);
@@ -133,6 +135,7 @@ export function TreeNode(props: TreeNodeProps) {
   const path = [...parent, node.name];
   const {
     setEditorPosition,
+    setLayout,
     structureTreeState,
     setStructureTreeState,
     currentStructureNode,

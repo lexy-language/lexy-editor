@@ -20,6 +20,7 @@ export default function FileNew() {
   function reset() {
     clearLocalStorage();
     setMessage("Reset done....");
+    window.location.reload();
   }
   return (
     <TextBox>

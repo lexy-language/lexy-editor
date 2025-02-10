@@ -33,6 +33,7 @@ jobs:
     - name: Build
       run: |
         yarn install
+        tsc
         yarn build
         
     - name: Deploy

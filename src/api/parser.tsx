@@ -20,7 +20,7 @@ export function parseFile(fileName: string, code: string, fileSystem: IFileSyste
   const lexyParser = createParser(baseLogger, fileSystem);
   const lines = code.split("\n");
   const {rootNodes, logger} = lexyParser.parse(lines, fileName, {suppressException: true});
-  const elapsed = BuiltInDateFunctions.milliseconds(new Date(), startTime);
+  const elapsed = BuiltInDateFunctions.milliseconds(new Date(), startTime).toNumber();
   return {logging: logger.entries, nodes: rootNodes, logger: logger, elapsed: elapsed}
 }
 

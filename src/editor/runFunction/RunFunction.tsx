@@ -73,7 +73,7 @@ function RunFunction() {
       const executable = result.getFunction(functionNode);
       const parameters = executeFunction.getParameters();
       const results = executable.run(parameters);
-      const elapsed = BuiltInDateFunctions.milliseconds(new Date(), startTime);
+      const elapsed = BuiltInDateFunctions.milliseconds(new Date(), startTime).toNumber();
       setExecutionLogging(executionLogging.setCurrent(results.logging));
       setExecuteFunction(executeFunction.setResults(results.value, elapsed));
     } catch (error: any) {

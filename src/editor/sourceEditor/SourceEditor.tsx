@@ -71,7 +71,6 @@ export default function SourceEditor() {
 
   function handleEditorChange(value: string | undefined, second: any) {
     if (!value) return;
-    console.log("handleEditorChange")
     if (!currentFileCode || isLoading(currentFileCode)) return;
     if (currentFileCode.code === value) return;
 
