@@ -6,7 +6,6 @@ import Paper from "@mui/material/Paper";
 export default function OnlyDesktopModal() {
 
   const [open, setOpen] = React.useState(!isBrowser);
-  const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
   return <Modal

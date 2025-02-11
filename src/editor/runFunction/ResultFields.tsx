@@ -36,6 +36,7 @@ export default function ResultFields(props: ResultFieldsProps) {
   function isValueType(value: any) {
     return typeof value === 'number'
       || typeof value === 'string'
+      || "toNumber" in value         // Check for Decimal
       || value instanceof String
       || value instanceof Date
       || toString.call(value) === '[object Boolean]';

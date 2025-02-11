@@ -5,7 +5,6 @@ import {CircularProgress} from "@mui/material";
 import {isLoading} from "../../context/loading";
 import remarkGfm from 'remark-gfm';
 import {styled} from "@mui/material/styles";
-import {Link} from "react-router-dom";
 
 const Outer = styled('div')`
   padding: 4px 12px 8px 4px;
@@ -21,7 +20,6 @@ export default function ViewEditor() {
 
   function navigateLink(url: string) {
     const identifier = `Lexy|${url.substring(preFix.length).replaceAll("/", "|")}`;
-    console.log(identifier);
     setCurrentFile({
       name: identifier,
       identifier: identifier
@@ -42,7 +40,6 @@ export default function ViewEditor() {
 
   useEffect(() => {
     const body = document.querySelector('.markdown-body') as any;
-    console.log("scrollIntoViewscrollIntoViewscrollIntoView")
     body?.scrollIntoView({
       behavior: 'smooth'
     }, 200)

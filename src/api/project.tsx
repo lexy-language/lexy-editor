@@ -34,7 +34,6 @@ export async function getProjectFiles(projectName: string): Promise<ProjectFolde
 }
 
 function getEmbeddedFile(identifier: string): ProjectFileDetails {
-  console.log("identifier: " + identifier);
   const parts = identifier.split("|");
   let folder = lexyLanguageFiles as ProjectFolder;
   for (let index = 1; index < parts.length - 1; index++) {
