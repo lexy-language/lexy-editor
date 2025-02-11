@@ -17,6 +17,7 @@ import {count} from "lexy/dist/infrastructure/arrayFunctions";
 import {SpecificationsLogEntry} from "lexy/dist/specifications/specificationsLogEntry";
 import ExecutionLogging from "../executionLogging/ExecutionLogging";
 import ViewEditor from "../viewEditor/ViewEditor";
+import {isBrowser} from "react-device-detect";
 
 const GridFullHeight = styled(Grid)`
   height: calc(100% - 264px);
@@ -125,33 +126,33 @@ function EditorPage() {
 
   return (
     <>
-      <GridFullHeight container>
-        <GridItem size={3}>
+      <GridFullHeight container style={!isBrowser ? {height: 'calc(100% - 64px)'} : {}}>
+        {isBrowser ? <GridItem size={3}>
           <FullHeightPaper>
             {content(leftOptions, layout.leftContainer)}
             {OptionButtonsGroup(leftOptions, layout.leftContainer, setValue<LeftContainer>((layout, value) => layout.setLeftContainer(value)))}
           </FullHeightPaper>
-        </GridItem>
-        <GridItem size={6}>
+        </GridItem> : <></>}
+        <GridItem size={!isBrowser ? 12 : 6}>
           <FullHeightPaper>
             {content(mainOptionsFiltered, mainContainer)}
             {OptionButtonsGroup(mainOptionsFiltered, mainContainer, setValue<MainContainer>((layout, value) => layout.setMainContainer(value)))}
           </FullHeightPaper>
         </GridItem>
-        <GridItem size={3}>
+        {isBrowser ? <GridItem size={3}>
           <FullHeightPaper>
             <TopPart>
               <RunFunction />
             </TopPart>
           </FullHeightPaper>
-        </GridItem>
+        </GridItem> : <></>}
       </GridFullHeight>
-      <ToolPanel>
+      {isBrowser ? <ToolPanel>
         <FullHeightPaper>
           {content(bottomOptions(scenariosSuffix), layout.bottomContainer)}
           {OptionButtonsGroup(bottomOptions(scenariosSuffix), layout.bottomContainer, setValue<BottomContainer>((layout, value) => layout.setBottomContainer(value)))}
         </FullHeightPaper>
-      </ToolPanel>
+      </ToolPanel> : <></>}
     </>
   );
 }
