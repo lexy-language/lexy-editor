@@ -82,7 +82,7 @@ export function LogEntry(props: TreeNodeProps) {
             Variables
           </NoPaddingListItemButton>
         </VariablesListItem>
-      {!openVariables ? <></> : renderVariablesValues(variablesLeftMargin)}
+      {true || !openVariables ? <></> : renderVariablesValues(variablesLeftMargin)}
     </>
   }
 
@@ -114,6 +114,8 @@ export function LogEntry(props: TreeNodeProps) {
   const isFunction = entry.message.startsWith("Execute:");
   const setOpenChildren = (value: boolean) => setExecutionLoggingTreeState(executionLoggingTreeState.setOpen(path, value));
   const setOpenVariables = (value: boolean) => setExecutionLoggingTreeState(executionLoggingTreeState.setOpen(pathVariables, value));
+
+  console.log(entry.message);
 
   return (isSystemVariables && !showVariables ? <></> :
     <>

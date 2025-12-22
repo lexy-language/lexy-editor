@@ -4,6 +4,7 @@ import {styled} from "@mui/material/styles";
 import Stack from "@mui/material/Stack";
 import {TextField} from "@mui/material";
 import IndentFields from "../indentFields/IndentFields";
+import {isValueType} from "../../infrastructure/isValueType";
 
 const FullWidthStack = styled(Stack)`
   width: 100%;
@@ -25,23 +26,6 @@ type ResultFieldsProps = {
 
 export default function ResultFields(props: ResultFieldsProps) {
 
-  const {values} = props;
-  const keys = values !== null ? Object.keys(values) : null;
-  if (values === null || keys === null || keys.length === 0) {
-    return <FieldBox>No result variables defined</FieldBox>;
-  }
-
-  const elements: Array<JSX.Element> = [];
-
-  function isValueType(value: any) {
-    return typeof value === 'number'
-      || typeof value === 'string'
-      || "toNumber" in value         // Check for Decimal
-      || value instanceof String
-      || value instanceof Date
-      || toString.call(value) === '[object Boolean]';
-  }
-
   function renderField(value: any, resultKey: string) {
     if (value === null || isValueType((value))) {
       return <FieldBox key={resultKey}>
@@ -54,6 +38,13 @@ export default function ResultFields(props: ResultFieldsProps) {
     }
   }
 
+  const {values} = props;
+  const keys = values !== null ? Object.keys(values) : null;
+  if (values === null || keys === null || keys.length === 0) {
+    return <FieldBox>No result variables defined</FieldBox>;
+  }
+
+  const elements: Array<JSX.Element> = [];
   for (const resultKey of keys) {
     const value = values[resultKey];
     elements.push(renderField(value, resultKey));
