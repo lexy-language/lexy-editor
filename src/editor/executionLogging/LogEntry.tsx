@@ -31,10 +31,7 @@ const FullWidthStack = styled(Stack)`
   flex-grow: 1;
 `;
 
-const LogListItem = styled(ListItem)`
-  &:not(:last-child) {
-  }
-`;
+const LogListItem = styled(ListItem)``;
 
 const VariablesListItem = styled(ListItem)`
   color: darkgrey;
@@ -82,7 +79,7 @@ export function LogEntry(props: TreeNodeProps) {
             Variables
           </NoPaddingListItemButton>
         </VariablesListItem>
-      {true || !openVariables ? <></> : renderVariablesValues(variablesLeftMargin)}
+      {!openVariables ? <></> : renderVariablesValues(variablesLeftMargin)}
     </>
   }
 
@@ -114,8 +111,6 @@ export function LogEntry(props: TreeNodeProps) {
   const isFunction = entry.message.startsWith("Execute:");
   const setOpenChildren = (value: boolean) => setExecutionLoggingTreeState(executionLoggingTreeState.setOpen(path, value));
   const setOpenVariables = (value: boolean) => setExecutionLoggingTreeState(executionLoggingTreeState.setOpen(pathVariables, value));
-
-  console.log(entry.message);
 
   return (isSystemVariables && !showVariables ? <></> :
     <>

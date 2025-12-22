@@ -24,10 +24,6 @@ export function parseFile(fileName: string, code: string, fileSystem: IFileSyste
   return {logging: logger.entries, nodes: rootNodes, logger: logger, elapsed: elapsed}
 }
 
-export function createLogger(): ILogger {
-  return baseLogger;
-}
-
 export function createLexyCompiler(): ILexyCompiler {
   return createCompiler(baseLogger, baseLogger);
 }
