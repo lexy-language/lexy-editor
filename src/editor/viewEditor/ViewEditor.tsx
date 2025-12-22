@@ -30,10 +30,10 @@ export default function ViewEditor() {
     currentFileCode,
   } = useContext();
 
-  const components={
+  const components = {
     a: (props: any) => {
       return props.href.startsWith(preFix)
-        ? <a href="#" onClick={() => navigateLink(props.href)}>{props.children}</a>
+        ? <a href="#top" onClick={() => navigateLink(props.href)}>{props.children}</a>
         : <a href={props.href}>{props.children}</a>
     }
   };

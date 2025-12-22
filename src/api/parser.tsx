@@ -1,4 +1,4 @@
-import {createCompiler, createParser, IFileSystem, ILexyCompiler, ILogger} from "lexy";
+import {createCompiler, createParser, IFileSystem, ILexyCompiler} from "lexy";
 import {IParserLogger, LogEntry} from "lexy/dist/parser/parserLogger";
 import {IRootNode} from "lexy/dist/language/rootNode";
 import {CompilerResult} from "lexy/dist/compiler/compilerResult";
