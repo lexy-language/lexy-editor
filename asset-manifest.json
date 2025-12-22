@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.js": "https://lexy-language.github.io/lexy-editor/static/js/main.154a00ae.js",
-    "static/js/2809.acda70e5.chunk.js": "https://lexy-language.github.io/lexy-editor/static/js/2809.acda70e5.chunk.js",
+    "main.js": "https://lexy-language.github.io/lexy-editor/static/js/main.c06f42d3.js",
+    "static/js/920.1b545e03.chunk.js": "https://lexy-language.github.io/lexy-editor/static/js/920.1b545e03.chunk.js",
     "static/js/6453.b3594785.chunk.js": "https://lexy-language.github.io/lexy-editor/static/js/6453.b3594785.chunk.js",
     "static/js/9553.e9860ffd.chunk.js": "https://lexy-language.github.io/lexy-editor/static/js/9553.e9860ffd.chunk.js",
     "static/js/4473.69bb0439.chunk.js": "https://lexy-language.github.io/lexy-editor/static/js/4473.69bb0439.chunk.js",
@@ -89,8 +89,8 @@
     "static/js/120.1032ddb8.chunk.js": "https://lexy-language.github.io/lexy-editor/static/js/120.1032ddb8.chunk.js",
     "static/media/codicon.ttf": "https://lexy-language.github.io/lexy-editor/static/media/codicon.7064e66c3890a12c47b4.ttf",
     "index.html": "https://lexy-language.github.io/lexy-editor/index.html",
-    "main.154a00ae.js.map": "https://lexy-language.github.io/lexy-editor/static/js/main.154a00ae.js.map",
-    "2809.acda70e5.chunk.js.map": "https://lexy-language.github.io/lexy-editor/static/js/2809.acda70e5.chunk.js.map",
+    "main.c06f42d3.js.map": "https://lexy-language.github.io/lexy-editor/static/js/main.c06f42d3.js.map",
+    "920.1b545e03.chunk.js.map": "https://lexy-language.github.io/lexy-editor/static/js/920.1b545e03.chunk.js.map",
     "6453.b3594785.chunk.js.map": "https://lexy-language.github.io/lexy-editor/static/js/6453.b3594785.chunk.js.map",
     "9553.e9860ffd.chunk.js.map": "https://lexy-language.github.io/lexy-editor/static/js/9553.e9860ffd.chunk.js.map",
     "4473.69bb0439.chunk.js.map": "https://lexy-language.github.io/lexy-editor/static/js/4473.69bb0439.chunk.js.map",
@@ -178,6 +178,6 @@
     "120.1032ddb8.chunk.js.map": "https://lexy-language.github.io/lexy-editor/static/js/120.1032ddb8.chunk.js.map"
   },
   "entrypoints": [
-    "static/js/main.154a00ae.js"
+    "static/js/main.c06f42d3.js"
   ]
 }
