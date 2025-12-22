@@ -26,7 +26,10 @@ Ensure lexy-typescript compiles correctly before running the command. Repositori
 ## Run locally
 
 Ensure node.js (v16 or above) is installed.
-Tested with node.js v16.20.2.
+Tested with node.js v18.20.8.
+
+Install packages
+`yarn install`
 
 Run editor locally
 `yarn start`
@@ -41,7 +44,8 @@ Check [lexy-language](https://github.com/lexy-language/lexy-language) for more i
 - [ ] Editor: add a view to add/edit tables
 - [ ] Editor: add a view to add/edit scenarios based on the current parameter and result variables of a function
 - [ ] Editor: make a version that runs online as a public demo/playground/ide, and a version that can be used locally for editing files on the local filesystem
-- [ ] Packages: use npm package from npm repo. It would be nice if all tgz files were erased from the whole git-repository history! 
+- [ ] Packages: use npm package from npm repo. It would be nice if all tgz files were erased from the whole git-repository history!
+- [ ] Packages: update packages and fix warnings (yarn install)
 - [ ] Version control: Implement usage of git branching to add versioning of lexy scripts
 - [ ] Integration: Add support for git submodules to support including existing lexy scripts
 - [ ] Deployment: Publish lexy-typescript as npm package 'lexy-compiler' and include it from the npm repository
