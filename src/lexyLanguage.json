@@ -20,6 +20,18 @@
   ],
   "folders": [
     {
+      "name": "Examples",
+      "identifier": "Lexy|Examples",
+      "files": [
+        {
+          "name": "New.lexy",
+          "identifier": "Lexy|Examples|New.lexy",
+          "code": "function ValidFunction\n  parameters\n    number Input\n  results\n    number Output\n    string Message\n\n  Output = Input\n  Message = \"☮ & ❤️\"\n\n\n\n"
+        }
+      ],
+      "folders": []
+    },
+    {
       "name": "Introduction",
       "identifier": "Lexy|Introduction",
       "files": [
