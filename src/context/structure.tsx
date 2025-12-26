@@ -1,5 +1,5 @@
 import {SourceReference} from "lexy/dist/parser/sourceReference";
-import {asRootNode} from "lexy/dist/language/rootNode";
+import {asComponentNode} from "lexy/dist/language/componentNode";
 import {NodeType} from "lexy/dist/language/nodeType";
 import {INode} from "lexy/dist/language/node";
 import {asVariableDefinition} from "lexy/dist/language/variableDefinition";
@@ -77,8 +77,8 @@ function mapType(variableType: VariableType | null | undefined): NodeKind  {
 }
 
 function getName(node: INode): {name: string, mapChildren: boolean, kind: NodeKind} | null {
-  const rootNode = asRootNode(node);
-  const rootNodeName = rootNode ? rootNode.nodeName : "";
+  const componentNode = asComponentNode(node);
+  const componentNodeName = componentNode ? componentNode.nodeName : "";
 
   switch (node.nodeType) {
     case NodeType.FunctionName:
@@ -91,15 +91,15 @@ function getName(node: INode): {name: string, mapChildren: boolean, kind: NodeKi
       return null;
 
     case NodeType.Function:
-      return {name: rootNodeName, kind: NodeKind.Code, mapChildren: true};
+      return {name: componentNodeName, kind: NodeKind.Code, mapChildren: true};
     case NodeType.Scenario:
-      return {name: rootNodeName, kind: NodeKind.Scenario, mapChildren: true};
+      return {name: componentNodeName, kind: NodeKind.Scenario, mapChildren: true};
     case NodeType.Table:
-      return {name: rootNodeName, kind: NodeKind.Table, mapChildren: true};
+      return {name: componentNodeName, kind: NodeKind.Table, mapChildren: true};
     case NodeType.TypeDefinition:
-      return {name: rootNodeName, kind: NodeKind.Type, mapChildren: true};
+      return {name: componentNodeName, kind: NodeKind.Type, mapChildren: true};
     case NodeType.EnumDefinition:
-      return {name: rootNodeName, kind: NodeKind.Enum, mapChildren: true};
+      return {name: componentNodeName, kind: NodeKind.Enum, mapChildren: true};
 
     case NodeType.FunctionResults:
     case NodeType.ScenarioResults:
@@ -128,23 +128,22 @@ function getName(node: INode): {name: string, mapChildren: boolean, kind: NodeKi
       let member = Assert.notNull(asEnumMember(node), "enumMember");
       return {name: member.name, kind: NodeKind.EnumMember, mapChildren: false};
     }
-    case NodeType.ScenarioExpectErrors: {
+    case NodeType.ScenarioExpectErrors:
       return {name: "Expect Errors", kind: NodeKind.Errors, mapChildren: false};
-    }
-    case NodeType.ScenarioExpectRootErrors: {
-      return {name: "Expect Root Error", kind: NodeKind.Errors, mapChildren: false};
-    }
+    case NodeType.ScenarioExpectComponentErrors:
+      return {name: "Expect Component Error", kind: NodeKind.Errors, mapChildren: false};
 
     case NodeType.TableHeader:
       return {name: "Header", kind: NodeKind.Table, mapChildren: true};
 
-    case NodeType.ColumnHeader:
+    case NodeType.ColumnHeader: {
       const column = Assert.notNull(asColumnHeader(node), "columnHeader");
       return {name: column.name, kind: mapType(column.type?.variableType), mapChildren: false};
+    }
 
-
-    default:
+    default: {
       return {name: node.nodeType, kind: NodeKind.Unknown, mapChildren: true};
+    }
   }
 }
 

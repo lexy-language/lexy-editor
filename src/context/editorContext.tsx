@@ -15,7 +15,7 @@ import {WebFileSystem} from "./webFileSystem";
 import {ProjectState} from "./projectState";
 import {SpecificationsLogEntry} from "lexy/dist/specifications/specificationsLogEntry";
 import {ExecutionLoggingState} from "./executionLoggingState";
-import {RootNodeList} from "lexy/dist/language/rootNodeList";
+import {ComponentNodeList} from "lexy/dist/language/componentNodeList";
 import {LayoutState} from "./layoutState";
 import {getLocalStorageCode, setLocalStorageCode} from "../api/codeStorage";
 
@@ -57,8 +57,8 @@ export interface EditorState {
   testingLogging: ReadonlyArray<SpecificationsLogEntry> | Loading;
   setTestingLogging: React.Dispatch<React.SetStateAction<ReadonlyArray<SpecificationsLogEntry> | Loading>>;
 
-  nodes: RootNodeList | Loading;
-  setNodes: React.Dispatch<React.SetStateAction<RootNodeList | Loading>>;
+  nodes: ComponentNodeList | Loading;
+  setNodes: React.Dispatch<React.SetStateAction<ComponentNodeList | Loading>>;
 
   structure: Array<StructureNode> | null;
   setStructure: React.Dispatch<React.SetStateAction<Array<StructureNode> | null>>;
@@ -102,7 +102,7 @@ export const EditorContextProvider = ({children}: ContextProviderProps) => {
   const [currentFileLogging, setCurrentFileLogging] = useState<Array<LogEntry> | Loading>([]);
   const [testingLogging, setTestingLogging] = useState<ReadonlyArray<SpecificationsLogEntry> | Loading>([]);
   const [parserLogging, setParserLogging] = useState<IParserLogger | null | Loading>(null);
-  const [nodes, setNodes] = useState<RootNodeList | Loading>(new RootNodeList([]));
+  const [nodes, setNodes] = useState<ComponentNodeList | Loading>(new ComponentNodeList([]));
 
   const [structure, setStructure] = useState<Array<StructureNode> | null>(null);
   const [currentStructureNode, setCurrentStructureNode] = useState<StructureNode | null>(null);
@@ -192,7 +192,7 @@ export const EditorContextProvider = ({children}: ContextProviderProps) => {
 
   useEffect(() => {
     function emptyCurrentFileState() {
-      setNodes(new RootNodeList());
+      setNodes(new ComponentNodeList());
       setStructure([]);
       setParserLogging(null);
       setStructure([]);
