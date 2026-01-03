@@ -49,7 +49,6 @@ Check [lexy-language](https://github.com/lexy-language/lexy-language) for more i
 - [ ] Version control: Implement usage of git branching to add versioning of lexy scripts
 - [ ] Integration: Add support for git submodules to support including existing lexy scripts
 - [ ] Deployment: Publish lexy-typescript as npm package 'lexy-compiler' and include it from the npm repository
-- [ ] React: Check how state management can be improved. It feels a bit messy.
 - [ ] Back-end: Develop a backend (preferably in node.js or dotnet) so it can run locally as an editor and publicly as a playground application.
 
 # Implementation details
