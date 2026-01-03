@@ -26,9 +26,9 @@ const NoPaddingListItemIcon = styled(ListItemIcon)`
   min-width: 30px
 `;
 
-function FolderItem(props: {folder: ProjectFolder, currentFile: ProjectFile | null, indent: number, setCurrentFile: (file: ProjectFile | null) => void, parent: Array<string>}) {
+function FolderItem(props: {folder: ProjectFolder, currentFile: ProjectFile | null, indent: number, parent: Array<string>}) {
 
-  const {folder, currentFile, indent, setCurrentFile, parent} = props;
+  const {folder, currentFile, indent, parent} = props;
   const path = [...parent, folder.name];
   const {projectFilesTreeState, setProjectFilesTreeState} = useContext();
   const open = projectFilesTreeState.isOpen(path);
@@ -50,19 +50,18 @@ function FolderItem(props: {folder: ProjectFolder, currentFile: ProjectFile | nu
       {open && folder.folders ? folder.folders.map(folder => <FolderItem key={folder.name} folder={folder}
                                                                          indent={indent + 1}
                                                                          currentFile={currentFile}
-                                                                         setCurrentFile={setCurrentFile}
                                                                          parent={path} />) : []}
       {open && folder.files ? folder.files.map(file => <FileItem key={file.name} file={file}
                                                                  indent={indent + 1}
-                                                                 currentFile={currentFile}
-                                                                 setCurrentFile={setCurrentFile} />) : []}
+                                                                 currentFile={currentFile} />) : []}
     </>
   );
 }
 
-function FileItem(props: {file: ProjectFile, currentFile: ProjectFile | null, indent: number, setCurrentFile: (file: ProjectFile) => void}) {
+function FileItem(props: {file: ProjectFile, currentFile: ProjectFile | null, indent: number}) {
 
-  const {file, currentFile, indent, setCurrentFile} = props;
+  const {file, currentFile, indent} = props;
+  const {setCurrentFile} = useContext();
 
   return (
     <ListItem disablePadding onClick={() => setCurrentFile(file)} style={currentFile === file ? {background: '#EEE'} : {}}>
@@ -79,11 +78,7 @@ function FileItem(props: {file: ProjectFile, currentFile: ProjectFile | null, in
 
 function Explorer() {
 
-  const {
-    projectFiles,
-    currentFile,
-    setCurrentFile
-  } = useContext();
+  const {projectFiles, currentFile} = useContext();
 
   function content() {
     if (projectFiles === null) {
@@ -92,7 +87,7 @@ function Explorer() {
     if (isLoading(projectFiles)) {
       return <CircularProgress/>;
     }
-    return <FolderItem folder={projectFiles as ProjectFolder} indent={0} currentFile={currentFile} setCurrentFile={setCurrentFile} parent={[]}/>;
+    return <FolderItem folder={projectFiles as ProjectFolder} indent={0} currentFile={currentFile} parent={[]}/>;
   }
 
   return (
