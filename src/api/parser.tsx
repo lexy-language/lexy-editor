@@ -4,9 +4,8 @@ import {IComponentNode} from "lexy/dist/language/componentNode";
 import {CompilerResult} from "lexy/dist/compiler/compilerResult";
 import {DummyLogger} from "./loggers";
 import {ComponentNodeList} from "lexy/dist/language/componentNodeList";
-import {BuiltInDateFunctions} from "lexy/dist/runTime/builtInDateFunctions";
 import {Libraries} from "lexy/dist/functionLibraries/libraries";
-import {DateLibrary, milliseconds} from "lexy/dist/runTime/libraries/dateLibrary";
+import {milliseconds} from "lexy/dist/runTime/libraries/dateLibrary";
 
 export type CompileResult = {
   logger: IParserLogger;
