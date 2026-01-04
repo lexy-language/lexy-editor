@@ -47,9 +47,9 @@ function mapType(variableType: VariableType | null | undefined): NodeKind  {
       return NodeKind.Table;
     case VariableTypeName.EnumType:
       return NodeKind.Enum;
-    case VariableTypeName.ComplexType:
+    case VariableTypeName.DeclaredType:
       return NodeKind.Type;
-    case VariableTypeName.CustomType:
+    case VariableTypeName.GeneratedType:
       return NodeKind.Type;
     case VariableTypeName.PrimitiveType:
       const primitiveType = asPrimitiveType(variableType);

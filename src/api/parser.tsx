@@ -5,6 +5,8 @@ import {CompilerResult} from "lexy/dist/compiler/compilerResult";
 import {DummyLogger} from "./loggers";
 import {ComponentNodeList} from "lexy/dist/language/componentNodeList";
 import {BuiltInDateFunctions} from "lexy/dist/runTime/builtInDateFunctions";
+import {Libraries} from "lexy/dist/functionLibraries/libraries";
+import {DateLibrary, milliseconds} from "lexy/dist/runTime/libraries/dateLibrary";
 
 export type CompileResult = {
   logger: IParserLogger;
@@ -17,15 +19,15 @@ const baseLogger = new DummyLogger();
 
 export function parseFile(fileName: string, code: string, fileSystem: IFileSystem): CompileResult {
   const startTime = new Date();
-  const lexyParser = createParser(baseLogger, fileSystem);
+  const lexyParser = createParser(baseLogger, fileSystem, new Libraries([]));
   const lines = code.split("\n");
   const {componentNodes, logger} = lexyParser.parse(lines, fileName, {suppressException: true});
-  const elapsed = BuiltInDateFunctions.milliseconds(new Date(), startTime).toNumber();
+  const elapsed = milliseconds(new Date(), startTime).toNumber();
   return {logging: logger.entries, nodes: componentNodes, logger: logger, elapsed: elapsed}
 }
 
 export function createLexyCompiler(): ILexyCompiler {
-  return createCompiler(baseLogger, baseLogger);
+  return createCompiler(baseLogger, baseLogger, new Libraries([]));
 }
 
 export function compileNodes(nodes: Array<IComponentNode>): CompilerResult {

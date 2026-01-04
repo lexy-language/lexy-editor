@@ -132,7 +132,7 @@ export default function ParameterField(props: ParameterFieldProps) {
       return <FieldBox>{renderPrimitiveType()}</FieldBox>;
     case VariableTypeName.EnumType:
       return <FieldBox>{renderEnumType()}</FieldBox>;
-    case VariableTypeName.CustomType:
+    case VariableTypeName.DeclaredType:
       return renderCustomType();
     default:
       return <div>Unknown type: {parameter.name}</div>
