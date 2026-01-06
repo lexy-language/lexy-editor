@@ -16,10 +16,10 @@ import {AdapterDateFns} from "@mui/x-date-pickers/AdapterDateFnsV3";
 import {Assert} from "lexy";
 import {asEnumType} from "lexy/dist/language/variableTypes/enumType";
 import ParameterFields from "./ParameterFields";
-import {asCustomType} from "lexy/dist/language/variableTypes/customType";
 import IndentFields from "../indentFields/IndentFields";
-import {VariablePath} from "lexy/dist/language/variablePath";
+import {IdentifierPath} from "lexy/dist/language/identifierPath";
 import Box from "@mui/material/Box";
+import {asDeclaredType} from "lexy/dist/language/variableTypes/declaredType";
 
 const ParameterTextField = styled(TextField)`
   width: 100%;
@@ -40,7 +40,7 @@ const FieldBox = styled(Box)`
 `;
 
 type ParameterFieldProps = {
-  parent?: VariablePath
+  parent?: IdentifierPath
   parameter: VariableDefinition;
 }
 
@@ -48,7 +48,7 @@ export default function ParameterField(props: ParameterFieldProps) {
 
   const {parameter, parent} = props;
   const {executeFunction, setExecuteFunction} = useContext();
-  const path = !!parent ? parent.append([parameter.name]) : new VariablePath([parameter.name]);
+  const path = !!parent ? parent.append([parameter.name]) : new IdentifierPath([parameter.name]);
 
   function enumValueChanged(event: any) {
     return setExecuteFunction(executeFunction.setParameter(path, event.target.value));
@@ -121,9 +121,10 @@ export default function ParameterField(props: ParameterFieldProps) {
   }
 
   function renderCustomType() {
-    const customType = Assert.notNull(asCustomType(parameter.variableType), "enumType");
+    const declaredType = Assert.notNull(asDeclaredType(parameter.variableType), "enumType");
+    const variables = declaredType.typeDefinition.variables;
     return <IndentFields name={parameter.name}>
-      <ParameterFields variables={customType.typeDefinition.variables} parent={path}/>
+      <ParameterFields variables={variables} parent={path}/>
     </IndentFields>;
   }
 

@@ -4,7 +4,7 @@ import {styled} from "@mui/material/styles";
 import ParameterField from "./ParameterField";
 import {VariableDefinition} from "lexy/dist/language/variableDefinition";
 import Stack from "@mui/material/Stack";
-import {VariablePath} from "lexy/dist/language/variablePath";
+import {IdentifierPath} from "lexy/dist/language/identifierPath";
 
 const FullWidthStack = styled(Stack)`
   width: 100%;
@@ -15,7 +15,7 @@ const FieldBox = styled(Box)`
 `;
 
 type ParameterFieldsProps = {
-  parent?: VariablePath;
+  parent?: IdentifierPath;
   variables: ReadonlyArray<VariableDefinition> | null | undefined;
 }
 

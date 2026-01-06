@@ -18,8 +18,8 @@ import {Scenario} from "lexy/dist/language/scenarios/scenario";
 import ParameterFields from "./ParameterFields";
 import ResultFields from "./ResultFields";
 import IndentFields from "../indentFields/IndentFields";
-import {BuiltInDateFunctions} from "lexy/dist/runTime/builtInDateFunctions";
 import {DependencyGraphFactory} from "lexy/dist/dependencyGraph/dependencyGraphFactory";
+import {milliseconds} from "../../infrastructure/dateFunctions";
 
 const MainBox = styled(Box)`
   padding: 16px 8px;
@@ -73,7 +73,7 @@ function RunFunction() {
       const executable = result.getFunction(functionNode);
       const parameters = executeFunction.getParameters();
       const results = executable.run(parameters);
-      const elapsed = BuiltInDateFunctions.milliseconds(new Date(), startTime).toNumber();
+      const elapsed = milliseconds(new Date(), startTime).toNumber();
       setExecutionLogging(executionLogging.setCurrent(results.logging));
       setExecuteFunction(executeFunction.setResults(results.value, elapsed));
     } catch (error: any) {
@@ -176,7 +176,7 @@ function RunFunction() {
   const menuItems = functionsMenuItems();
 
   if (structure === null || menuItems.length === 0) {
-    return <Box>No functions found in file. Add <strong>Function:</strong> to the code, or select a file with functions.</Box>
+    return <Box>No functions found in file. Add <strong>function NewFunction</strong> to the code, or select a file with functions.</Box>
   }
 
   return (
