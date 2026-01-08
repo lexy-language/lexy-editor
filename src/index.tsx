@@ -5,14 +5,14 @@ import { ThemeProvider } from '@mui/material/styles';
 import App from './App';
 import theme from './theme';
 import reportWebVitals from "./reportWebVitals";
-import { BrowserRouter } from 'react-router-dom';
+import {HashRouter} from 'react-router-dom';
 
 ReactDOM.render(
   <ThemeProvider theme={theme}>
     <CssBaseline />
-    <BrowserRouter basename={process.env.REACT_APP_BASE_ROUTE}>
+    <HashRouter basename={process.env.REACT_APP_BASE_ROUTE}>
       <App />
-    </BrowserRouter>
+    </HashRouter>
   </ThemeProvider>,
   document.getElementById('root')
 );
