@@ -256,22 +256,22 @@ export const EditorContextProvider = ({children}: ContextProviderProps) => {
     setExecuteFunction(executeFunction => executeFunction.reset());
     setExecutionLogging(executionLogging => executionLogging.reset());
 
-    const codeFromCache = currentProject.file(currentFile.identifier);
-    if (codeFromCache) {
-      setCodeFile({
-        code: codeFromCache,
-        identifier: currentFile.identifier,
-        name: currentFile.name
-      });
-      return;
-    }
-
     const fromLocalStorage = getLocalStorageCode(currentFile.identifier);
     if (fromLocalStorage) {
       setCodeFile({
         code: fromLocalStorage,
         identifier: currentFile.identifier,
         name: currentFile.name,
+      });
+      return;
+    }
+
+    const codeFromCache = currentProject.file(currentFile.identifier);
+    if (codeFromCache) {
+      setCodeFile({
+        code: codeFromCache,
+        identifier: currentFile.identifier,
+        name: currentFile.name
       });
       return;
     }
