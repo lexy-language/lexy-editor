@@ -1,7 +1,7 @@
 import {createCompiler, createParser, IFileSystem, ILexyCompiler} from "lexy";
 import {IParserLogger, LogEntry} from "lexy/dist/parser/parserLogger";
 import {IComponentNode} from "lexy/dist/language/componentNode";
-import {CompilerResult} from "lexy/dist/compiler/compilerResult";
+import {CompilerResult} from "lexy/dist/generation/compilerResult";
 import {DummyLogger} from "./loggers";
 import {ComponentNodeList} from "lexy/dist/language/componentNodeList";
 import {Libraries} from "lexy/dist/functionLibraries/libraries";
