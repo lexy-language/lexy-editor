@@ -1,30 +1,30 @@
 import React from 'react';
-import {useContext} from '../../context/editorContext';
 import List from "@mui/material/List";
 import {CircularProgress} from "@mui/material";
 import Box from "@mui/material/Box";
 import {isLoading} from "../../context/loading";
 import {TreeNode} from "./TreeNode";
+import {useProjectContext} from "../../context/project/context";
 
 function Structure() {
 
-  const {structure} = useContext();
+  const {nodes} = useProjectContext();
 
   function content() {
 
-    if (structure === null) {
+    if (nodes === null) {
       return <Box>No structure.</Box>;
     }
 
-    if (isLoading(structure)) {
+    if (isLoading(nodes)) {
       return <CircularProgress/>;
     }
 
     const result = [];
-    for (let index = 0 ; index < structure.length ; index ++) {
-      const node = structure[index];
+    for (let index = 0 ; index < nodes.length ; index ++) {
+      const node = nodes[index];
       if (node !== null) {
-        result.push(<TreeNode node={node} indent={0} key={index} parent={[]}/>);
+        result.push(<TreeNode node={node} indent={0} key={index} parent={[]} index={index} />);
       }
     }
     return result;

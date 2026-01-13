@@ -1,25 +1,28 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import Box from "@mui/material/Box";
 import {
   Button,
   CircularProgress,
   FormControl,
-  FormGroup, InputLabel, MenuItem, Select,
+  FormGroup,
+  InputLabel,
+  MenuItem,
+  Select,
   SelectChangeEvent,
 } from "@mui/material";
-import {useContext} from "../../context/editorContext";
+import {ProjectContextState, useProjectContext} from "../../context/project/context";
 import {isLoading} from "../../context/loading";
-import {StructureNode} from "../../context/structure";
-import {Function} from "lexy/dist/language/functions/function";
 import {styled} from "@mui/material/styles";
-import {NodeType} from "lexy/dist/language/nodeType";
-import {compileNodes} from "../../api/parser";
-import {Scenario} from "lexy/dist/language/scenarios/scenario";
 import ParameterFields from "./ParameterFields";
 import ResultFields from "./ResultFields";
 import IndentFields from "../indentFields/IndentFields";
-import {DependencyGraphFactory} from "lexy/dist/dependencyGraph/dependencyGraphFactory";
-import {milliseconds} from "../../infrastructure/dateFunctions";
+import {CompilationContextState, useCompilationContext} from "../../context/compilation/context";
+import {FunctionNodeModel, NodeKind, NodeModel} from "../../context/project/nodeModel";
+import {NodeType} from "lexy/dist/language/nodeType";
+import {firstOrDefault} from "lexy/dist/infrastructure/arrayFunctions";
+import {Nothing} from "../../infrastructure/nothing";
+import {RunFunctionFailedResponse} from "../../context/compilation/response";
+import Grid from "@mui/material/Grid2";
 
 const MainBox = styled(Box)`
   padding: 16px 8px;
@@ -47,136 +50,158 @@ const Error = styled(Box)`
   color: crimson;
 `;
 
+const FullAreaBox = styled(Box)`
+  padding: 16px;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
 function RunFunction() {
 
-  function renderError() {
-    if (executeFunction === null || !executeFunction.error) return [];
-    return <Error>
-      {executeFunction.error.split('\n').map((value, index) => <div key={index}>{value}</div>)}
-    </Error>;
-  }
-
-  function execute() {
-    if (isLoading(nodes)) return;
-
-    const node = currentStructureNode as StructureNode;
-    const functionNode = getFunctionNode(node);
-    if (functionNode === null) {
-      setExecuteFunction(executeFunction.setError(`Couldn't find function: '${node?.name}'`))
-      return;
-    }
-
-    const startTime = new Date();
-    try {
-      const functionAndDependencies = DependencyGraphFactory.nodeAndDependencies(nodes, functionNode);
-      const result = compileNodes(functionAndDependencies)
-      const executable = result.getFunction(functionNode);
-      const parameters = executeFunction.getParameters();
-      const results = executable.run(parameters);
-      const elapsed = milliseconds(new Date(), startTime).toNumber();
-      setExecutionLogging(executionLogging.setCurrent(results.logging));
-      setExecuteFunction(executeFunction.setResults(results.value, elapsed));
-    } catch (error: any) {
-      setExecuteFunction(executeFunction.setError(error.toString()))
-    }
-  }
+  const {
+    nodes,
+    currentNode,
+    currentFile,
+    setCurrentNode,
+    currentFileCode
+  }: ProjectContextState = useProjectContext();
 
   const {
-    structure,
-    currentStructureNode,
-    setCurrentStructureNode,
+    runFunction,
+    runFunctionCompleted,
     executeFunction,
-    setExecuteFunction,
-    executionLogging,
-    setExecutionLogging,
-    nodes
-  } = useContext();
+    setExecuteFunction
+  }: CompilationContextState = useCompilationContext();
+
+  const [functionsOptions, setFunctionsOptions] = useState<JSX.Element[]>([]);
 
   useEffect(() => {
-    if (structure === null) return;
+    if (isLoading(nodes)) return;
 
-    for (const node of structure) {
+    function addFunction(node: NodeModel) {
+      if (node.kind == NodeKind.Function) {
+        result.push(<MenuItem key={node.name} value={node.name}>{node.name}</MenuItem>)
+      } else if (node.kind == NodeKind.Scenario) {
+        const scenarioFunction = firstOrDefault(node.children, where => where.kind == NodeKind.Function) as FunctionNodeModel;
+        if (scenarioFunction) {
+          result.push(<MenuItem key={scenarioFunction.name} value={node.name}>{scenarioFunction.name}</MenuItem>)
+        }
+      }
+    }
+
+    const result: JSX.Element[] = [];
+    nodes.forEach(addFunction);
+    setFunctionsOptions(result);
+
+    for (const node of nodes) {
       const functionNode = getFunctionNode(node);
       if (functionNode !== null) {
-        setCurrentStructureNode(node);
+        setCurrentNode(node);
         return;
       }
     }
-    setCurrentStructureNode(null);
-  }, [structure, setCurrentStructureNode])
+    setCurrentNode(null);
+  }, [nodes, setCurrentNode])
 
-  if (isLoading(currentStructureNode)) {
-    return <CircularProgress/>;
+  function renderError() {
+    if (!runFunctionCompleted || !runFunctionCompleted.error) return <></>;
+    const executeFunctionFailed = runFunctionCompleted as RunFunctionFailedResponse
+    return <Error>
+      {executeFunctionFailed.lastError.split('\n').map((value, index: number) => <div key={index}>{value}</div>)}
+    </Error>;
   }
 
-  function getFunctionNode(node: StructureNode | null): Function | null {
-    return node === null
-      ? null
-      : node.nodeType === NodeType.Function
-        ? node.node as Function
-        : node.nodeType === NodeType.Scenario
-          ? (node.node as Scenario).functionNode
-          : null;
+  function getFunctionNode(currentNode: NodeModel | Nothing): FunctionNodeModel | Nothing {
+    if (currentNode?.nodeType == NodeType.Function) {
+      return currentNode as FunctionNodeModel;
+    } else if (currentNode?.nodeType == NodeType.Scenario) {
+      return firstOrDefault(currentNode.children, where => where.nodeType == NodeType.Function) as FunctionNodeModel;
+    }
+    return null
   }
 
-  function content() {
+  function execute() {
+    if (isLoading(nodes) || !currentNode || !currentFile || currentFileCode == null || isLoading(currentFileCode)) return;
+
+    const functionNode = getFunctionNode(node);
+    if (functionNode === null) {
+      setExecuteFunction(executeFunction.setError(`Couldn't find function: '${node?.name}'`));
+      return;
+    }
+
+    const currentFolder = currentFileCode.identifier.split("|");
+    currentFolder.splice(currentFolder.length - 1, 1);
+    runFunction(currentFolder, currentFile.name, currentNode.name, executeFunction.parameters)
+  }
+
+  function form() {
+    if (isLoading(nodes)) {
+      return (
+        <FullAreaBox>
+          <Grid container direction="row" alignItems="center">
+            <Grid>
+              <CircularProgress size={50} />
+            </Grid>
+          </Grid>
+        </FullAreaBox>
+      );
+    }
+
     if (node === null || functionNode === null) {
       return <Box>Select function to execute it.</Box>
     }
-    const results = executeFunction.getResults();
 
-    return <FormGroup>
-      <IndentFields name={"Parameters"} title={true}>
-        <ParameterFields variables={functionNode.parameters?.variables} />
-      </IndentFields>
-      <ExecuteButton variant="contained" onClick={execute}>Execute</ExecuteButton>
-      {executeFunction.elapsed !== null ? <Feedback>Execution time: {executeFunction.elapsed}ms</Feedback> : <></>}
-      {renderError()}
-      {results !== null ? <IndentFields name={"Results"} title={true}>
-        <ResultFields values={results} />
-      </IndentFields> : <></>}
-    </FormGroup>;
+    return (
+      <FormGroup>
+        <IndentFields name={"Parameters"} title={true}>
+          {<ParameterFields variables={functionNode.parameters} />}
+        </IndentFields>
+        <ExecuteButton variant="contained" onClick={execute}>Execute</ExecuteButton>
+        {executeFunction.elapsed !== null ? <Feedback>Compilation and execution time: {executeFunction.elapsed}ms</Feedback> : <></>}
+        {renderError()}
+        {executeFunction.loading ?
+          <FullAreaBox>
+            <Grid container direction="row" alignItems="center">
+              <Grid>
+                <CircularProgress size={50} />
+              </Grid>
+            </Grid>
+          </FullAreaBox> : <></>}
+        {executeFunction.results ? <IndentFields name={"Results"} title={true}>
+          <ResultFields values={executeFunction.results} />
+        </IndentFields> : <></>}
+      </FormGroup>
+    );
   }
 
-  function getFunction(name: string): StructureNode | null {
-    if (structure === null) return null;
-    for (const node of structure) {
+  function getFunction(name: string): NodeModel | null {
+    if (isLoading(nodes)) return null;
+    for (const node of nodes) {
       const functionNode = getFunctionNode(node);
-      if (functionNode !== null && functionNode.name.value === name) {
-        return node;
+      if (functionNode !== null && functionNode.name === name) {
+        return functionNode;
       }
     }
     return null;
   }
 
   const handleChange = (event: SelectChangeEvent) => {
-    if (structure === null) return;
     const functionNode = getFunction(event.target.value);
     if (functionNode !== null) {
-      setCurrentStructureNode(functionNode);
+      setCurrentNode(functionNode);
     }
   };
 
-  function functionsMenuItems() {
-    if (structure === null) return []
-    const result: JSX.Element[] = [];
-    structure.forEach(node => {
-      const functionNode = getFunctionNode(node);
-      if (functionNode !== null) {
-        const functionName = functionNode.name.value;
-        result.push(<MenuItem key={functionName} value={functionName}>{functionName}</MenuItem>)
-      }
-    });
-    return result;
-  }
+  const node = currentNode as NodeModel | null;
+  const functionNode = getFunctionNode(currentNode);
 
-  const node = currentStructureNode as StructureNode | null;
-  const functionNode = getFunctionNode(currentStructureNode);
-  const currentNodeName = functionNode !== null ? functionNode.name.value : "";
-  const menuItems = functionsMenuItems();
-
-  if (structure === null || menuItems.length === 0) {
-    return <Box>No functions found in file. Add <strong>function NewFunction</strong> to the code, or select a file with functions.</Box>
+  if (functionsOptions.length === 0) {
+    return <Box>
+      No functions found in file. Add <strong>function NewFunction</strong> to the code, or select a file with functions.
+    </Box>;
   }
 
   return (
@@ -184,16 +209,16 @@ function RunFunction() {
       <SelectBox>
         <FormControl fullWidth>
           <InputLabel id="label-select-function">Execute Function</InputLabel>
-          <Select
-            labelId="label-select-function"
-            value={currentNodeName}
-            label="Execute Function"
-            onChange={handleChange}>
-            {menuItems}
+          <Select labelId="label-select-function"
+                  label="Execute Function"
+                  onChange={handleChange}
+                  value={currentNode ? currentNode.name : ""}
+                  disabled={isLoading(nodes)}>
+            {functionsOptions}
           </Select>
         </FormControl>
       </SelectBox>
-      {content()}
+      {form()}
     </MainBox>
   );
 }

@@ -1,4 +1,4 @@
-import {NodeKind, StructureNode} from "../../context/structure";
+import {NodeKind, NodeModel} from "../../context/project/nodeModel";
 import CodeIcon from "@mui/icons-material/Code";
 import RuleIcon from "@mui/icons-material/Rule";
 import GridOnIcon from "@mui/icons-material/GridOn";
@@ -12,7 +12,8 @@ import FormatQuoteIcon from "@mui/icons-material/FormatQuote";
 import QuestionMarkIcon from "@mui/icons-material/QuestionMark";
 import React from "react";
 import {NodeType} from "lexy/dist/language/nodeType";
-import {useContext} from "../../context/editorContext";
+import {useProjectContext} from "../../context/project/context";
+import {useEditorContext} from "../../context/editor/context";
 import {Menu, MenuItem, styled} from "@mui/material";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
@@ -21,7 +22,8 @@ import ListItem from "@mui/material/ListItem";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import ListItemButton from "@mui/material/ListItemButton";
-import {MainContainer} from "../../context/layoutState";
+import {MainContainer} from "../../context/editor/layoutState";
+import DataObjectIcon from '@mui/icons-material/DataObject';
 
 const indentValue = 16;
 
@@ -35,9 +37,10 @@ const NoPaddingListItemIcon = styled(ListItemIcon)`
 `;
 
 type TreeNodeProps = {
-  node: StructureNode,
+  node: NodeModel,
   indent: number,
-  parent: Array<string>
+  parent: Array<string>,
+  index: number
 }
 
 export function TreeNode(props: TreeNodeProps) {
@@ -46,6 +49,7 @@ export function TreeNode(props: TreeNodeProps) {
     switch (type) {
       case NodeKind.Code:
       case NodeKind.Function:
+      case NodeKind.Expression:
         return <CodeIcon fontSize="small"/>;
 
       case NodeKind.Scenario:
@@ -55,8 +59,10 @@ export function TreeNode(props: TreeNodeProps) {
 
       case NodeKind.Results:
       case NodeKind.Parameters:
-      case NodeKind.Type:
         return <ListIcon fontSize="small"/>;
+
+      case NodeKind.Type:
+        return <DataObjectIcon fontSize="small"/>
 
       case NodeKind.Enum:
         return <FormatListNumberedIcon fontSize="small"/>;
@@ -85,12 +91,12 @@ export function TreeNode(props: TreeNodeProps) {
 
   function onClick(event: React.MouseEvent<HTMLLIElement>) {
     setEditorPosition({
-      lineNumber: node.reference.lineNumber,
-      column: node.reference.characterNumber,
+      lineNumber: node.lineNumber,
+      column: node.characterNumber,
       source: "state"
     });
     setLayout(layout => layout.setMainContainer(MainContainer.Source));
-    setCurrentStructureNode(node);
+    setCurrentNode(node);
     if (event.type === 'contextmenu') {
       setAnchorEl(event.currentTarget);
       event.preventDefault();
@@ -119,30 +125,31 @@ export function TreeNode(props: TreeNodeProps) {
   }
 
   function renderChildren() {
+    if (!(openChildren && node.children)) return [];
     const children = [];
-    if (openChildren && node.children) {
-      for (let index = 0; index < node.children.length; index++) {
-        const structureNode: StructureNode = node.children[index];
-        if (!!structureNode) {
-          children.push(<TreeNode node={structureNode} indent={indent + 1} key={structureNode.name} parent={path}/>);
-        }
+
+    for (let index = 0; index < node.children.length; index++) {
+      const nodeModel: NodeModel = node.children[index];
+      if (!!nodeModel) {
+        children.push(<TreeNode node={nodeModel} indent={indent + 1} key={index + "." + nodeModel.name} index={index}
+                                parent={path}/>);
       }
     }
     return children;
   }
 
-  const {node, indent, parent} = props;
-  const path = [...parent, node.name];
+  const {node, indent, parent, index} = props;
+  const path = node.kind == NodeKind.Expression ? [...parent, "" + index, node.name] : [...parent, node.name];
+  const {setEditorPosition, setLayout} = useEditorContext();
   const {
-    setEditorPosition,
-    setLayout,
-    structureTreeState,
-    setStructureTreeState,
-    currentStructureNode,
-    setCurrentStructureNode,
-  } = useContext();
-  const openChildren = structureTreeState.isOpen(path);
-  const setOpenChildren = (value: boolean) => setStructureTreeState(structureTreeState.setOpen(path, value));
+    nodeTreeState,
+    setNodeTreeState,
+    currentNode,
+    setCurrentNode
+  } = useProjectContext();
+
+  const openChildren = nodeTreeState.isOpen(path);
+  const setOpenChildren = (value: boolean) => setNodeTreeState(nodeTreeState.setOpen(path, value));
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const openMenu = Boolean(anchorEl);
@@ -152,7 +159,7 @@ export function TreeNode(props: TreeNodeProps) {
   return (
     <>
       <ListItem disablePadding onClick={onClick} onContextMenu={onClick}
-                style={currentStructureNode === node ? {background: '#EEE'} : {}}>
+                style={currentNode === node ? {background: '#EEE'} : {}}>
         <NoPaddingListItemButton onClick={() => setOpenChildren(!openChildren)}
                                  style={indent > 0 ? ({paddingLeft: (indentValue * indent) + 'px'}) : ({})}>
           <NoPaddingListItemIcon>

@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import {styled} from "@mui/material/styles";
 import {Link} from "@mui/material";
-import {clearLocalStorage} from "../api/codeStorage";
+import {useCodeFileStorage} from "../../api/codeStorage";
 
 const TextBox = styled('div')`
   padding: 16px;
@@ -17,10 +17,15 @@ const Feedback = styled(TextBox)`
 
 export default function FileNew() {
   const [message, setMessage] = useState('');
+  const {clearCodeFiles} = useCodeFileStorage();
+
   function reset() {
-    clearLocalStorage();
-    setMessage("Reset done....");
-    window.location.reload();
+    clearCodeFiles()
+      .then(() => {
+        setMessage("Reset done. Please refresh page!!");
+        setTimeout(() => window.location.reload(), 500);
+      })
+      .catch(error => setMessage("Error occurred: " + error.stack));
   }
   return (
     <TextBox>

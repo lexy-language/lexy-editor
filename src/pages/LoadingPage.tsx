@@ -8,6 +8,7 @@ const FullAreaBox = styled(Box)`
   height: calc(100% - 64px);
   padding: 8px;
 `;
+
 const FullAreaPaper = styled(Paper)`
   height: 100%;
   width: 100%;

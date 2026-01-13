@@ -2,9 +2,9 @@ import React from 'react';
 import Box from "@mui/material/Box";
 import {styled} from "@mui/material/styles";
 import ParameterField from "./ParameterField";
-import {VariableDefinition} from "lexy/dist/language/variableDefinition";
 import Stack from "@mui/material/Stack";
 import {IdentifierPath} from "lexy/dist/language/identifierPath";
+import {VariableModel} from "../../context/project/nodeModel";
 
 const FullWidthStack = styled(Stack)`
   width: 100%;
@@ -16,7 +16,7 @@ const FieldBox = styled(Box)`
 
 type ParameterFieldsProps = {
   parent?: IdentifierPath;
-  variables: ReadonlyArray<VariableDefinition> | null | undefined;
+  variables: readonly VariableModel[] | null | undefined;
 }
 
 export default function ParameterFields(props: ParameterFieldsProps) {

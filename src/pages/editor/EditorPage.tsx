@@ -3,21 +3,23 @@ import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid2';
 import {styled} from '@mui/material/styles';
 import {Button} from "@mui/material";
-import {BottomContainer, LayoutState, LeftContainer, MainContainer} from '../../context/layoutState';
-import {useContext} from '../../context/editorContext';
-import Explorer from '../explorer/Explorer';
-import Structure from '../structure/Structure';
-import SourceEditor from '../sourceEditor/SourceEditor';
-import RunFunction from '../runFunction/RunFunction';
-import Testing from '../testing/Testing';
-import Logging from '../logging/Logging';
+import {BottomContainer, LayoutState, LeftContainer, MainContainer} from '../../context/editor/layoutState';
+import Explorer from '../../editor/explorer/Explorer';
+import Structure from '../../editor/structure/Structure';
+import SourceEditor from '../../editor/sourceEditor/SourceEditor';
+import RunFunction from '../../editor/runFunction/RunFunction';
+import Testing from '../../editor/testing/Testing';
+import Logging from '../../editor/logging/Logging';
 import Box from "@mui/material/Box";
 import {isLoading} from "../../context/loading";
 import {count} from "lexy/dist/infrastructure/arrayFunctions";
-import {SpecificationsLogEntry} from "lexy/dist/specifications/specificationsLogEntry";
-import ExecutionLogging from "../executionLogging/ExecutionLogging";
-import ViewEditor from "../viewEditor/ViewEditor";
+import ExecutionLogging from "../../editor/executionLogging/ExecutionLogging";
+import ViewEditor from "../../editor/viewEditor/ViewEditor";
 import {isBrowser} from "react-device-detect";
+import {useEditorContext} from "../../context/editor/context";
+import {useProjectContext} from "../../context/project/context";
+import {useCompilationContext} from "../../context/compilation/context";
+import AutorenewIcon from '@mui/icons-material/Autorenew';
 
 const GridFullHeight = styled(Grid)`
   height: calc(100% - 264px);
@@ -50,10 +52,10 @@ const BottomPart = styled(Box)`
   padding: 8px 0 0;
 `;
 
-function OptionButtonsGroup<T>(values: {name: string, value: T}[], currentValue: T, setValue: (item: T) => void) {
+function OptionButtonsGroup<T>(values: {name: string | JSX.Element, value: T}[], currentValue: T, setValue: (item: T) => void) {
   return <BottomPart>
-    {values.map(value => <Button
-      key={value.name}
+    {values.map((value, index) => <Button
+      key={'option-' + index}
       variant={(value.value === currentValue ? 'contained' : 'text')}
       onClick={() => setValue(value.value)}>
       {value.name}
@@ -69,12 +71,9 @@ function content<T>(values: {value: T, element: () => React.ReactNode}[], curren
 
 function EditorPage() {
 
-  const {
-    layout,
-    setLayout,
-    testingLogging,
-    currentFileCode
-  } = useContext();
+  const {layout, setLayout} = useEditorContext();
+  const {currentFileCode} = useProjectContext();
+  const {testingLogging} = useCompilationContext();
   const [lastShowView, setLastShowView] = useState<boolean>(false);
 
   const leftOptions = [
@@ -88,21 +87,30 @@ function EditorPage() {
     { name: 'Execution Logging', value: MainContainer.ExecutionLogging, element: () => <ExecutionLogging /> },
   ];
 
-  const bottomOptions = (suffix: string) => [
+  const bottomOptions = (suffix: JSX.Element) => [
     { name: 'Compilation Logging', value: BottomContainer.Logging, element: () => <Logging /> },
-    { name: 'Test Logging' + suffix, value: BottomContainer.Testing, element: () => <Testing /> },
+    { name: <>Test Logging {suffix}</>, value: BottomContainer.Testing, element: () => <Testing /> },
   ];
 
   function getScenariosSuffix() {
-    if (!(testingLogging !== null && !isLoading(testingLogging))) {
-      return '';
+    if (!testingLogging) {
+      return <></>;
     }
 
-    const logging = testingLogging as SpecificationsLogEntry[];
-    const errors = count(logging, entry => !entry.isError && entry.node !== null);
-    const scenarios = count(logging, entry => entry.node !== null);
+    if (isLoading(testingLogging)) {
+      return <AutorenewIcon fontSize={"small"}  sx={{
+        animation: "spin 2s linear infinite",
+        "@keyframes spin": {
+          "0%": {transform: "rotate(0deg)"},
+          "100%": {transform: "rotate(360deg)"},
+        },
+      }} />;
+    }
 
-    return ` (${errors}/${scenarios})`;
+    const errors = count(testingLogging, entry => !entry.isError && entry.nodeName !== null);
+    const scenarios = count(testingLogging, entry => entry.nodeName !== null);
+
+    return <> ({errors}/{scenarios})</>;
   }
 
   function setValue<T>(setLayoutValue: (layout: LayoutState, item: T) => LayoutState) {

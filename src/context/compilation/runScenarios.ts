@@ -1,28 +1,33 @@
-import {IComponentNode} from "lexy/dist/language/componentNode";
+import type {IParserLogger} from "lexy/dist/parser/parserLogger";
+
 import {NodeType} from "lexy/dist/language/nodeType";
 import {ScenarioRunner} from "lexy/dist/specifications/scenarioRunner";
 import {asScenario} from "lexy/dist/language/scenarios/scenario";
-import {createLexyCompiler} from "../api/parser";
+import {createLexyCompiler} from "../../api/parser";
 import {Assert, ILexyCompiler} from "lexy";
 import {SpecificationRunnerContext} from "lexy/dist/specifications/specificationRunnerContext";
 import {SpecificationsLogEntry} from "lexy/dist/specifications/specificationsLogEntry";
-import {IParserLogger} from "lexy/dist/parser/parserLogger";
 import {ComponentNodeList} from "lexy/dist/language/componentNodeList";
-import {MemoryLogger} from "../api/loggers";
+import {MemoryLogger} from "../../infrastructure/loggers";
+import {Dependencies} from "lexy/dist/dependencyGraph/dependencies";
 
-export function runScenarios(currentFileName: string, nodes: Array<IComponentNode>, parserLogger: IParserLogger, setTestingLogging: ((log: ReadonlyArray<SpecificationsLogEntry>) => void)) {
+export async function runScenarios(currentFileName: string, nodes: ComponentNodeList, dependencies: Dependencies,
+                             parserLogger: IParserLogger,
+                             continueCheck: () => Promise<boolean>): Promise<readonly SpecificationsLogEntry[]> {
 
   function addRunners(lexyCompiler: ILexyCompiler, context: SpecificationRunnerContext, scenarioRunners: Array<ScenarioRunner>) {
-    for (const node of nodes) {
+    for (const node of nodes.values) {
       if (node.nodeType !== NodeType.Scenario) continue;
       const scenario = Assert.notNull(asScenario(node), "scenario");
-      const runner = new ScenarioRunner(currentFileName, lexyCompiler, new ComponentNodeList(nodes), scenario, context, parserLogger);
+      const runner = new ScenarioRunner(currentFileName, lexyCompiler, nodes, scenario, context, parserLogger, dependencies);
       scenarioRunners.push(runner)
     }
   }
 
-  function runRunners(scenarioRunners: Array<ScenarioRunner>) {
+  async function runRunners(scenarioRunners: Array<ScenarioRunner>): Promise<void> {
     for (const scenarioRunner of scenarioRunners) {
+      console.log("scenarioRunner: " + scenarioRunner.scenario.name);
+      if (!await continueCheck()) return;
       scenarioRunner.run()
     }
   }
@@ -34,13 +39,14 @@ export function runScenarios(currentFileName: string, nodes: Array<IComponentNod
     const scenarioRunners: Array<ScenarioRunner> = [];
 
     addRunners(lexyCompiler, context, scenarioRunners);
-    runRunners(scenarioRunners);
+    await runRunners(scenarioRunners);
     context.logTimeSpent();
+    //console.log("scenarioRunner: complete " + JSON.stringify(context.logEntries, null, 4));
 
-    setTestingLogging(context.logEntries);
-
+    return context.logEntries;
   } catch (error: any) {
+    console.log("scenarioRunner: error " + error);
     const entry = new SpecificationsLogEntry(null, null, true, "Application error occurred: " + error.stack);
-    setTestingLogging([entry]);
+    return [entry];
   }
 }

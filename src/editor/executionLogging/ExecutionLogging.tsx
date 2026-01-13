@@ -1,18 +1,16 @@
 import React, {useEffect} from 'react';
-import {useContext} from '../../context/editorContext';
 import List from "@mui/material/List";
 import {CircularProgress} from "@mui/material";
 import Box from "@mui/material/Box";
 import {isLoading} from "../../context/loading";
 import {LogEntry} from "./LogEntry";
+import {ProjectContextState, useProjectContext} from "../../context/project/context";
+import {CompilationContextState, useCompilationContext} from "../../context/compilation/context";
 
 function ExecutionLogging() {
 
-  const {
-    executionLogging,
-    setExecutionLoggingTreeState,
-    currentFile
-  } = useContext();
+  const {executionLogging, setExecutionLoggingTreeState}: CompilationContextState = useCompilationContext();
+  const {currentFile}: ProjectContextState = useProjectContext();
 
   useEffect(() => {
     setExecutionLoggingTreeState(state => {

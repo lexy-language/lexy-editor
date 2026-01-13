@@ -1,15 +1,18 @@
 import React, {useState} from 'react';
 import {CircularProgress, Link, styled} from "@mui/material";
-import {MainContainer} from "../../context/layoutState";
-import {useContext} from "../../context/editorContext";
+import {MainContainer} from "../../context/editor/layoutState";
 import {isLoading} from "../../context/loading";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
-import {SpecificationsLogEntry} from "lexy/dist/specifications/specificationsLogEntry";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import ListItemIcon from "@mui/material/ListItemIcon";
+import {ProjectContextState, useProjectContext} from "../../context/project/context";
+import {useEditorContext} from "../../context/editor/context";
+import {CompilationContextState, useCompilationContext} from "../../context/compilation/context";
+import {SpecificationsLogModel} from "../../context/compilation/specificationsLogModel";
+import Box from "@mui/material/Box";
 
 const LoggingList = styled(List)`
   font-family: Menlo, Monaco, "Courier New", monospace;
@@ -34,20 +37,27 @@ const Separator = styled('div')`
   width: 12px;
 `;
 
+const FullAreaBox = styled(Box)`
+  padding: 16px;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
 interface LogItemProps {
-  entry: SpecificationsLogEntry
+  entry: SpecificationsLogModel
 }
 
 function LogItem(props: LogItemProps) {
+
   const {entry} = props;
-  const colorStyle = entry.isError ? {color: 'red'} : entry.node !== null ? {color: 'green'} : {};
-  const {
-    executionLogging,
-    setExecutionLogging,
-    setEditorPosition,
-    setLayout,
-    currentFile
-  } = useContext();
+  const colorStyle = entry.isError ? {color: 'red'} : entry.nodeName !== null ? {color: 'green'} : {};
+  const {setEditorPosition, setLayout} = useEditorContext();
+  const {currentFile}: ProjectContextState = useProjectContext();
+  const {executionLogging, setExecutionLogging}: CompilationContextState = useCompilationContext();
+
   const [open, setOpen] = useState(false);
 
   const showExecutionLogging = () => {
@@ -57,16 +67,18 @@ function LogItem(props: LogItemProps) {
   }
 
   const showCode = () => {
-    if (!entry.reference)  return;
-    if (currentFile !== null && !isLoading(currentFile) && currentFile.name !== entry.reference.file.fileName) {
-      //todo navigate to different file: logEntry.reference.file.fileName
+    if (!entry.fileName)  return;
+    if (currentFile !== null && !isLoading(currentFile) && currentFile.name != entry.fileName) {
+      //todo navigate to different file: logEntry.fileName
       return;
     }
-    setEditorPosition({
-      lineNumber: entry.reference.lineNumber,
-      column: entry.reference.characterNumber,
-      source: "state"
-    });
+    if (entry.lineNumber && entry.characterNumber) {
+      setEditorPosition({
+        lineNumber: entry.lineNumber,
+        column: entry.characterNumber,
+        source: "state"
+      });
+    }
     setLayout(layout => layout.setMainContainer(MainContainer.Source));
   }
 
@@ -82,7 +94,7 @@ function LogItem(props: LogItemProps) {
       {!entry.executionLogging ? <></>
         : <Link style={{ cursor: 'pointer' }} onClick={showExecutionLogging}>view execution logging</Link>}
       <Separator />
-      {!entry.reference ? <></>
+      {!entry.fileName ? <></>
         : <Link style={{ cursor: 'pointer' }} onClick={showCode}>view code</Link>}
     </ListItem>
     {entry.errors !== null && open ? <List>
@@ -93,17 +105,19 @@ function LogItem(props: LogItemProps) {
 
 function Testing() {
 
-  const {
-    testingLogging,
-  } = useContext();
+  const {testingLogging}: CompilationContextState = useCompilationContext();
 
   if (isLoading(testingLogging)) {
-    return <CircularProgress/>;
+    return (
+      <FullAreaBox><CircularProgress/></FullAreaBox>
+    );
   }
 
   const logs = testingLogging.map((entry, index) => <LogItem entry={entry} key={index}/>);
 
-  return <LoggingList disablePadding>{logs}</LoggingList>;
+  return (
+    <LoggingList disablePadding>{logs}</LoggingList>
+  );
 }
 
 export default Testing;

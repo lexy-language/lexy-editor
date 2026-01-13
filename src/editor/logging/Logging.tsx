@@ -1,11 +1,12 @@
 import React from 'react';
-import {CircularProgress, styled} from "@mui/material";
-import {useContext} from "../../context/editorContext";
-import {isLoading} from "../../context/loading";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
-import {LogEntry} from "lexy/dist/parser/parserLogger";
+import {CircularProgress, styled} from "@mui/material";
+import {useEditorContext} from "../../context/editor/context";
+import {useProjectContext} from "../../context/project/context";
+import {LogModel} from "../../context/project/logModel";
+import {isLoading} from "../../context/loading";
 
 const NoPaddingListItemButton = styled(ListItemButton)`
   padding: 2px;
@@ -17,25 +18,24 @@ const LoggingList = styled(List)`
 `;
 
 interface LogItemProps {
-  logEntry: LogEntry
+  logEntry: LogModel
 }
 
 function LogItem(props: LogItemProps) {
 
-  const {
-    setEditorPosition,
-    currentFile
-  } = useContext();
+  const {currentFile} = useProjectContext();
+  const {setEditorPosition} = useEditorContext();
+
   const {logEntry} = props;
 
   function setPosition() {
-    if (currentFile !== null && !isLoading(currentFile) && currentFile.name !== logEntry.reference.file.fileName) {
-      //todo navigate to different file: logEntry.reference.file.fileName
+    if (currentFile !== null && !isLoading(currentFile) && currentFile.name !== logEntry.fileName) {
+      //todo navigate to different file: logEntry.fileName
       return;
     }
     setEditorPosition({
-      lineNumber: logEntry.reference.lineNumber,
-      column: logEntry.reference.characterNumber,
+      lineNumber: logEntry.lineNumber,
+      column: logEntry.characterNumber,
       source: "state"
     })
   }
@@ -49,15 +49,13 @@ function LogItem(props: LogItemProps) {
 
 function Logging() {
 
-  const {
-    currentFileLogging,
-  } = useContext();
+  const {currentFileLogging} = useProjectContext();
 
   if (isLoading(currentFileLogging)) {
     return <CircularProgress/>;
   }
 
-  const sorted = currentFileLogging.sort((left, right) => left.sortIndex < right.sortIndex ? -1 : 1);
+  const sorted = [...currentFileLogging].sort((left, right) => left.sortIndex < right.sortIndex ? -1 : 1);
   const logs = sorted.map((entry, index) => <LogItem logEntry={entry} key={index} /> );
 
   return <LoggingList disablePadding>{logs}</LoggingList>;

@@ -5,12 +5,12 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import Stack from "@mui/material/Stack";
 import {useEffect, useState} from "react";
-import {useContext} from "../context/editorContext";
-import {ProjectFile, ProjectFolder} from "../api/project";
+import {ProjectFile, ProjectFolder} from "../../api/project";
 import {firstOrDefault} from "lexy/dist/infrastructure/arrayFunctions";
-import {isLoading} from "../context/loading";
+import {isLoading} from "../../context/loading";
 import {useNavigate} from "react-router";
 import {useLocation } from 'react-router-dom';
+import {useProjectContext} from "../../context/project/context";
 
 const Introduction = styled('div')(({theme}) => ({
   position: 'relative',
@@ -46,7 +46,7 @@ function CurrentFileBox(props: CurrentFileBoxProps) {
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
-  const {currentFile, setCurrentFile} = useContext();
+  const {currentFile, setCurrentFile} = useProjectContext();
   const {fileIndex, introductionFiles} = props;
   const navigate = useNavigate();
   const location = useLocation(); // React Hook
@@ -87,7 +87,7 @@ export default function IntroductionNavigation() {
     projectFiles,
     currentFile,
     setCurrentFile
-  } = useContext();
+  } = useProjectContext();
 
   const [introductionFiles, setIntroductionFiles] = useState<Array<ProjectFile> | null>([]);
 
@@ -113,15 +113,17 @@ export default function IntroductionNavigation() {
   const previousDisabled = fileIndex <= 0;
   const nextDisabled = introductionFiles === null || fileIndex >= introductionFiles.length - 1;
 
-  return <Introduction>
-    <Stack direction="row">
-      <IconButton size={"small"} color="inherit" disabled={previousDisabled} onClick={previous}>
-        <ChevronLeftIcon/>
-      </IconButton>
-      <CurrentFileBox fileIndex={fileIndex} introductionFiles={introductionFiles}/>
-      <IconButton size={"small"} color="inherit" disabled={nextDisabled} onClick={next}>
-        <ChevronRightIcon/>
-      </IconButton>
-    </Stack>
-  </Introduction>;
+  return (
+    <Introduction>
+      <Stack direction="row">
+        <IconButton size={"small"} color="inherit" disabled={previousDisabled} onClick={previous}>
+          <ChevronLeftIcon/>
+        </IconButton>
+        <CurrentFileBox fileIndex={fileIndex} introductionFiles={introductionFiles}/>
+        <IconButton size={"small"} color="inherit" disabled={nextDisabled} onClick={next}>
+          <ChevronRightIcon/>
+        </IconButton>
+      </Stack>
+    </Introduction>
+  );
 }

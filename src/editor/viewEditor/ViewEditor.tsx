@@ -1,6 +1,6 @@
 import React, {useEffect} from 'react';
 import Markdown from 'react-markdown'
-import {useContext} from "../../context/editorContext";
+import {useProjectContext} from "../../context/project/context";
 import {CircularProgress} from "@mui/material";
 import {isLoading} from "../../context/loading";
 import remarkGfm from 'remark-gfm';
@@ -14,9 +14,7 @@ const preFix = 'https://github.com/lexy-language/lexy-language/blob/main/';
 
 export default function ViewEditor() {
 
-  const {
-    setCurrentFile
-  } = useContext();
+  const {currentFileCode, setCurrentFile} = useProjectContext();
 
   function navigateLink(url: string) {
     const identifier = `Lexy|${url.substring(preFix.length).replaceAll("/", "|")}`;
@@ -25,10 +23,6 @@ export default function ViewEditor() {
       identifier: identifier
     });
   }
-
-  const {
-    currentFileCode,
-  } = useContext();
 
   const components = {
     a: (props: any) => {

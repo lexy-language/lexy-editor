@@ -1,12 +1,21 @@
-import React from 'react';
-import {EditorContextProvider} from "./editorContext";
+import React, {createElement} from 'react';
+import {EditorContextProvider} from "./editor/context";
+import {ProjectContextProvider, ProjectHandlers} from "./project/context";
+import {ComponentProps} from "../infrastructure/componentProps";
+import {CompilationContextProvider, CompilationHandlers} from "./compilation/context";
 
-type ContextsProps = {
-  children: React.ReactNode;
-};
+export const Contexts = (props: ComponentProps) => {
+  const handlers = [
+    ...CompilationHandlers,
+    ...ProjectHandlers,
+    CompilationContextProvider,
+    ProjectContextProvider,
+    EditorContextProvider
+  ];
 
-export const Contexts = ({children}: ContextsProps) => {
-  return <EditorContextProvider>
-    {children}
-  </EditorContextProvider>;
+  let element;
+  for (const handler of handlers) {
+    element = createElement(handler, element ? {children: element} : props);
+  }
+  return <>{element}</>;
 };

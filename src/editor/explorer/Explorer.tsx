@@ -1,5 +1,4 @@
 import React from 'react';
-import {useContext} from '../../context/editorContext';
 import {ProjectFile, ProjectFolder} from "../../api/project";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
@@ -13,6 +12,7 @@ import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import {CircularProgress, styled} from "@mui/material";
 import Box from "@mui/material/Box";
 import {isLoading} from "../../context/loading";
+import {useProjectContext} from "../../context/project/context";
 
 const indentValue = 16;
 const fileIndentValue = 30;
@@ -30,7 +30,7 @@ function FolderItem(props: {folder: ProjectFolder, currentFile: ProjectFile | nu
 
   const {folder, currentFile, indent, parent} = props;
   const path = [...parent, folder.name];
-  const {projectFilesTreeState, setProjectFilesTreeState} = useContext();
+  const {projectFilesTreeState, setProjectFilesTreeState} = useProjectContext();
   const open = projectFilesTreeState.isOpen(path);
   const setOpen = (value: boolean) => setProjectFilesTreeState(projectFilesTreeState.setOpen(path, value));
 
@@ -61,7 +61,7 @@ function FolderItem(props: {folder: ProjectFolder, currentFile: ProjectFile | nu
 function FileItem(props: {file: ProjectFile, currentFile: ProjectFile | null, indent: number}) {
 
   const {file, currentFile, indent} = props;
-  const {setCurrentFile} = useContext();
+  const {setCurrentFile} = useProjectContext();
 
   return (
     <ListItem disablePadding onClick={() => setCurrentFile(file)} style={currentFile === file ? {background: '#EEE'} : {}}>
@@ -78,7 +78,7 @@ function FileItem(props: {file: ProjectFile, currentFile: ProjectFile | null, in
 
 function Explorer() {
 
-  const {projectFiles, currentFile} = useContext();
+  const {projectFiles, currentFile} = useProjectContext();
 
   function content() {
     if (projectFiles === null) {

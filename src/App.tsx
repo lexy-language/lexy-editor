@@ -1,17 +1,17 @@
 import React, {lazy, Suspense, useEffect} from 'react';
 import {Route, Routes, Navigate} from 'react-router-dom';
 
-import EditorBar from "./mainPage/EditorBar";
-import FilePage from "./files/FilePage";
-import FileExamples from "./files/FileExamples";
-import FileNew from "./files/FileNew";
-import FileOpen from "./files/FileOpen";
+import EditorBar from "./pages/main/EditorBar";
+import FilePage from "./pages/files/FilePage";
+import FileExamples from "./pages/files/FileExamples";
+import FileNew from "./pages/files/FileNew";
+import FileOpen from "./pages/files/FileOpen";
 import {Contexts} from "./context/Contexts";
 import LoadingPage from "./pages/LoadingPage";
-import {hideResizeObserverLoopErrors} from "./mainPage/HideResizeObserverLoopErrors";
+import {hideResizeObserverLoopErrors} from "./pages/main/HideResizeObserverLoopErrors";
 import OnlyDesktopModal from "./editor/onlyDesktopModal/OnlyDesktopModal";
 
-const EditorPage = lazy(() => import('./editor/editorPage/EditorPage'));
+const EditorPage = lazy(() => import('./pages/editor/EditorPage'));
 
 function App() {
 

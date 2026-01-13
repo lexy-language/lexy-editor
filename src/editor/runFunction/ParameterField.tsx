@@ -5,21 +5,18 @@ import {
   InputLabel, MenuItem, Select,
   TextField,
 } from "@mui/material";
-import {useContext} from "../../context/editorContext";
+import {useProjectContext} from "../../context/project/context";
 import {styled} from "@mui/material/styles";
-import {VariableDefinition} from "lexy/dist/language/variableDefinition";
-import {TypeNames} from "lexy/dist/language/variableTypes/typeNames";
-import {VariableTypeName} from "lexy/dist/language/variableTypes/variableTypeName";
-import {asPrimitiveType} from "lexy/dist/language/variableTypes/primitiveType";
 import {DatePicker, LocalizationProvider} from "@mui/x-date-pickers";
 import {AdapterDateFns} from "@mui/x-date-pickers/AdapterDateFnsV3";
 import {Assert} from "lexy";
-import {asEnumType} from "lexy/dist/language/variableTypes/enumType";
 import ParameterFields from "./ParameterFields";
 import IndentFields from "../indentFields/IndentFields";
-import {IdentifierPath} from "lexy/dist/language/identifierPath";
 import Box from "@mui/material/Box";
-import {asDeclaredType} from "lexy/dist/language/variableTypes/declaredType";
+import {EnumTypeModel, ObjectTypeModel, TypeKind, TypeModel, VariableModel} from "../../context/project/nodeModel";
+import {IdentifierPath} from "lexy/dist/language/identifierPath";
+import {TypeNames} from "lexy/dist/language/variableTypes/typeNames";
+import {CompilationContextState, useCompilationContext} from "../../context/compilation/context";
 
 const ParameterTextField = styled(TextField)`
   width: 100%;
@@ -41,13 +38,14 @@ const FieldBox = styled(Box)`
 
 type ParameterFieldProps = {
   parent?: IdentifierPath
-  parameter: VariableDefinition;
+  parameter: VariableModel;
 }
 
 export default function ParameterField(props: ParameterFieldProps) {
 
   const {parameter, parent} = props;
-  const {executeFunction, setExecuteFunction} = useContext();
+  const {executeFunction, setExecuteFunction}: CompilationContextState = useCompilationContext();
+
   const path = !!parent ? parent.append([parameter.name]) : new IdentifierPath([parameter.name]);
 
   function enumValueChanged(event: any) {
@@ -78,25 +76,24 @@ export default function ParameterField(props: ParameterFieldProps) {
     return value;
   }
 
-  function renderPrimitiveType() {
-    const primitiveType = Assert.notNull(asPrimitiveType(parameter.variableType), "primitiveType");
-    if (primitiveType.type === TypeNames.string) {
+  function renderPrimitiveType(primitiveType: TypeModel) {
+    if (primitiveType.name === TypeNames.string) {
       const value = getParameterOrDefault();
       return <ParameterTextField label={parameter.name} variant="outlined"
                                  value={value} onChange={stringValueChanged}/>;
     }
-    if (primitiveType.type === TypeNames.number) {
+    if (primitiveType.name === TypeNames.number) {
       const value = getParameterOrDefault();
       return <ParameterTextField label={parameter.name} variant="outlined"
                                  type="number"
                                  value={!!value ? value : ''} onChange={numberValueChanged}/>;
     }
-    if (primitiveType.type === TypeNames.boolean) {
+    if (primitiveType.name === TypeNames.boolean) {
       const value = getParameterOrDefault();
       return <FormControlLabel control={<Checkbox value={value} onChange={booleanValueChanged}/>}
                                label={parameter.name}/>
     }
-    if (primitiveType.type === TypeNames.date) {
+    if (primitiveType.name === TypeNames.date) {
       const value = getParameterOrDefault();
       return <LocalizationProvider dateAdapter={AdapterDateFns}>
         <ParameterDatePicker label={parameter.name} value={value} onChange={dateValueChanged}
@@ -104,38 +101,35 @@ export default function ParameterField(props: ParameterFieldProps) {
       </LocalizationProvider>;
     }
 
-    return <div>Unknown primitive type: {primitiveType.type}</div>
+    return <div>Unknown primitive type: {primitiveType.name}</div>
   }
 
-  function renderEnumType() {
-    const enumType = Assert.notNull(asEnumType(parameter.variableType), "enumType");
+  function renderEnumType(enumType: EnumTypeModel) {
     const value = getParameterOrDefault();
     return <FormControl fullWidth>
       <InputLabel id={"label-select-" + parameter.name}>{parameter.name}</InputLabel>
       <ParameterSelect labelId={"label-select-" + parameter.name}
                        value={value} label={parameter.name} onChange={enumValueChanged}>
-        {enumType.enum.members.map((member, index) =>
-          <MenuItem key={index} value={`${enumType.type}.${member.name}`}>{member.name}</MenuItem>)}
+        {enumType.members.map((member, index) =>
+          <MenuItem key={index} value={`${enumType.kind}.${member}`}>{member}</MenuItem>)}
       </ParameterSelect>
     </FormControl>
   }
 
-  function renderCustomType() {
-    const declaredType = Assert.notNull(asDeclaredType(parameter.variableType), "enumType");
-    const variables = declaredType.typeDefinition.variables;
+  function renderObjectType(objectType: ObjectTypeModel) {
     return <IndentFields name={parameter.name}>
-      <ParameterFields variables={variables} parent={path}/>
+      <ParameterFields variables={objectType.variables} parent={path}/>
     </IndentFields>;
   }
 
-  switch (parameter.variableType?.variableTypeName) {
-    case VariableTypeName.PrimitiveType:
-      return <FieldBox>{renderPrimitiveType()}</FieldBox>;
-    case VariableTypeName.EnumType:
-      return <FieldBox>{renderEnumType()}</FieldBox>;
-    case VariableTypeName.DeclaredType:
-      return renderCustomType();
+  switch (parameter.type.kind) {
+    case TypeKind.Primitive:
+      return <FieldBox>{renderPrimitiveType(parameter.type)}</FieldBox>;
+    case TypeKind.Enum:
+      return <FieldBox>{renderEnumType(parameter.type as EnumTypeModel)}</FieldBox>;
+    case TypeKind.Object:
+      return renderObjectType(parameter.type as ObjectTypeModel);
     default:
-      return <div>Unknown type: {parameter.name}</div>
+      return <div>Unknown type: {parameter.name}({parameter.type.kind})</div>
   }
 }

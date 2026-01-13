@@ -1,5 +1,5 @@
 import React from "react";
-import {useContext} from "../../context/editorContext";
+import {useProjectContext} from "../../context/project/context";
 import {styled} from "@mui/material";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
@@ -8,9 +8,10 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import ListItemButton from "@mui/material/ListItemButton";
 import {LogVariables} from "lexy/dist/runTime/executionContext";
-import {ExecutionLogEntry} from "lexy/dist/runTime/executionLogEntry";
 import Stack from "@mui/material/Stack";
 import Variables from "./Variables";
+import {ExecutionLogModel} from "../../context/compilation/executionLogModel";
+import {CompilationContextState, useCompilationContext} from "../../context/compilation/context";
 
 const indentValue = 16;
 
@@ -38,7 +39,7 @@ const VariablesListItem = styled(ListItem)`
 `;
 
 type TreeNodeProps = {
-  entry: ExecutionLogEntry,
+  entry: ExecutionLogModel,
   indent: number,
   parent: Array<string>,
   index: number
@@ -87,7 +88,7 @@ export function LogEntry(props: TreeNodeProps) {
     const children = [];
     if (openChildren && entry.entries) {
       for (let index = 0; index < entry.entries.length; index++) {
-        const childEntry: ExecutionLogEntry = entry.entries[index];
+        const childEntry: ExecutionLogModel = entry.entries[index];
         if (!!childEntry) {
           children.push(<LogEntry entry={childEntry} indent={indent + 1} key={index} parent={path} index={index}/>);
         }
@@ -99,16 +100,15 @@ export function LogEntry(props: TreeNodeProps) {
   const {entry, indent, parent, index} = props;
   const path = [...parent, index.toString()];
   const pathVariables = [...parent, index.toString(), "var"];
-  const {
-    executionLoggingTreeState,
-    setExecutionLoggingTreeState
-  } = useContext();
+  const {executionLoggingTreeState, setExecutionLoggingTreeState}: CompilationContextState = useCompilationContext();
+
   const openChildren = executionLoggingTreeState.isOpen(path);
   const openVariables = executionLoggingTreeState.isOpen(pathVariables);
   const isSystemVariables = entry.message === "Parameters" || entry.message === "Results";
   const showVariables = hasVariables(entry.readVariables) || hasVariables(entry.writeVariables);
   const hasChildren = entry.entries.length > 0 || (isSystemVariables && showVariables);
   const isFunction = entry.message.startsWith("Execute:");
+
   const setOpenChildren = (value: boolean) => setExecutionLoggingTreeState(executionLoggingTreeState.setOpen(path, value));
   const setOpenVariables = (value: boolean) => setExecutionLoggingTreeState(executionLoggingTreeState.setOpen(pathVariables, value));
 

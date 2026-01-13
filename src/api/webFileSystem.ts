@@ -1,22 +1,22 @@
 import {IFileSystem} from "lexy";
-import {ProjectState} from "./projectState";
+import {CodeFileStorage, workerCodeFileStorage} from "./codeStorage";
 
 export class WebFileSystem implements IFileSystem {
 
-  private currentProject: ProjectState;
-  private currentFolder: string[];
+  private readonly currentFolder: string[];
+  private readonly store: CodeFileStorage;
 
-  constructor(currentFolder: string[], currentProject: ProjectState) {
+  constructor(currentFolder: string[]) {
     this.currentFolder = currentFolder;
-    this.currentProject = currentProject;
+    this.store = workerCodeFileStorage();
   }
 
-  readAllLines(fileName: string): Array<string> {
+  async readAllLines(fileName: string): Promise<string[]> {
     const fullFile = this.isPathRooted(fileName) ? fileName : this.getFullPath(fileName);
     const parts = fullFile.split("/");
     this.removeFirst(parts);
-    const data = this.currentProject.file(parts.join("|"));
-    if (data === undefined) {
+    const data = await this.store.getCodeFile(parts.join("|"));
+    if (!data) {
       throw new Error("Couldn't load: " + fileName);
     }
     return data.split("\n");
@@ -73,14 +73,14 @@ export class WebFileSystem implements IFileSystem {
     return parts.join("/");
   }
 
-  fileExists(fileName: string): boolean {
+  async fileExists(fileName: string): Promise<boolean> {
     const parts = fileName.split("/");
     if (parts[0].length === 0) this.removeFirst(parts);
-    const data = this.currentProject.file(parts.join('|'));
+    const data = await this.store.getCodeFile(parts.join('|'));
     return !!data;
   }
 
-  directoryExists(absoluteFolder: string): boolean {
+  async directoryExists(absoluteFolder: string): Promise<boolean> {
     throw new Error("Not implemented.")
   }
 
@@ -88,11 +88,11 @@ export class WebFileSystem implements IFileSystem {
     return folder.startsWith("/");
   }
 
-  getDirectoryFiles(folder: string, extension: Array<string>): Array<string> {
+  async getDirectoryFiles(folder: string, extension: Array<string>): Promise<string[]> {
     return [];
   }
 
-  getDirectories(folder: string): Array<string> {
+  async getDirectories(folder: string): Promise<string[]> {
     return [];
   }
 

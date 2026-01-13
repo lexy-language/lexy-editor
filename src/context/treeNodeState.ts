@@ -21,6 +21,12 @@ export class TreeNodeState {
     return new TreeNodeState(newState);
   }
 
+  public delete(path: Array<string>): TreeNodeState {
+    const fullPath = TreeNodeState.fullPath(path);
+    delete this.state[fullPath];
+    return new TreeNodeState(this.state);
+  }
+
   private static fullPath(path: Array<string>) {
     return path.join("|");
   }
