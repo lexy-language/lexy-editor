@@ -52,11 +52,10 @@ function codeFileStorage(filesStore: IndexedDBStore<FileCode>): CodeFileStorage 
 }
 
 export function useCodeFileStorage(): CodeFileStorage {
-  const store = useMemo(() => {
+  return useMemo(() => {
     const storeFiles = windowIndexedDBStore<FileCode>(idbConfig, "code-files");
     return codeFileStorage(storeFiles);
   }, []);
-  return store;
 }
 
 export function workerCodeFileStorage(): CodeFileStorage {
