@@ -1,7 +1,8 @@
 {
   "files": {
-    "main.js": "https://lexy-language.github.io/lexy-editor/static/js/main.b6b8ba06.js",
-    "static/js/5607.21eee4af.chunk.js": "https://lexy-language.github.io/lexy-editor/static/js/5607.21eee4af.chunk.js",
+    "main.js": "https://lexy-language.github.io/lexy-editor/static/js/main.0588a852.js",
+    "static/js/9461.a26581ae.chunk.js": "https://lexy-language.github.io/lexy-editor/static/js/9461.a26581ae.chunk.js",
+    "static/js/5106.60b94d9d.chunk.js": "https://lexy-language.github.io/lexy-editor/static/js/5106.60b94d9d.chunk.js",
     "static/js/6453.5e7b8845.chunk.js": "https://lexy-language.github.io/lexy-editor/static/js/6453.5e7b8845.chunk.js",
     "static/js/9553.8a0671ba.chunk.js": "https://lexy-language.github.io/lexy-editor/static/js/9553.8a0671ba.chunk.js",
     "static/js/4473.d038901e.chunk.js": "https://lexy-language.github.io/lexy-editor/static/js/4473.d038901e.chunk.js",
@@ -85,12 +86,14 @@
     "static/js/1390.9aa8fb23.chunk.js": "https://lexy-language.github.io/lexy-editor/static/js/1390.9aa8fb23.chunk.js",
     "static/js/3852.da702c53.chunk.js": "https://lexy-language.github.io/lexy-editor/static/js/3852.da702c53.chunk.js",
     "static/js/2756.2313383b.chunk.js": "https://lexy-language.github.io/lexy-editor/static/js/2756.2313383b.chunk.js",
-    "static/css/2696.bb70a379.chunk.css": "https://lexy-language.github.io/lexy-editor/static/css/2696.bb70a379.chunk.css",
-    "static/js/2696.0624f2d1.chunk.js": "https://lexy-language.github.io/lexy-editor/static/js/2696.0624f2d1.chunk.js",
+    "static/css/2625.675ad591.chunk.css": "https://lexy-language.github.io/lexy-editor/static/css/2625.675ad591.chunk.css",
+    "static/js/2625.7f05a5de.chunk.js": "https://lexy-language.github.io/lexy-editor/static/js/2625.7f05a5de.chunk.js",
+    "static/js/4926.50683a82.chunk.js": "https://lexy-language.github.io/lexy-editor/static/js/4926.50683a82.chunk.js",
     "static/media/codicon.ttf": "https://lexy-language.github.io/lexy-editor/static/media/codicon.7064e66c3890a12c47b4.ttf",
     "index.html": "https://lexy-language.github.io/lexy-editor/index.html",
-    "main.b6b8ba06.js.map": "https://lexy-language.github.io/lexy-editor/static/js/main.b6b8ba06.js.map",
-    "5607.21eee4af.chunk.js.map": "https://lexy-language.github.io/lexy-editor/static/js/5607.21eee4af.chunk.js.map",
+    "main.0588a852.js.map": "https://lexy-language.github.io/lexy-editor/static/js/main.0588a852.js.map",
+    "9461.a26581ae.chunk.js.map": "https://lexy-language.github.io/lexy-editor/static/js/9461.a26581ae.chunk.js.map",
+    "5106.60b94d9d.chunk.js.map": "https://lexy-language.github.io/lexy-editor/static/js/5106.60b94d9d.chunk.js.map",
     "6453.5e7b8845.chunk.js.map": "https://lexy-language.github.io/lexy-editor/static/js/6453.5e7b8845.chunk.js.map",
     "9553.8a0671ba.chunk.js.map": "https://lexy-language.github.io/lexy-editor/static/js/9553.8a0671ba.chunk.js.map",
     "4473.d038901e.chunk.js.map": "https://lexy-language.github.io/lexy-editor/static/js/4473.d038901e.chunk.js.map",
@@ -174,10 +177,11 @@
     "1390.9aa8fb23.chunk.js.map": "https://lexy-language.github.io/lexy-editor/static/js/1390.9aa8fb23.chunk.js.map",
     "3852.da702c53.chunk.js.map": "https://lexy-language.github.io/lexy-editor/static/js/3852.da702c53.chunk.js.map",
     "2756.2313383b.chunk.js.map": "https://lexy-language.github.io/lexy-editor/static/js/2756.2313383b.chunk.js.map",
-    "2696.bb70a379.chunk.css.map": "https://lexy-language.github.io/lexy-editor/static/css/2696.bb70a379.chunk.css.map",
-    "2696.0624f2d1.chunk.js.map": "https://lexy-language.github.io/lexy-editor/static/js/2696.0624f2d1.chunk.js.map"
+    "2625.675ad591.chunk.css.map": "https://lexy-language.github.io/lexy-editor/static/css/2625.675ad591.chunk.css.map",
+    "2625.7f05a5de.chunk.js.map": "https://lexy-language.github.io/lexy-editor/static/js/2625.7f05a5de.chunk.js.map",
+    "4926.50683a82.chunk.js.map": "https://lexy-language.github.io/lexy-editor/static/js/4926.50683a82.chunk.js.map"
   },
   "entrypoints": [
-    "static/js/main.b6b8ba06.js"
+    "static/js/main.0588a852.js"
   ]
 }
