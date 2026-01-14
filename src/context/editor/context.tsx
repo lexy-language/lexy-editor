@@ -3,7 +3,6 @@ import React, {useState} from 'react';
 import {LayoutState} from "./layoutState";
 import {ComponentProps} from "../../infrastructure/componentProps";
 import {nothing, Nothing} from "../../infrastructure/nothing";
-import {stat} from "fs";
 
 export type EditorPosition = {
   lineNumber: number;

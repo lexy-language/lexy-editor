@@ -1,6 +1,4 @@
 import {languages} from "monaco-editor";
-import LanguageConfiguration = languages.LanguageConfiguration;
-import IMonarchLanguage = languages.IMonarchLanguage;
 
 export const conf: languages.LanguageConfiguration = {
 	comments: {

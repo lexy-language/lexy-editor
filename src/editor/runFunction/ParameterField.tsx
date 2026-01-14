@@ -5,11 +5,9 @@ import {
   InputLabel, MenuItem, Select,
   TextField,
 } from "@mui/material";
-import {useProjectContext} from "../../context/project/context";
 import {styled} from "@mui/material/styles";
 import {DatePicker, LocalizationProvider} from "@mui/x-date-pickers";
 import {AdapterDateFns} from "@mui/x-date-pickers/AdapterDateFnsV3";
-import {Assert} from "lexy";
 import ParameterFields from "./ParameterFields";
 import IndentFields from "../indentFields/IndentFields";
 import Box from "@mui/material/Box";

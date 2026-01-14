@@ -54,7 +54,7 @@ export function HandleCompilationComplete({children}: ComponentProps) {
 
     if (!compilationCompleted) return;
 
-    if (compilationCompleted.type == ResponseType.CompilationFailed) {
+    if (compilationCompleted.type === ResponseType.CompilationFailed) {
       setError(compilationCompleted as CompilationFailedResponse);
       return;
     }
@@ -64,6 +64,7 @@ export function HandleCompilationComplete({children}: ComponentProps) {
     setCurrentFileLogging(errorOrSuccessful(logging, elapsed));
     setNodes(nodes);
     setCurrentNode(nothing);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [compilationCompleted]);
 
   return <>{children}</>;

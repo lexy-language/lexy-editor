@@ -39,7 +39,7 @@ export function HandleFileChange({children}: ComponentProps) {
       return;
     }
 
-    if (lastCode == currentFileCode.code) return;
+    if (lastCode === currentFileCode.code) return;
     setLastCode(currentFileCode.code);
 
     const currentFolder = currentFileCode.identifier.split("|");

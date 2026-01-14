@@ -53,7 +53,7 @@ async function processWorkerRequest(message: MessageEvent<Request>): Promise<voi
 
     async function continueOperation(): Promise<boolean> {
       let operationState = await getOperationState(operationKey);
-      let continueValue = operationState == request.timestamp;
+      let continueValue = operationState === request.timestamp;
       if (!continueValue) {
         console.log(`CANCEL CURRENT OPERATION: ${operationState} (new: ${request.timestamp})`);
       }
@@ -115,9 +115,9 @@ async function processWorkerRequest(message: MessageEvent<Request>): Promise<voi
     self.postMessage(response);
   }
 
-  if (message.data.type == RequestType.StartCompilation) {
+  if (message.data.type === RequestType.StartCompilation) {
     await processStartCompilation(message.data as StartCompilationRequest);
-  } else if (message.data.type == RequestType.RunFunction) {
+  } else if (message.data.type === RequestType.RunFunction) {
     await processExecuteFunction(message.data as RunFunctionRequest);
   } else {
     console.log("Invalid compile worker request: " + JSON.stringify(message.data));

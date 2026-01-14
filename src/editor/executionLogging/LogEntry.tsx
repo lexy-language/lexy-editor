@@ -1,5 +1,4 @@
 import React from "react";
-import {useProjectContext} from "../../context/project/context";
 import {styled} from "@mui/material";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";

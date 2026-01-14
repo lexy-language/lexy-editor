@@ -139,7 +139,7 @@ export function TreeNode(props: TreeNodeProps) {
   }
 
   const {node, indent, parent, index} = props;
-  const path = node.kind == NodeKind.Expression ? [...parent, "" + index, node.name] : [...parent, node.name];
+  const path = node.kind === NodeKind.Expression ? [...parent, "" + index, node.name] : [...parent, node.name];
   const {setEditorPosition, setLayout} = useEditorContext();
   const {
     nodeTreeState,

@@ -71,7 +71,7 @@ export default function SourceEditor() {
   function handleEditorChange(value: string | undefined, second: any) {
 
     const reason = firstOrDefault<{metadata: {source: string}}>(second.detailedReasons)?.metadata?.source;
-    if (reason == "setValue") return;
+    if (reason === "setValue") return;
     console.log("handleEditorChange: " + JSON.stringify(second));
     if (!value) return;
     if (!currentFileCode || isLoading(currentFileCode)) return;

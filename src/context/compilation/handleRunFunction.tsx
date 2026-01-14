@@ -23,6 +23,7 @@ export function HandleRunFunction({children}: ComponentProps) {
       setExecuteFunction(state => state.setError(runFunctionCompleted.error.toString()));
       setExecutionLogging(state => state.reset());
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [runFunctionCompleted]);
 
   return <>{children}</>;

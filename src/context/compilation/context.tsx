@@ -65,11 +65,11 @@ export const CompilationContextProvider = ({children}: ComponentProps) => {
   const {updateOperationState} = useOperationStateStorage();
 
   function handleResponse(response: MessageEvent<Response>) {
-    if (response.data.type == ResponseType.CompilationCompleted) {
+    if (response.data.type === ResponseType.CompilationCompleted) {
       setCompilationCompleted(response.data as CompilationSuccessResponse);
-    } else if (response.data.type == ResponseType.RunScenariosCompleted) {
+    } else if (response.data.type === ResponseType.RunScenariosCompleted) {
       setRunScenariosCompleted(response.data as RunScenariosResponse);
-    } else if (response.data.type == ResponseType.RunFunctionCompleted) {
+    } else if (response.data.type === ResponseType.RunFunctionCompleted) {
       setRunFunctionCompleted(response.data as RunFunctionCompletedResponse);
     } else {
       console.log(`Error: Unknown message: ${JSON.stringify(response.data)}`);

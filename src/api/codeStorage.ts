@@ -1,4 +1,4 @@
-import React, {useMemo} from "react";
+import {useMemo} from "react";
 import {IndexedDBStore, windowIndexedDBStore, workerIndexedDBStore} from "./indexedDb/indexedDBStore";
 import {idbConfig} from "./idbConfig";
 

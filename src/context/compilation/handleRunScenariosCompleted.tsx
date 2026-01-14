@@ -11,6 +11,7 @@ export function HandleRunScenariosCompleted({children}: ComponentProps) {
     if (runScenariosCompleted) {
       setTestingLogging(() => runScenariosCompleted.result)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [runScenariosCompleted]);
 
   return <>{children}</>;

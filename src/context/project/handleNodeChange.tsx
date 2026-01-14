@@ -10,6 +10,7 @@ export function HandleNodeChange({children}: ComponentProps) {
 
   useEffect(() => {
     setExecuteFunction(executeFunction => executeFunction.reset());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentNode])
 
   return <>{children}</>;

@@ -68,7 +68,7 @@ function LogItem(props: LogItemProps) {
 
   const showCode = () => {
     if (!entry.fileName)  return;
-    if (currentFile !== null && !isLoading(currentFile) && currentFile.name != entry.fileName) {
+    if (currentFile !== null && !isLoading(currentFile) && currentFile.name !== entry.fileName) {
       //todo navigate to different file: logEntry.fileName
       return;
     }

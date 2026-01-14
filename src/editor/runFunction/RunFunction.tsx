@@ -82,10 +82,10 @@ function RunFunction() {
     if (isLoading(nodes)) return;
 
     function addFunction(node: NodeModel) {
-      if (node.kind == NodeKind.Function) {
+      if (node.kind === NodeKind.Function) {
         result.push(<MenuItem key={node.name} value={node.name}>{node.name}</MenuItem>)
-      } else if (node.kind == NodeKind.Scenario) {
-        const scenarioFunction = firstOrDefault(node.children, where => where.kind == NodeKind.Function) as FunctionNodeModel;
+      } else if (node.kind === NodeKind.Scenario) {
+        const scenarioFunction = firstOrDefault(node.children, where => where.kind === NodeKind.Function) as FunctionNodeModel;
         if (scenarioFunction) {
           result.push(<MenuItem key={scenarioFunction.name} value={node.name}>{scenarioFunction.name}</MenuItem>)
         }
@@ -115,10 +115,10 @@ function RunFunction() {
   }
 
   function getFunctionNode(currentNode: NodeModel | Nothing): FunctionNodeModel | Nothing {
-    if (currentNode?.nodeType == NodeType.Function) {
+    if (currentNode?.nodeType === NodeType.Function) {
       return currentNode as FunctionNodeModel;
-    } else if (currentNode?.nodeType == NodeType.Scenario) {
-      return firstOrDefault(currentNode.children, where => where.nodeType == NodeType.Function) as FunctionNodeModel;
+    } else if (currentNode?.nodeType === NodeType.Scenario) {
+      return firstOrDefault(currentNode.children, where => where.nodeType === NodeType.Function) as FunctionNodeModel;
     }
     return null
   }
