@@ -21,7 +21,7 @@
     "assert": "^2.1.0",
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.13",
-    "lexy": "file:libs/lexy-compiler-v0.0.98.tgz",
+    "lexy": "file:libs/lexy-compiler-v0.0.99.tgz",
     "moment": "^2.30.1",
     "monaco-editor": "^0.36.1",
     "react": "^18.3.1",
