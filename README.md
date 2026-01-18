@@ -25,7 +25,7 @@ Ensure lexy-typescript compiles correctly before running the command. Repositori
 
 ## Run locally
 
-Ensure node.js (v16 or above) is installed.
+Ensure node.js (v18 or above) is installed.
 Tested with node.js v18.20.8.
 
 Install packages
