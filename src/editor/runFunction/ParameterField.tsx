@@ -1,20 +1,15 @@
 import React from 'react';
-import {
-  Checkbox,
-  FormControl, FormControlLabel,
-  InputLabel, MenuItem, Select,
-  TextField,
-} from "@mui/material";
+import {Checkbox, FormControl, FormControlLabel, InputLabel, MenuItem, Select, TextField,} from "@mui/material";
 import {styled} from "@mui/material/styles";
 import {DatePicker, LocalizationProvider} from "@mui/x-date-pickers";
 import {AdapterDateFns} from "@mui/x-date-pickers/AdapterDateFnsV3";
 import ParameterFields from "./ParameterFields";
 import IndentFields from "../indentFields/IndentFields";
 import Box from "@mui/material/Box";
-import {EnumTypeModel, ObjectTypeModel, TypeKind, TypeModel, VariableModel} from "../../context/project/nodeModel";
+import {EnumTypeModel, ObjectTypeModel, TypeModel, TypeModelKind, VariableModel} from "../../context/project/nodeModel";
 import {IdentifierPath} from "lexy/dist/language/identifierPath";
-import {TypeNames} from "lexy/dist/language/variableTypes/typeNames";
 import {CompilationContextState, useCompilationContext} from "../../context/compilation/context";
+import {TypeNames} from "lexy/dist/language/typeSystem/typeNames";
 
 const ParameterTextField = styled(TextField)`
   width: 100%;
@@ -74,24 +69,24 @@ export default function ParameterField(props: ParameterFieldProps) {
     return value;
   }
 
-  function renderPrimitiveType(primitiveType: TypeModel) {
-    if (primitiveType.name === TypeNames.string) {
+  function renderValueType(valueType: TypeModel) {
+    if (valueType.name === TypeNames.string) {
       const value = getParameterOrDefault();
       return <ParameterTextField label={parameter.name} variant="outlined"
                                  value={value} onChange={stringValueChanged}/>;
     }
-    if (primitiveType.name === TypeNames.number) {
+    if (valueType.name === TypeNames.number) {
       const value = getParameterOrDefault();
       return <ParameterTextField label={parameter.name} variant="outlined"
                                  type="number"
                                  value={!!value ? value : ''} onChange={numberValueChanged}/>;
     }
-    if (primitiveType.name === TypeNames.boolean) {
+    if (valueType.name === TypeNames.boolean) {
       const value = getParameterOrDefault();
       return <FormControlLabel control={<Checkbox value={value} onChange={booleanValueChanged}/>}
                                label={parameter.name}/>
     }
-    if (primitiveType.name === TypeNames.date) {
+    if (valueType.name === TypeNames.date) {
       const value = getParameterOrDefault();
       return <LocalizationProvider dateAdapter={AdapterDateFns}>
         <ParameterDatePicker label={parameter.name} value={value} onChange={dateValueChanged}
@@ -99,7 +94,7 @@ export default function ParameterField(props: ParameterFieldProps) {
       </LocalizationProvider>;
     }
 
-    return <div>Unknown primitive type: {primitiveType.name}</div>
+    return <div>Unknown primitive type: {valueType.name}</div>
   }
 
   function renderEnumType(enumType: EnumTypeModel) {
@@ -121,11 +116,11 @@ export default function ParameterField(props: ParameterFieldProps) {
   }
 
   switch (parameter.type.kind) {
-    case TypeKind.Primitive:
-      return <FieldBox>{renderPrimitiveType(parameter.type)}</FieldBox>;
-    case TypeKind.Enum:
+    case TypeModelKind.Primitive:
+      return <FieldBox>{renderValueType(parameter.type)}</FieldBox>;
+    case TypeModelKind.Enum:
       return <FieldBox>{renderEnumType(parameter.type as EnumTypeModel)}</FieldBox>;
-    case TypeKind.Object:
+    case TypeModelKind.Object:
       return renderObjectType(parameter.type as ObjectTypeModel);
     default:
       return <div>Unknown type: {parameter.name}({parameter.type.kind})</div>

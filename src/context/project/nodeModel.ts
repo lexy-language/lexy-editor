@@ -2,10 +2,6 @@ import type {INode} from "lexy/dist/language/node";
 
 import {Function} from "lexy/dist/language/functions/function";
 import {NodeType} from "lexy/dist/language/nodeType";
-import {VariableType} from "lexy/dist/language/variableTypes/variableType";
-import {asPrimitiveType} from "lexy/dist/language/variableTypes/primitiveType";
-import {TypeNames} from "lexy/dist/language/variableTypes/typeNames";
-import {VariableTypeName} from "lexy/dist/language/variableTypes/variableTypeName";
 import {asComponentNode} from "lexy/dist/language/componentNode";
 import {Assert} from "lexy";
 import {asVariableDefinition} from "lexy/dist/language/variableDefinition";
@@ -13,10 +9,12 @@ import {asVariableDeclarationExpression} from "lexy/dist/language/expressions/va
 import {asAssignmentDefinition} from "lexy/dist/language/scenarios/assignmentDefinition";
 import {asColumnHeader} from "lexy/dist/language/tables/columnHeader";
 import {nothing, Nothing} from "../../infrastructure/nothing";
-import {asGeneratedType} from "lexy/dist/language/variableTypes/generatedType";
-import {asDeclaredType} from "lexy/dist/language/variableTypes/declaredType";
-import {asEnumType} from "lexy/dist/language/variableTypes/enumType";
 import {asEnumMember} from "lexy/dist/language/enums/enumMember";
+import {Type} from "lexy/dist/language/typeSystem/type";
+import {TypeKind} from "lexy/dist/language/typeSystem/typeKind";
+import {asValueType} from "lexy/dist/language/typeSystem/valueType";
+import {asObjectType} from "lexy/dist/language/typeSystem/objects/objectType";
+import {TypeNames} from "lexy/dist/language/typeSystem/typeNames";
 
 export enum NodeKind {
   Unknown = "Unknown",
@@ -54,7 +52,7 @@ export interface FunctionNodeModel extends NodeModel {
   readonly parameters: readonly VariableModel[];
 }
 
-export enum TypeKind {
+export enum TypeModelKind {
   Unsupported,
   Primitive,
   Enum,
@@ -62,17 +60,17 @@ export enum TypeKind {
 }
 
 export interface TypeModel {
-  readonly kind: TypeKind;
+  readonly kind: TypeModelKind;
   readonly name: string;
 }
 
 export interface EnumTypeModel extends TypeModel {
-  readonly kind: TypeKind.Enum;
+  readonly kind: TypeModelKind.Enum;
   readonly members: string[]
 }
 
 export interface ObjectTypeModel extends TypeModel {
-  readonly kind: TypeKind.Object;
+  readonly kind: TypeModelKind.Object;
   readonly variables: VariableModel[];
 }
 
@@ -85,11 +83,11 @@ export function mapNodes(nodes: readonly INode[]): NodeModel[] {
 
   const typesCache: {[key: string]: TypeModel} = {};
 
-  function mapTypeToKind(variableType: VariableType | Nothing | undefined): NodeKind  {
+  function mapTypeToKind(variableType: Type | Nothing | undefined): NodeKind  {
 
     function mapValueType() {
-      const primitiveType = asPrimitiveType(variableType);
-      switch (primitiveType?.type) {
+      const valueType = asValueType(variableType);
+      switch (valueType?.type) {
         case TypeNames.number:
           return NodeKind.Number;
         case TypeNames.boolean:
@@ -103,34 +101,34 @@ export function mapNodes(nodes: readonly INode[]): NodeModel[] {
       }
     }
 
-    switch (variableType?.variableTypeName) {
-      case VariableTypeName.TableType:
+    switch (variableType?.typeKind) {
+      case TypeKind.TableType:
         return NodeKind.Table;
-      case VariableTypeName.EnumType:
+      case TypeKind.EnumType:
         return NodeKind.Enum;
-      case VariableTypeName.DeclaredType:
+      case TypeKind.DeclaredType:
         return NodeKind.Type;
-      case VariableTypeName.GeneratedType:
+      case TypeKind.GeneratedType:
         return NodeKind.Type;
-      case VariableTypeName.PrimitiveType:
+      case TypeKind.ValueType:
         return mapValueType();
-      case VariableTypeName.FunctionType:
+      case TypeKind.FunctionType:
         return NodeKind.Function;
 
-      case VariableTypeName.VoidType:
+      case TypeKind.VoidType:
       case nothing:
       default:
         return NodeKind.Unknown;
     }
   }
 
-  function mapType(variableType: VariableType | Nothing): TypeModel {
+  function mapType(type: Type | Nothing): TypeModel {
 
-    function mapPrimitiveType(): TypeModel {
-      let primitiveType = Assert.notNull(asPrimitiveType(variableType), "asPrimitiveType");
+    function mapValueType(): TypeModel {
+      let valueType = Assert.notNull(asValueType(type), "asValueType");
       return {
-        kind: TypeKind.Primitive,
-        name: primitiveType.type
+        kind: TypeModelKind.Primitive,
+        name: valueType.type
       };
     }
 
@@ -141,54 +139,36 @@ export function mapNodes(nodes: readonly INode[]): NodeModel[] {
       return type;
     }
 
-    function mapGeneratedType () {
-      let objectType = Assert.notNull(asGeneratedType(variableType), "asGeneratedType");
+    function mapObjectType () {
+      let objectType = Assert.notNull(asObjectType(type), "asGeneratedType");
       return fromCache<ObjectTypeModel>(objectType.name, () => ({
-        kind: TypeKind.Object,
+        kind: TypeModelKind.Object,
         name: objectType.name,
         variables: objectType.members.map(member => ({name: member.name, type: mapType(member.type)}))
       }));
     }
 
-    function mapDeclaredType() {
-      let objectType = Assert.notNull(asDeclaredType(variableType), "asDeclaredType");
-      return fromCache<ObjectTypeModel>(objectType.type, () => ({
-        kind: TypeKind.Object,
-        name: objectType.type,
-        variables: objectType.typeDefinition.variables.map(member => ({name: member.name, type: mapType(member.variableType)}))
-      }));
-    }
+    switch (type?.typeKind) {
+      case TypeKind.ValueType:
+        return mapValueType();
+      case TypeKind.GeneratedType:
+        return mapObjectType();
+      case TypeKind.DeclaredType:
+        return mapObjectType();
+      case TypeKind.EnumType:
+        return mapObjectType();
 
-    function mapEnumType() {
-      let enumType = Assert.notNull(asEnumType(variableType), "asGeneratedType");
-      return fromCache<EnumTypeModel>(enumType.type, () => ({
-        kind: TypeKind.Enum,
-        name: enumType.type,
-        members: enumType.enum.members.map(member => member.name)
-      }));
-    }
-
-    switch (variableType?.variableTypeName) {
-      case VariableTypeName.PrimitiveType:
-        return mapPrimitiveType();
-      case VariableTypeName.GeneratedType:
-        return mapGeneratedType();
-      case VariableTypeName.DeclaredType:
-        return mapDeclaredType();
-      case VariableTypeName.EnumType:
-        return mapEnumType();
-
-      case VariableTypeName.FunctionType:
-      case VariableTypeName.TableType:
+      case TypeKind.FunctionType:
+      case TypeKind.TableType:
       default:
-        return {kind: TypeKind.Unsupported, name: variableType?.variableTypeName ?? "nothing"}
+        return {kind: TypeModelKind.Unsupported, name: type?.typeKind ?? "nothing"}
     }
   }
 
   function mapParameters(functionNode: Function): readonly VariableModel[] {
     return functionNode.parameters.variables.map(variabel => ({
       name: variabel.name,
-      type: mapType(variabel.variableType),
+      type: mapType(variabel.type),
     }));
   }
 
@@ -201,7 +181,7 @@ export function mapNodes(nodes: readonly INode[]): NodeModel[] {
   function createNode(node: INode, kind: NodeKind, name: string | Nothing = nothing,  mapChildren: boolean = true): NodeModel {
 
     const componentNode = asComponentNode(node);
-    const componentNodeName = componentNode ? componentNode.nodeName : "";
+    const componentNodeName = componentNode ? componentNode.name : "";
 
     const children = mapChildren ? mapNodes(node.getChildren()) : [];
 
@@ -219,7 +199,7 @@ export function mapNodes(nodes: readonly INode[]): NodeModel[] {
   function mapVariableDefinition(node: INode) {
     const definition = Assert.notNull(asVariableDefinition(node), "variableDefinition");
     const functionNode = createNode(node, NodeKind.Function, definition.name);
-    return {...functionNode, kind: NodeKind.Function, type: mapType(definition.variableType)};
+    return {...functionNode, kind: NodeKind.Function, type: mapType(definition.type)};
   }
 
   function mapNode(node: INode): NodeModel | Nothing {
@@ -257,11 +237,11 @@ export function mapNodes(nodes: readonly INode[]): NodeModel[] {
       }
       case NodeType.VariableDeclarationExpression: {
         let expression = Assert.notNull(asVariableDeclarationExpression(node), "variableDeclarationExpression");
-        return createNode(node, mapTypeToKind(expression.type.variableType), nothing, false);
+        return createNode(node, mapTypeToKind(expression.typeDeclaration.type), nothing, false);
       }
       case NodeType.AssignmentDefinition: {
         let definition = Assert.notNull(asAssignmentDefinition(node), "variableDefinition");
-        return createNode(node, mapTypeToKind(definition.variableType), definition.variable.path.join("."), false);
+        return createNode(node, mapTypeToKind(definition.type), definition.variable.path.join("."), false);
       }
 
       case NodeType.EnumMember: {
@@ -279,7 +259,7 @@ export function mapNodes(nodes: readonly INode[]): NodeModel[] {
 
       case NodeType.ColumnHeader: {
         const column = Assert.notNull(asColumnHeader(node), "columnHeader");
-        return createNode(node, mapTypeToKind(column.type?.variableType), column.name, false);
+        return createNode(node, mapTypeToKind(column.typeDeclaration?.type), column.name, false);
       }
 
       default: {
