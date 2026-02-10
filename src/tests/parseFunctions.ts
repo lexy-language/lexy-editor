@@ -1,4 +1,5 @@
-import type {IParserLogger} from "lexy/dist/parser/parserLogger";
+import type {IParserLogger} from "lexy/dist/parser/logging/parserLogger";
+
 import {ComponentNodeList} from "lexy/dist/language/componentNodeList";
 import {LexyParser} from "lexy/dist/parser/lexyParser";
 import {Tokenizer} from "lexy/dist/parser/tokens/tokenizer";
@@ -31,7 +32,7 @@ export async function parseNodes(code: string, libraries: ILibraries | null = nu
 
   const parser = createParser(libraries);
   const codeLines = code.split("\n");
-  const result = await parser.parse(codeLines, `tests.lexy`, {suppressException: true});
+  const result = await parser.parseCode(`runtime.lexy`, codeLines, {suppressException: true});
 
   return {nodes: result.componentNodes, logger: result.logger};
 }

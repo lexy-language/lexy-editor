@@ -1,4 +1,4 @@
-export function timestamp() {
+export function timestamp(): string {
   let now = new Date();
   return now.getFullYear()
     + ("0" + (now.getMonth() + 1)).slice(-2)

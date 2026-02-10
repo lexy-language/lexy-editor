@@ -1,14 +1,14 @@
-import type {IParserLogger} from "lexy/dist/parser/parserLogger";
+import type {IParserLogger} from "lexy/dist/parser/logging/parserLogger";
 
 import {NodeType} from "lexy/dist/language/nodeType";
 import {ScenarioRunner} from "lexy/dist/specifications/scenarioRunner";
 import {asScenario} from "lexy/dist/language/scenarios/scenario";
-import {createLexyCompiler} from "../../api/parser";
+import {createLexyCompiler} from "../../../api/parser";
 import {Assert, ILexyCompiler} from "lexy";
 import {SpecificationRunnerContext} from "lexy/dist/specifications/specificationRunnerContext";
 import {SpecificationsLogEntry} from "lexy/dist/specifications/specificationsLogEntry";
 import {ComponentNodeList} from "lexy/dist/language/componentNodeList";
-import {MemoryLogger} from "../../infrastructure/loggers";
+import {MemoryLogger} from "../../../infrastructure/loggers";
 import {Dependencies} from "lexy/dist/dependencyGraph/dependencies";
 
 export async function runScenarios(currentFileName: string, nodes: ComponentNodeList, dependencies: Dependencies,

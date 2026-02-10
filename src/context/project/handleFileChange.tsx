@@ -63,7 +63,8 @@ export function HandleFileChange({children}: ComponentProps) {
         code: code,
         identifier: identifier,
         name: name,
-        source: "state"
+        source: "state",
+        versionId: -1
       };
       setCurrentFileCode(currentFileCode);
     }

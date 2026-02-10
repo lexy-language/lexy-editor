@@ -1,4 +1,4 @@
-import {LogEntry} from "lexy/dist/parser/parserLogger";
+import {LogEntry} from "lexy/dist/parser/logging/parserLogger";
 
 export interface LogModel {
   readonly fileName: string;
@@ -15,9 +15,9 @@ export function mapLogging(logging: LogEntry[]): LogModel[] {
 
 export function mapLogEntry(entry: LogEntry): LogModel {
   return {
-    fileName: entry.reference.file.fileName,
+    fileName: entry.reference.fileName,
     lineNumber: entry.reference.lineNumber,
-    characterNumber: entry.reference.characterNumber,
+    characterNumber: entry.reference.column,
     sortIndex: entry.sortIndex,
     isError: entry.isError,
     message: entry.message

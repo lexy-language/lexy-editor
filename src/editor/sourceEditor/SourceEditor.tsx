@@ -10,6 +10,10 @@ import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
 import {firstOrDefault, where} from "lexy/dist/infrastructure/arrayFunctions";
 import IStandaloneEditorConstructionOptions = editor.IStandaloneEditorConstructionOptions;
 import {useEditorContext} from "../../context/editor/context";
+import {SignaturesCompletedResponse, SymbolsCompletedResponse} from "../../context/symbols/response";
+import {nothing, Nothing} from "../../infrastructure/nothing";
+import IEditorAction = editor.IEditorAction;
+import {useSymbolsContext} from "../../context/symbols/context";
 
 const space = ' '.charCodeAt(0);
 const languageId = 'lexy';
@@ -25,10 +29,20 @@ export default function SourceEditor() {
     currentFileLogging
   } = useProjectContext();
   const [editorMounted, setEditorMounted] = useState(false);
+  const {
+    symbolsCompleted,
+    signaturesCompleted,
+    completionItemsCompleted,
+    editorProviders
+  } = useSymbolsContext();
 
   function initializeMonaco(){
     if (!monaco) return;
     monaco.languages.register({id: languageId});
+    monaco.languages.registerCompletionItemProvider(languageId, editorProviders.completionItemProvider);
+    monaco.languages.registerSignatureHelpProvider(languageId, editorProviders.signatureHelpProvider);
+    monaco.languages.registerDocumentSymbolProvider(languageId, editorProviders.documentSymbolProvider);
+    //monaco.languages.registerDefinitionProvider(languageId, editorProviders.definitionProvider);
     /* not yet working, using YAML for now
     monaco.languages.registerTokensProviderFactory(languageId, {
       create: () => language
@@ -77,7 +91,13 @@ export default function SourceEditor() {
     if (!currentFileCode || isLoading(currentFileCode)) return;
     if (currentFileCode.code === value) return;
 
-    let details = {name: currentFileCode.name, identifier: currentFileCode.identifier, code: value, source: "editor"};
+    let details = {
+      name: currentFileCode.name,
+      identifier: currentFileCode.identifier,
+      code: value,
+      source: "editor",
+      versionId: editorRef.current?.getModel()?.getVersionId() ?? -1
+    };
     setCurrentFileCode(details);
   }
 
@@ -128,12 +148,25 @@ export default function SourceEditor() {
     monaco.editor.setModelMarkers(model, "owner", markers);
   }
 
+  editorRef.current?.getSupportedActions().forEach((value: IEditorAction) => {
+    console.log(value);
+  });
+
+  function trigger(handlerId: string) {
+    return function () {
+      editorRef.current?.trigger('anything', handlerId, {});
+    }
+  }
+
   useEffect(initializeMonaco, [monaco]);
   useEffect(showEditorPosition, [editorPosition]);
   useEffect(showCode, [currentFileCode]);
-  useEffect(showMarkers, [currentFileLogging, monaco, currentFileCode])
+  useEffect(showMarkers, [currentFileLogging, monaco, currentFileCode]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(initializeEditorContent, [editorMounted])
+  useEffect(initializeEditorContent, [editorMounted]);
+  useEffect(trigger("'editor.action.triggerSuggest'"),[symbolsCompleted]);
+  useEffect(trigger("'editor.action.triggerSuggest'"),[signaturesCompleted]);
+  useEffect(trigger("'editor.action.triggerSuggest'"),[completionItemsCompleted]);
 
   if (!currentFileCode) {
     return <Box>No file selected</Box>;

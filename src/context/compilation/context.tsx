@@ -23,7 +23,8 @@ import {HandleRunScenariosCompleted} from "./handleRunScenariosCompleted";
 import {SpecificationsLogModel} from "./specificationsLogModel";
 import {useOperationStateStorage} from "../../api/operationStorage";
 import {timestamp} from "../../infrastructure/timestamp";
-import {operationKey} from "./worker";
+
+export const operationKey = "compilation-worker";
 
 export interface CompilationContextState {
   startCompilation(folder: string[], filename: string, code: string): Promise<void>;
@@ -81,7 +82,7 @@ export const CompilationContextProvider = ({children}: ComponentProps) => {
       return worker;
     }
 
-    const newWorker = new Worker(new URL('./worker.ts', import.meta.url));
+    const newWorker = new Worker(new URL('./background/worker.ts', import.meta.url));
     newWorker.onmessage = handleResponse;
     setWorker(newWorker);
     return newWorker

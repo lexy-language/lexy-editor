@@ -1,19 +1,23 @@
+import type {IParserLogger} from "lexy/dist/parser/logging/parserLogger";
+import type {IComponentNode} from "lexy/dist/language/componentNode";
+
 import {createCompiler, createParser, IFileSystem, ILexyCompiler} from "lexy";
-import {IParserLogger, LogEntry} from "lexy/dist/parser/parserLogger";
-import {IComponentNode} from "lexy/dist/language/componentNode";
 import {CompilerResult} from "lexy/dist/generation/compilerResult";
 import {DummyLogger} from "../infrastructure/loggers";
 import {ComponentNodeList} from "lexy/dist/language/componentNodeList";
 import {Libraries} from "lexy/dist/functionLibraries/libraries";
 import {milliseconds} from "lexy/dist/runTime/libraries/dateLibrary";
 import {Dependencies} from "lexy/dist/dependencyGraph/dependencies";
+import {LogEntry} from "lexy/dist/parser/logging/parserLogger";
+import {DocumentsSymbols} from "lexy/dist/parser/symbols/documentsSymbols";
 
 export type ParseResult = {
   logger: IParserLogger;
   logging: Array<LogEntry>;
   nodes: ComponentNodeList;
   elapsed: number;
-  dependencies: Dependencies
+  dependencies: Dependencies,
+  symbols: DocumentsSymbols
 }
 
 const baseLogger = new DummyLogger();
@@ -21,9 +25,9 @@ const baseLogger = new DummyLogger();
 export async function parseLines(fileName: string, lines: string[], fileSystem: IFileSystem): Promise<ParseResult> {
   const startTime = new Date();
   const lexyParser = createParser(baseLogger, fileSystem, new Libraries([]));
-  const {componentNodes, logger, dependencies} = await lexyParser.parse(lines, fileName, {suppressException: true});
+  const {componentNodes, logger, dependencies, documentsSymbols} = await lexyParser.parseCode(fileName, lines, {suppressException: true});
   const elapsed = milliseconds(new Date(), startTime).toNumber();
-  return {logging: logger.entries, nodes: componentNodes, logger: logger, elapsed: elapsed, dependencies: dependencies}
+  return {logging: logger.entries, nodes: componentNodes, logger: logger, elapsed: elapsed, dependencies: dependencies, symbols: documentsSymbols}
 }
 
 export async function parseCode(fileName: string, code: string, fileSystem: IFileSystem): Promise<ParseResult> {
@@ -34,9 +38,9 @@ export async function parseCode(fileName: string, code: string, fileSystem: IFil
 export async function parseFile(fileName: string, fileSystem: IFileSystem): Promise<ParseResult> {
   const startTime = new Date();
   const lexyParser = createParser(baseLogger, fileSystem, new Libraries([]));
-  const {componentNodes, logger, dependencies} = await lexyParser.parseFile(fileName, {suppressException: true});
+  const {componentNodes, logger, dependencies, documentsSymbols} = await lexyParser.parseFile(fileName, {suppressException: true});
   const elapsed = milliseconds(new Date(), startTime).toNumber();
-  return {logging: logger.entries, nodes: componentNodes, logger: logger, elapsed: elapsed, dependencies: dependencies}
+  return {logging: logger.entries, nodes: componentNodes, logger: logger, elapsed: elapsed, dependencies: dependencies, symbols: documentsSymbols}
 }
 
 export function createLexyCompiler(): ILexyCompiler {

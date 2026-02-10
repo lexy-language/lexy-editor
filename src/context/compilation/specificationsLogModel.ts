@@ -16,9 +16,9 @@ export type SpecificationsLogModel = {
 function mapSpecificationsLogModel(result: SpecificationsLogEntry): SpecificationsLogModel {
   return {
     nodeName: result.node ? result.node.name : nothing,
-    characterNumber: result.reference ? result.reference.characterNumber : nothing,
+    characterNumber: result.reference ? result.reference.column : nothing,
     lineNumber: result.reference ? result.reference.lineNumber : nothing,
-    fileName: result.reference?.file ? result.reference.file.fileName : nothing,
+    fileName: result.reference ? result.reference.fileName : nothing,
     isError: result.isError,
     message: result.message,
     errors: result.errors,

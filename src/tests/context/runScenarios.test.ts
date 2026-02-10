@@ -1,6 +1,6 @@
 import {parseLines} from "../../api/parser";
 import {NodeFileSystem} from "../nodeFileSystem";
-import {runScenarios} from "../../context/compilation/runScenarios"; // This import style requires "esModuleInterop", see "side notes"
+import {runScenarios} from "../../context/compilation/background/runScenarios"; // This import style requires "esModuleInterop", see "side notes"
 
 test('parse big file', async () => {
   const fileSystem = new NodeFileSystem();

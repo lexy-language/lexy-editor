@@ -30,7 +30,7 @@ export class ExecuteFunctionState {
         return undefined;
       }
       valueObject = valueObject[reference.rootIdentifier] as ParametersModel;
-      reference = reference.childrenReference();
+      reference = reference.childrenPath();
     }
     return valueObject[reference.rootIdentifier];
   }
@@ -44,7 +44,7 @@ export class ExecuteFunctionState {
         valueObject[reference.rootIdentifier] = {};
       }
       valueObject = valueObject[reference.rootIdentifier] as ParametersModel;
-      reference = reference.childrenReference();
+      reference = reference.childrenPath();
     }
     valueObject[reference.rootIdentifier] = value;
 

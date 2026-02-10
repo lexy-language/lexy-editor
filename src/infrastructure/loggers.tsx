@@ -30,7 +30,7 @@ export class MemoryLogger implements ILogger {
   }
 
   isEnabled(level: LogLevel): boolean {
-    return true;
+    return level != LogLevel.Debug;
   }
 
   logDebug(message: string): void {

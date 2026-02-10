@@ -87,7 +87,7 @@ export function mapNodes(nodes: readonly INode[]): NodeModel[] {
 
     function mapValueType() {
       const valueType = asValueType(variableType);
-      switch (valueType?.type) {
+      switch (valueType?.name) {
         case TypeNames.number:
           return NodeKind.Number;
         case TypeNames.boolean:
@@ -122,13 +122,13 @@ export function mapNodes(nodes: readonly INode[]): NodeModel[] {
     }
   }
 
-  function mapType(type: Type | Nothing): TypeModel {
+  function mapType(type: Type | Nothing | undefined): TypeModel {
 
     function mapValueType(): TypeModel {
       let valueType = Assert.notNull(asValueType(type), "asValueType");
       return {
         kind: TypeModelKind.Primitive,
-        name: valueType.type
+        name: valueType.name
       };
     }
 
@@ -166,9 +166,10 @@ export function mapNodes(nodes: readonly INode[]): NodeModel[] {
   }
 
   function mapParameters(functionNode: Function): readonly VariableModel[] {
+    if (functionNode.parameters == null) return [];
     return functionNode.parameters.variables.map(variabel => ({
       name: variabel.name,
-      type: mapType(variabel.type),
+      type: mapType(variabel.state?.type),
     }));
   }
 
@@ -189,9 +190,9 @@ export function mapNodes(nodes: readonly INode[]): NodeModel[] {
       name: name ?? componentNodeName,
       kind: kind,
       children: children,
-      fileName: node.reference.file.fileName,
+      fileName: node.reference.fileName,
       lineNumber: node.reference.lineNumber,
-      characterNumber: node.reference.characterNumber,
+      characterNumber: node.reference.column,
       nodeType: node.nodeType
     }
   }
@@ -199,7 +200,7 @@ export function mapNodes(nodes: readonly INode[]): NodeModel[] {
   function mapVariableDefinition(node: INode) {
     const definition = Assert.notNull(asVariableDefinition(node), "variableDefinition");
     const functionNode = createNode(node, NodeKind.Function, definition.name);
-    return {...functionNode, kind: NodeKind.Function, type: mapType(definition.type)};
+    return {...functionNode, kind: NodeKind.Function, type: mapType(definition.state?.type)};
   }
 
   function mapNode(node: INode): NodeModel | Nothing {
@@ -241,7 +242,7 @@ export function mapNodes(nodes: readonly INode[]): NodeModel[] {
       }
       case NodeType.AssignmentDefinition: {
         let definition = Assert.notNull(asAssignmentDefinition(node), "variableDefinition");
-        return createNode(node, mapTypeToKind(definition.type), definition.variable.path.join("."), false);
+        return createNode(node, mapTypeToKind(definition.state?.type), definition.variable.path.join("."), false);
       }
 
       case NodeType.EnumMember: {
