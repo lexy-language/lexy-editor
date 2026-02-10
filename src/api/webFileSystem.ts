@@ -1,5 +1,7 @@
 import {IFileSystem} from "lexy";
 import {CodeFileStorage, workerCodeFileStorage} from "./codeStorage";
+import {ISourceCodeDocument} from "lexy/dist/parser/documents/ISourceCodeDocument";
+import {StringSourceCodeDocument} from "lexy/dist/parser/documents/stringSourceCodeDocument";
 
 export class WebFileSystem implements IFileSystem {
 
@@ -14,7 +16,7 @@ export class WebFileSystem implements IFileSystem {
   async readAllLines(fileName: string): Promise<string[]> {
     const fullFile = this.isPathRooted(fileName) ? fileName : this.getFullPath(fileName);
     const parts = fullFile.split("/");
-    this.removeFirst(parts);
+    WebFileSystem.removeFirst(parts);
     const data = await this.store.getCodeFile(parts.join("|"));
     if (!data) {
       throw new Error("Couldn't load: " + fileName);
@@ -28,7 +30,7 @@ export class WebFileSystem implements IFileSystem {
 
   getDirectoryName(parentFullFileName: string): string {
     const parts = parentFullFileName.split("/");
-    this.removeLast(parts);
+    WebFileSystem.removeLast(parts);
     return parts.length > 0 ? parts.join("/") : "";
   }
 
@@ -39,7 +41,7 @@ export class WebFileSystem implements IFileSystem {
     const folder = [...this.currentFolder];
     for (const part of parts) {
       if (part === "..") {
-        this.removeLast(folder);
+        WebFileSystem.removeLast(folder);
       } else {
         folder.push(part)
       }
@@ -48,24 +50,24 @@ export class WebFileSystem implements IFileSystem {
     return "/" + fullPath;
   }
 
-  private removeLast(folder: string[]) {
+  private static removeLast(folder: string[]) {
     folder.splice(folder.length - 1, 1);
   }
 
-  private removeFirst(folder: string[]) {
+  private static removeFirst(folder: string[]) {
     folder.splice(0, 1);
   }
 
   combine(fullPath: string, fileName: string): string {
     if (fullPath.length === 0) return fileName;
     const parts = fullPath.split("/");
-    if (parts[parts.length - 1].length === 0) this.removeLast(parts);
+    if (parts[parts.length - 1].length === 0) WebFileSystem.removeLast(parts);
 
     const fileParts = fileName.split("/");
 
     for (const part of fileParts) {
       if (part === "..") {
-        this.removeLast(parts);
+        WebFileSystem.removeLast(parts);
       } else {
         parts.push(part)
       }
@@ -75,7 +77,7 @@ export class WebFileSystem implements IFileSystem {
 
   async fileExists(fileName: string): Promise<boolean> {
     const parts = fileName.split("/");
-    if (parts[0].length === 0) this.removeFirst(parts);
+    if (parts[0].length === 0) WebFileSystem.removeFirst(parts);
     const data = await this.store.getCodeFile(parts.join('|'));
     return !!data;
   }
@@ -98,5 +100,10 @@ export class WebFileSystem implements IFileSystem {
 
   logFolders(): string {
     return "";
+  }
+
+  async createFileSourceDocument(fullPath: string): Promise<ISourceCodeDocument> {
+    const code = await this.readAllLines(fullPath);
+    return new StringSourceCodeDocument(code, fullPath);
   }
 }
