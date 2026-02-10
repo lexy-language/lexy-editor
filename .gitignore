@@ -49,9 +49,9 @@ tests/webhost/webtsc.js
 tests/cases/**/*.js
 tests/cases/**/*.js.map
 *.config
-scripts/eslint/built/
-scripts/debug.bat
-scripts/run.bat
+tmp_scripts/eslint/built/
+tmp_scripts/debug.bat
+tmp_scripts/run.bat
 scripts/**/*.js
 scripts/**/*.js.map
 coverage/
