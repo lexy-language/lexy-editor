@@ -10,9 +10,14 @@ import {Contexts} from "./context/Contexts";
 import LoadingPage from "./pages/LoadingPage";
 import {hideResizeObserverLoopErrors} from "./pages/main/HideResizeObserverLoopErrors";
 import OnlyDesktopModal from "./editor/onlyDesktopModal/OnlyDesktopModal";
-import { loader } from "@monaco-editor/react";
+import {styled} from "@mui/material"
 
 const EditorPage = lazy(() => import('./pages/editor/EditorPage'));
+
+const Container = styled("div")`
+  height: 100vh;
+  background: #EEE;
+`;
 
 function App() {
 
@@ -25,7 +30,7 @@ function App() {
   }
 
   return (
-    <div style={{ height: '100vh', background: '#EEE' }}>
+    <Container>
       <Contexts>
         <EditorBar />
         <Routes>
@@ -39,7 +44,7 @@ function App() {
         </Routes>
       </Contexts>
       <OnlyDesktopModal />
-    </div>
+    </Container>
   );
 }
 
