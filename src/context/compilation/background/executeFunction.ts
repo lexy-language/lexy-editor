@@ -5,12 +5,12 @@ import {asScenario, instanceOfScenario} from "lexy/dist/language/scenarios/scena
 import {asFunction} from "lexy/dist/language/functions/function";
 import {Assert} from "lexy";
 import {milliseconds} from "../../../infrastructure/dateFunctions";
-import {ResponseType, RunFunctionFailedResponse, RunFunctionSuccessResponse} from "../response";
+import {ResponseType, RunFunctionFailed, RunFunctionSuccess} from "../response";
 import {mapExecutionLogging} from "../executionLogModel";
 import {mapExecutionResults} from "../resultsModel";
-import {CompilationContext} from "./worker";
+import {CompilationWorkerContext} from "./worker";
 
-export async function executeFunction(request: RunFunctionRequest, context: CompilationContext) {
+export async function executeFunction(request: RunFunctionRequest, context: CompilationWorkerContext) {
 
   const startTime = new Date();
   try {
@@ -25,7 +25,7 @@ export async function executeFunction(request: RunFunctionRequest, context: Comp
     const results = executable.run(parameters);
     const elapsed = milliseconds(new Date(), startTime).toNumber();
 
-    const response: RunFunctionSuccessResponse = {
+    const response: RunFunctionSuccess = {
       type: ResponseType.RunFunctionCompleted,
       error: false,
       logging: mapExecutionLogging(results.logging),
@@ -36,7 +36,7 @@ export async function executeFunction(request: RunFunctionRequest, context: Comp
     context.postResponse(response);
 
   } catch (error: any) {
-    const failed: RunFunctionFailedResponse = {type: ResponseType.RunFunctionCompleted, error: true, lastError: error.stack};
+    const failed: RunFunctionFailed = {type: ResponseType.RunFunctionCompleted, error: true, lastError: error.stack};
     context.postResponse(failed);
   }
 }

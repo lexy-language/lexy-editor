@@ -15,7 +15,7 @@ export function mapLogging(logging: LogEntry[]): LogModel[] {
 
 export function mapLogEntry(entry: LogEntry): LogModel {
   return {
-    fileName: entry.reference.fileName,
+    fileName: entry.reference.file.name,
     lineNumber: entry.reference.lineNumber,
     characterNumber: entry.reference.column,
     sortIndex: entry.sortIndex,

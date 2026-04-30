@@ -4,12 +4,13 @@ import {idbConfig} from "./idbConfig";
 
 interface FileCode {
   id: string,
+  versionId: number,
   code: string
 }
 
 export interface CodeFileStorage {
   getCodeFile(identifier: string): Promise<string | null>;
-  storeCodeFile(identifier: string, code: string, override: boolean): Promise<boolean>;
+  storeCodeFile(identifier: string, code: string, versionId: number, override: boolean): Promise<boolean>;
   clearCodeFiles(): Promise<any>;
 }
 
@@ -20,22 +21,35 @@ function codeFileStorage(filesStore: IndexedDBStore<FileCode>): CodeFileStorage 
   function getCodeFile(identifier: string): Promise<string | null> {
     return new Promise<string | null>((resolve, reject) =>
       getByID(identifier)
-        .then(value => value ? resolve(value.code) : resolve(null))
+        .then(value => {
+          if (value) {
+            console.log(`>>>>>> get <<< code file ${value.id} version: ${value.versionId}`)
+            resolve(value.code);
+          } else {
+            resolve(null);
+          }
+        })
         .catch(reject));
   }
 
-  function storeCodeFile(identifier: string, code: string, override: boolean): Promise<boolean> {
+  function storeCodeFile(identifier: string, code: string, versionId: number, override: boolean): Promise<boolean> {
+
+    console.log(`>>>>>> store <<< code file ${identifier} version: ${versionId}`)
+
     if (!override) {
       return new Promise<boolean>((resolve, reject) => {
-        addIfNew({id: identifier, code: code}, identifier)
+        addIfNew({id: identifier, code: code, versionId: versionId}, identifier)
           .then(id => resolve(id != null))
           .catch(reject);
       });
     }
 
     return new Promise<boolean>((resolve, reject) => {
-      update({id: identifier, code: code}, identifier)
-        .then(_ => resolve(true))
+      update({id: identifier, code: code, versionId: versionId}, identifier)
+        .then(_ => {
+          console.log(`>>>>>> stored <<< code file ${identifier} version: ${versionId}`)
+          resolve(true);
+        })
         .catch(reject);
     });
   }

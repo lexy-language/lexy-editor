@@ -1,96 +1,60 @@
-import {CompletionItemsCompletedResponse, ResponseType} from "../response";
-import {GetCompletionItemsRequest} from "../requests";
-import {SymbolsContext} from "./worker";
-import {SuggestionsResult} from "lexy/dist/parser/symbols/SuggestionsResult";
-import {languages} from "monaco-editor";
+import {CompletionItemsFetched, ResponseType} from "../response";
+import {GetCompletionItems} from "../requests";
+import {SymbolsWorkerContext} from "./worker";
 import {Position} from "lexy/dist/language/position";
-import {SymbolKind} from "lexy/dist/language/symbols/symbolKind";
+import {nothing} from "../../../infrastructure/nothing";
+import {SuggestionModel} from "../model";
 import {Suggestion} from "lexy/dist/language/symbols/suggestion";
-import CompletionList = languages.CompletionList;
-import CompletionItem = languages.CompletionItem;
-import CompletionItemKind = languages.CompletionItemKind;
+import {Project} from "lexy/dist/infrastructure/project";
 
-export async function getCompletionItems(request: GetCompletionItemsRequest, context: SymbolsContext) {
+export async function getCompletionItems(request: GetCompletionItems, context: SymbolsWorkerContext) {
 
-  function mapKind(kind: SymbolKind): CompletionItemKind {
-    switch (kind) {
-      case SymbolKind.Scenario:
-        return CompletionItemKind.Class;
-      case SymbolKind.Keyword:
-        return CompletionItemKind.Keyword;
-      case SymbolKind.Type:
-        return CompletionItemKind.Class;
-      case SymbolKind.ParameterVariable:
-        return CompletionItemKind.Variable;
-      case SymbolKind.ValueType:
-        return CompletionItemKind.Class;
-      case SymbolKind.ResultVariable:
-        return CompletionItemKind.Variable;
-      case SymbolKind.Operator:
-        return CompletionItemKind.Operator;
-      case SymbolKind.Function:
-        return CompletionItemKind.Function;
-      case SymbolKind.Enum:
-        return CompletionItemKind.Enum;
-      case SymbolKind.EnumMember:
-        return CompletionItemKind.EnumMember;
-      case SymbolKind.Constant:
-        return CompletionItemKind.Constant;
-      case SymbolKind.Variable:
-        return CompletionItemKind.Variable;
-      case SymbolKind.SystemFunction:
-        return CompletionItemKind.Function;
-      case SymbolKind.GeneratedType:
-        return CompletionItemKind.Class;
-      case SymbolKind.Table:
-        return CompletionItemKind.Class;
-      case SymbolKind.TableFunction:
-        return CompletionItemKind.Function;
-      case SymbolKind.ObjectVariable:
-        return CompletionItemKind.Variable;
-      case SymbolKind.Comments:
-        return CompletionItemKind.Keyword;
-      case SymbolKind.LibraryFunction:
-        return CompletionItemKind.Function;
-      case SymbolKind.TableColumn:
-        return CompletionItemKind.Variable;
-      default:
-        return CompletionItemKind.Keyword;
-    }
-  }
-
-  function mapValue(value: Suggestion): CompletionItem {
-    return {
-      label: value.name,
-      kind: mapKind(value.kind),
-      insertText: value.name,
-      range: {
-        startLineNumber: 0,
-        startColumn: 0,
-        endLineNumber: 0,
-        endColumn: 0
-      }
-    }
-  }
-
-  function map(items: SuggestionsResult): CompletionList {
-    const suggestions = items.all.map(value => mapValue(value));
-    return {suggestions: suggestions};
+  function map(filtered: readonly Suggestion[]): SuggestionModel[] {
+    return filtered.map(value => ({
+      name: value.name,
+      description: value.description,
+      kind: value.kind
+    }))
   }
 
   async function getItems() {
 
-    const symbols = context.verifySymbols("GetCompletionItems", request.fileName, request.versionId);
+    const symbols = context.verifySymbols("GetCompletionItems", request.fullFilePath, request.versionId);
     if (symbols == null) return;
 
-    const items = symbols.value.getSuggestions(request.fileName, new Position(request.position.lineNumber, request.position.column));
+    const position = new Position(request.position.lineNumber, request.position.column);
 
-    const response: CompletionItemsCompletedResponse = {
-      type: ResponseType.CompletionItemsCompleted,
-      fileName: request.fileName,
+    const fileName = symbols.project.file(request.fullFilePath);
+    const items = symbols.value.getSuggestions(fileName, position);
+
+    console.log(`>>>>>>> getCompletionItems items: ${items.filtered.length} (filter: ${items.filter})`);
+
+    const response: CompletionItemsFetched = {
+      type: ResponseType.CompletionItemsFetched,
+      messageId: request.messageId,
+      errorMessage: nothing,
+      fullFilePath: request.fullFilePath,
       versionId: request.versionId,
       position: request.position,
-      items: map(items)
+      items: map(items.filtered)
+    };
+
+    context.postResponse(response);
+  }
+
+  function handleError(error: any) {
+
+    console.log("Error occurred in symbol worker: getCompletionItems");
+    console.log(error);
+
+    const response: CompletionItemsFetched = {
+      type: ResponseType.CompletionItemsFetched,
+      messageId: request.messageId,
+      errorMessage: nothing,
+      fullFilePath: request.fullFilePath,
+      versionId: request.versionId,
+      position: request.position,
+      items: []
     };
     context.postResponse(response);
   }
@@ -98,7 +62,6 @@ export async function getCompletionItems(request: GetCompletionItemsRequest, con
   try {
     await getItems();
   } catch (error: any) {
-    console.log("Error occurred in symbol worker: getCompletionItems");
-    console.log(error);
+    handleError(error);
   }
 }

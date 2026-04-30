@@ -20,6 +20,7 @@ import {useEditorContext} from "../../context/editor/context";
 import {useProjectContext} from "../../context/project/context";
 import {useCompilationContext} from "../../context/compilation/context";
 import AutorenewIcon from '@mui/icons-material/Autorenew';
+import {milliseconds} from "lexy/dist/runTime/libraries/dateLibrary";
 
 const GridFullHeight = styled(Grid)`
   height: calc(100% - 264px);
@@ -75,15 +76,21 @@ function EditorPage() {
   const {currentFileCode} = useProjectContext();
   const {testingLogging} = useCompilationContext();
   const [lastShowView, setLastShowView] = useState<boolean>(false);
+  const [startTime] = useState<Date>(new Date());
 
   const leftOptions = [
     { name: 'Explorer', value: LeftContainer.Explorer, element: () => <Explorer /> },
     { name: 'Structure', value: LeftContainer.Structure, element: () => <Structure />  },
   ];
 
+  function getSourceEditor() {
+    const elapsed = milliseconds(new Date(), startTime).toNumber();
+    return elapsed > 2000 ? <SourceEditor/> : <></>;
+  }
+
   const mainOptions = [
     { name: 'View', value: MainContainer.View, element: () => <ViewEditor /> },
-    { name: 'Source Code', value: MainContainer.Source, element: () => <SourceEditor /> },
+    { name: 'Source Code', value: MainContainer.Source, element: () => getSourceEditor() },
     { name: 'Execution Logging', value: MainContainer.ExecutionLogging, element: () => <ExecutionLogging /> },
   ];
 

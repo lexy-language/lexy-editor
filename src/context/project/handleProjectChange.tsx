@@ -46,7 +46,7 @@ export function HandleProjectChange({children}: ComponentProps) {
           function addCode(parent: ProjectFolder) {
             for (const file of parent.files) {
               let code = (file as ProjectFileDetails).code;
-              storeCodeFile(file.identifier, code, false)
+              storeCodeFile(file.identifier, code, -1, false)
                 .then(stored => {
                   if (stored) {
                     console.log("file stored: " + file.identifier);

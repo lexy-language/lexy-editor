@@ -15,6 +15,7 @@ import {TypeKind} from "lexy/dist/language/typeSystem/typeKind";
 import {asValueType} from "lexy/dist/language/typeSystem/valueType";
 import {asObjectType} from "lexy/dist/language/typeSystem/objects/objectType";
 import {TypeNames} from "lexy/dist/language/typeSystem/typeNames";
+import {asEnumType} from "lexy/dist/language/typeSystem/enumType";
 
 export enum NodeKind {
   Unknown = "Unknown",
@@ -139,12 +140,24 @@ export function mapNodes(nodes: readonly INode[]): NodeModel[] {
       return type;
     }
 
+    function mapEnumType () {
+      const enumType = Assert.notNull(asEnumType(type), "asGeneratedType");
+      return fromCache<EnumTypeModel>(enumType.name, () => ({
+        kind: TypeModelKind.Enum,
+        name: enumType.name,
+        members: enumType.members.map(member => member.name)
+      }));
+    }
+
     function mapObjectType () {
-      let objectType = Assert.notNull(asObjectType(type), "asGeneratedType");
+      const objectType = Assert.notNull(asObjectType(type), "asGeneratedType");
       return fromCache<ObjectTypeModel>(objectType.name, () => ({
         kind: TypeModelKind.Object,
         name: objectType.name,
-        variables: objectType.members.map(member => ({name: member.name, type: mapType(member.type)}))
+        variables: objectType.members.map(member => ({
+          name: member.name,
+            type: mapType(member.type)
+        }))
       }));
     }
 
@@ -156,7 +169,7 @@ export function mapNodes(nodes: readonly INode[]): NodeModel[] {
       case TypeKind.DeclaredType:
         return mapObjectType();
       case TypeKind.EnumType:
-        return mapObjectType();
+        return mapEnumType();
 
       case TypeKind.FunctionType:
       case TypeKind.TableType:
@@ -190,7 +203,7 @@ export function mapNodes(nodes: readonly INode[]): NodeModel[] {
       name: name ?? componentNodeName,
       kind: kind,
       children: children,
-      fileName: node.reference.fileName,
+      fileName: node.reference.file.name,
       lineNumber: node.reference.lineNumber,
       characterNumber: node.reference.column,
       nodeType: node.nodeType
@@ -207,9 +220,6 @@ export function mapNodes(nodes: readonly INode[]): NodeModel[] {
 
     switch (node.nodeType) {
       case NodeType.FunctionName:
-      case NodeType.ScenarioName:
-      case NodeType.ScenarioFunctionName:
-      case NodeType.EnumName:
       case NodeType.TableRow:
         return null;
 
@@ -225,11 +235,11 @@ export function mapNodes(nodes: readonly INode[]): NodeModel[] {
         return createNode(node, NodeKind.Enum);
 
       case NodeType.FunctionResults:
-      case NodeType.ScenarioResults:
+      case NodeType.Results:
         return createNode(node, NodeKind.Results, "Results");
 
       case NodeType.FunctionParameters:
-      case NodeType.ScenarioParameters:
+      case NodeType.Parameters:
         return createNode(node, NodeKind.Parameters, "Parameters");
       case NodeType.FunctionCode:
         return createNode(node, NodeKind.Code, "Code");

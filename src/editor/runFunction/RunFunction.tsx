@@ -21,7 +21,7 @@ import {FunctionNodeModel, NodeKind, NodeModel} from "../../context/project/node
 import {NodeType} from "lexy/dist/language/nodeType";
 import {firstOrDefault} from "lexy/dist/infrastructure/arrayFunctions";
 import {Nothing} from "../../infrastructure/nothing";
-import {RunFunctionFailedResponse} from "../../context/compilation/response";
+import {RunFunctionFailed} from "../../context/compilation/response";
 import Grid from "@mui/material/Grid2";
 
 const MainBox = styled(Box)`
@@ -108,7 +108,7 @@ function RunFunction() {
 
   function renderError() {
     if (!runFunctionCompleted || !runFunctionCompleted.error) return <></>;
-    const executeFunctionFailed = runFunctionCompleted as RunFunctionFailedResponse
+    const executeFunctionFailed = runFunctionCompleted as RunFunctionFailed
     return <Error>
       {executeFunctionFailed.lastError.split('\n').map((value, index: number) => <div key={index}>{value}</div>)}
     </Error>;

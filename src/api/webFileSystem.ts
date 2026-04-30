@@ -1,27 +1,40 @@
-import {IFileSystem} from "lexy";
+import type {IFile} from "lexy/dist/infrastructure/file";
+import type {IFileSystem} from "lexy";
+import type {ISourceCodeDocument} from "lexy/dist/parser/documents/ISourceCodeDocument";
+import type {ISourceCodeDocuments} from "lexy/dist/parser/documents/ISourceCodeDocuments";
+
 import {CodeFileStorage, workerCodeFileStorage} from "./codeStorage";
-import {ISourceCodeDocument} from "lexy/dist/parser/documents/ISourceCodeDocument";
 import {StringSourceCodeDocument} from "lexy/dist/parser/documents/stringSourceCodeDocument";
 
 export class WebFileSystem implements IFileSystem {
 
-  private readonly currentFolder: string[];
+  private readonly currentFolderValue: string[];
   private readonly store: CodeFileStorage;
 
   constructor(currentFolder: string[]) {
-    this.currentFolder = currentFolder;
+    this.currentFolderValue = currentFolder;
     this.store = workerCodeFileStorage();
   }
 
   async readAllLines(fileName: string): Promise<string[]> {
-    const fullFile = this.isPathRooted(fileName) ? fileName : this.getFullPath(fileName);
-    const parts = fullFile.split("/");
-    WebFileSystem.removeFirst(parts);
-    const data = await this.store.getCodeFile(parts.join("|"));
+    const identifier = this.identifier(fileName);
+    const data = await this.store.getCodeFile(identifier);
     if (!data) {
       throw new Error("Couldn't load: " + fileName);
     }
     return data.split("\n");
+  }
+
+  async writeAllLines(fileName: string, lines: readonly string[]): Promise<void> {
+    const identifier = this.identifier(fileName);
+    await this.store.storeCodeFile(identifier, lines.join("\n"), 0, true);
+  }
+
+  private identifier(fileName: string) {
+    const fullFile = this.isPathRooted(fileName) ? fileName : this.getFullPath(fileName);
+    const parts = fullFile.split("/");
+    WebFileSystem.removeFirst(parts);
+    return parts.join("|");
   }
 
   getFileName(fullFileName: string): string {
@@ -38,7 +51,7 @@ export class WebFileSystem implements IFileSystem {
     if (this.isPathRooted(fileName)) return fileName;
 
     const parts = fileName.split("/");
-    const folder = [...this.currentFolder];
+    const folder = [...this.currentFolderValue];
     for (const part of parts) {
       if (part === "..") {
         WebFileSystem.removeLast(folder);
@@ -46,8 +59,9 @@ export class WebFileSystem implements IFileSystem {
         folder.push(part)
       }
     }
+
     const fullPath = folder.join("/");
-    return "/" + fullPath;
+    return fullPath.startsWith("/") ? fullPath : "/" + fullPath;
   }
 
   private static removeLast(folder: string[]) {
@@ -73,6 +87,10 @@ export class WebFileSystem implements IFileSystem {
       }
     }
     return parts.join("/");
+  }
+
+  public currentFolder(): string {
+    return this.currentFolderValue.join("/");
   }
 
   async fileExists(fileName: string): Promise<boolean> {
@@ -102,8 +120,16 @@ export class WebFileSystem implements IFileSystem {
     return "";
   }
 
-  async createFileSourceDocument(fullPath: string): Promise<ISourceCodeDocument> {
-    const code = await this.readAllLines(fullPath);
-    return new StringSourceCodeDocument(code, fullPath);
+  async createFileSourceDocument(file: IFile): Promise<ISourceCodeDocument> {
+    const code = await this.readAllLines(file.fullPath);
+    return new StringSourceCodeDocument(code, file);
+  }
+
+  async createFileSourceDocuments(files: readonly IFile[]): Promise<ISourceCodeDocuments> {
+    const documents = [];
+    for (const fileName of files) {
+      documents.push(await this.createFileSourceDocument(fileName));
+    }
+    return {documents, dispose: () => {}};
   }
 }

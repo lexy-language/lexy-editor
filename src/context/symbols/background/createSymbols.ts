@@ -1,28 +1,73 @@
 import {WebFileSystem} from "../../../api/webFileSystem";
-import {parseFile} from "../../../api/parser";
+import {parseLines} from "../../../api/parser";
 import {
-  ResponseType, SymbolsCompletedResponse,
+  ResponseType, SymbolsCreated,
 } from "../response";
-import {CreateSymbolsRequest} from "../requests";
-import {SymbolsContext} from "./worker";
+import {CreateSymbols} from "../requests";
+import {SymbolsWorkerContext} from "./worker";
+import {nothing} from "../../../infrastructure/nothing";
 
-export async function createSymbols(request: CreateSymbolsRequest, context: SymbolsContext) {
+export async function createSymbols(request: CreateSymbols, context: SymbolsWorkerContext) {
 
-  async function getSymbols(request: CreateSymbolsRequest) {
+  async function getDocumentSymbols(fileName: string, fileSystem: WebFileSystem) {
 
-    const fileSystem = new WebFileSystem(request.folder);
-    const {symbols} = await parseFile(request.fileName, fileSystem);
-    const response: SymbolsCompletedResponse = {
-      type: ResponseType.SymbolsCompleted,
-      fileName: request.fileName,
-      versionId: request.versionId,
-      symbols: []
-    };
+    if (context.symbols
+     && context.symbols.fullFilePath == request.fullFilePath
+     && context.symbols.versionId == request.versionId) {
+      console.log(">>>>> CreateSymbols >>> use existing '" + request.fullFilePath + "' - " + request.versionId);
+      return context.symbols.value;
+    }
+    console.log(">>>>> CreateSymbols >>> parseFile '" + request.fullFilePath + "' - " + request.versionId);
+    const {project, symbols} = await parseLines(request.fullFilePath, request.code.split("\n"), fileSystem);
 
     context.symbols = {
       versionId: request.versionId,
-      fileName: request.fileName,
-      value : symbols
+      fullFilePath: request.fullFilePath,
+      project: project,
+      value: symbols
+    };
+
+    return symbols;
+  }
+
+  async function getSymbols(request: CreateSymbols) {
+
+    console.log(">>>>> CreateSymbols: " + JSON.stringify(request, null, 4));
+
+    const fullPath = request.fullFilePath.split("/");
+    const fileName = fullPath[fullPath.length - 1];
+    fullPath.splice(fullPath.length - 1, 1);
+
+    const fileSystem = new WebFileSystem(fullPath);
+    const symbols = await getDocumentSymbols(fileName, fileSystem);
+
+    if (!request.messageId) return;
+
+    const response: SymbolsCreated = {
+      type: ResponseType.SymbolsCreated,
+      messageId: request.messageId,
+      errorMessage: nothing,
+      fullFilePath: request.fullFilePath,
+      versionId: request.versionId,
+      symbols: []
+    };
+    context.postResponse(response);
+  }
+
+  function handleError(error: any) {
+
+    console.log("Error occurred in symbol worker: createSymbols");
+    console.log(error);
+
+    if (!request.messageId) return;
+
+    const response: SymbolsCreated = {
+      type: ResponseType.SymbolsCreated,
+      messageId: request.messageId,
+      errorMessage: `${error.stack}: ${error.message}`,
+      fullFilePath: request.fullFilePath,
+      versionId: request.versionId,
+      symbols: []
     };
     context.postResponse(response);
   }
@@ -30,7 +75,6 @@ export async function createSymbols(request: CreateSymbolsRequest, context: Symb
   try {
     await getSymbols(request);
   } catch (error: any) {
-    console.log("Error occurred in symbol worker: createSymbols");
-    console.log(error);
+    handleError(error);
   }
 }

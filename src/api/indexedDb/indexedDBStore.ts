@@ -1,5 +1,9 @@
 //adapted from use use-indexeddb (https://github.com/hc-oss/use-indexeddb/commit/f6e5deed3f3c1010c4b314d72b25b5a4f454f07f)
 
+import {log} from "util";
+
+const DEBUG_LOG = false;
+
 export interface IndexedDBColumn {
   name: string;
   keyPath: string;
@@ -36,6 +40,15 @@ const self = globalThis as unknown as DedicatedWorkerGlobalScope;
 export function createIndexedDBStore<T>(factory: IDBFactory, config: IndexedDBConfig, currentStore: string) {
 
   let transaction = 0;
+
+  function logDebug(message: () => string) {
+    if (DEBUG_LOG) {
+      console.log(message());
+    }
+  }
+  function logError(message: string) {
+    console.log("ERROR: " + message);
+  }
 
   function validateStore(db: IDBDatabase, storeName: string) {
     return db.objectStoreNames.contains(storeName);
@@ -102,20 +115,19 @@ export function createIndexedDBStore<T>(factory: IDBFactory, config: IndexedDBCo
 
   function getByID(id: string | number) {
     const thisTransaction = ++transaction;
-    console.log(`getByID: ${id}(${thisTransaction})`)
     return new Promise<T>((resolve, reject) => {
       getConnection()
         .then(db => {
           if (!validateBeforeTransaction(db, currentStore, reject)) return;
-          let tx = createTransaction(db, "readonly", currentStore, (e) => console.log("Transaction getByID completed: " + JSON.stringify(e)), reject, null);
+          let tx = createTransaction(db, "readonly", currentStore, (e) => logDebug(() => "Transaction getByID completed: " + JSON.stringify(e)), reject, null);
           let objectStore = tx.objectStore(currentStore);
           let request = objectStore.get(id);
           request.onsuccess = (e: any) => {
-            console.log(`getByID: ${id}(${thisTransaction}): `, e.target.result, "...");
+            logDebug(() => `getByID: ${id}(${thisTransaction}): `);
             resolve(e.target.result as T);
           };
           request.onerror = (e: any) => {
-            console.log(`getByID: ${id}(${thisTransaction}): error `, e.target.result);
+            logError(`getByID: ${id}(${thisTransaction}): error `);
             reject(e.target.result as T);
           };
         })
@@ -128,7 +140,7 @@ export function createIndexedDBStore<T>(factory: IDBFactory, config: IndexedDBCo
       getConnection()
         .then(db => {
           if (!validateBeforeTransaction(db, currentStore, reject)) return;
-          let tx = createTransaction(db, "readonly", currentStore, (e) => console.log("Transaction getOneByKey completed: " + JSON.stringify(e)), reject);
+          let tx = createTransaction(db, "readonly", currentStore, (e) => logDebug(() => "Transaction getOneByKey completed: " + JSON.stringify(e)), reject);
           let objectStore = tx.objectStore(currentStore);
           let index = objectStore.index(keyPath);
           let request = index.get(value);
@@ -145,7 +157,7 @@ export function createIndexedDBStore<T>(factory: IDBFactory, config: IndexedDBCo
       getConnection()
         .then(db => {
           if (!validateBeforeTransaction(db, currentStore, reject)) return;
-          let tx = createTransaction(db, "readonly", currentStore, (e) => console.log("Transaction getManyByKey completed: " + JSON.stringify(e)), reject);
+          let tx = createTransaction(db, "readonly", currentStore, (e) => logDebug(() => "Transaction getManyByKey completed: " + JSON.stringify(e)), reject);
           let objectStore = tx.objectStore(currentStore);
           let index = objectStore.index(keyPath);
           let request = index.getAll(value);
@@ -162,7 +174,7 @@ export function createIndexedDBStore<T>(factory: IDBFactory, config: IndexedDBCo
       getConnection()
         .then(db => {
           if (!validateBeforeTransaction(db, currentStore, reject)) return;
-          let tx = createTransaction(db, "readonly", currentStore, () => console.log("getAll.validateBeforeTransaction.resolve"), reject);
+          let tx = createTransaction(db, "readonly", currentStore, () => logDebug(() => "getAll.validateBeforeTransaction.resolve"), reject);
           let objectStore = tx.objectStore(currentStore);
           let request = objectStore.getAll();
           request.onsuccess = (e: any) => {
@@ -178,7 +190,7 @@ export function createIndexedDBStore<T>(factory: IDBFactory, config: IndexedDBCo
       getConnection()
         .then(db => {
           if (!validateBeforeTransaction(db, currentStore, reject)) return;
-          let tx = createTransaction(db, "readwrite", currentStore, (e) => console.log("Transaction add completed: " + JSON.stringify(e)), reject);
+          let tx = createTransaction(db, "readwrite", currentStore, (e) => logDebug(() => "Transaction add completed: " + JSON.stringify(e)), reject);
           let objectStore = tx.objectStore(currentStore);
           let request = objectStore.add(value);
           request.onsuccess = (e: any) => {
@@ -195,7 +207,7 @@ export function createIndexedDBStore<T>(factory: IDBFactory, config: IndexedDBCo
       getConnection()
         .then(db => {
           if (!validateBeforeTransaction(db, currentStore, reject)) return;
-          let tx = createTransaction(db, "readwrite", currentStore, (e) => console.log("Transaction add completed: " + JSON.stringify(e)), reject);
+          let tx = createTransaction(db, "readwrite", currentStore, (e) => logDebug(() => "Transaction add completed: " + JSON.stringify(e)), reject);
           let objectStore = tx.objectStore(currentStore);
           let request = objectStore.get(key);
           request.onsuccess = (e: any) => {
@@ -216,14 +228,13 @@ export function createIndexedDBStore<T>(factory: IDBFactory, config: IndexedDBCo
   }
 
   function update(value: T, key?: any) {
-    console.trace();
-    console.log(`Update: ${key}(${++transaction}) - ${JSON.stringify(value)}`)
+    logDebug(() => `Update: ${key}(${++transaction}) - ${JSON.stringify(value)}`)
     return new Promise<any>((resolve, reject) => {
       getConnection()
         .then(db => {
 
           if (!validateBeforeTransaction(db, currentStore, reject)) return;
-          let tx = createTransaction(db, "readwrite", currentStore, (e) => console.log(`Transaction update completed: ${key}(${transaction}) - ${JSON.stringify(e)}`), reject);
+          let tx = createTransaction(db, "readwrite", currentStore, (e) => logDebug(() => `Transaction update completed: ${key}(${transaction}) - ${JSON.stringify(e)}`), reject);
           let objectStore = tx.objectStore(currentStore);
           let request = objectStore.put(value);
           request.onsuccess = (e: any) => {
@@ -240,7 +251,7 @@ export function createIndexedDBStore<T>(factory: IDBFactory, config: IndexedDBCo
       getConnection()
         .then(db => {
           if (!validateBeforeTransaction(db, currentStore, reject)) return;
-          let tx = createTransaction(db, "readwrite", currentStore, (e) => console.log("Transaction deleteByID completed: " + JSON.stringify(e)), reject);
+          let tx = createTransaction(db, "readwrite", currentStore, (e) => logDebug(() => "Transaction deleteByID completed: " + JSON.stringify(e)), reject);
           let objectStore = tx.objectStore(currentStore);
           let request = objectStore.delete(id);
           request.onsuccess = (e: any) => {
@@ -257,7 +268,7 @@ export function createIndexedDBStore<T>(factory: IDBFactory, config: IndexedDBCo
       getConnection()
         .then(db => {
           if (!validateBeforeTransaction(db, currentStore, reject)) return;
-          let tx = createTransaction(db, "readwrite", currentStore, (e) => console.log("Transaction deleteAll completed: " + JSON.stringify(e)), reject);
+          let tx = createTransaction(db, "readwrite", currentStore, (e) => logDebug(() => "Transaction deleteAll completed: " + JSON.stringify(e)), reject);
           let objectStore = tx.objectStore(currentStore);
           let request = objectStore.clear();
           request.onsuccess = (e: any) => {
@@ -274,7 +285,7 @@ export function createIndexedDBStore<T>(factory: IDBFactory, config: IndexedDBCo
       getConnection()
         .then(db => {
           if (!validateBeforeTransaction(db, currentStore, reject)) return;
-          let tx = createTransaction(db, "readonly", config.databaseName, (e) => console.log("Transaction openCursor completed: " + JSON.stringify(e)), reject);
+          let tx = createTransaction(db, "readonly", config.databaseName, (e) => logDebug(() => "Transaction openCursor completed: " + JSON.stringify(e)), reject);
           let objectStore = tx.objectStore(config.databaseName);
           let request = objectStore.openCursor(keyRange);
           request.onsuccess = e => {

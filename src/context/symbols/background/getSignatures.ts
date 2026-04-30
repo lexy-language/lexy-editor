@@ -1,34 +1,44 @@
-import {GetSignaturesRequest} from "../requests";
-import {SymbolsContext} from "./worker";
-import {languages} from "monaco-editor";
+import {GetSignatures} from "../requests";
+import {SymbolsWorkerContext} from "./worker";
 import {Position} from "lexy/dist/language/position";
-import SignatureHelp = languages.SignatureHelp;
-import {Signatures} from "lexy/dist/language/symbols/signatures";
-import {ResponseType, SignaturesCompletedResponse} from "../response";
+import {ResponseType, SignaturesFetched} from "../response";
+import {nothing} from "../../../infrastructure/nothing";
 
-export async function getSignatures(request: GetSignaturesRequest, context: SymbolsContext) {
-
-  function map(items: Signatures | null): SignatureHelp {
-    return {
-      signatures: [],
-      activeSignature: 0,
-      activeParameter: 0
-    };
-  }
+export async function getSignatures(request: GetSignatures, context: SymbolsWorkerContext) {
 
   function geValue() {
 
-    const symbols = context.verifySymbols("GetSignatures", request.fileName, request.versionId);
+    const symbols = context.verifySymbols("GetSignatures", request.fullFilePath, request.versionId);
     if (symbols == null) return;
 
-    const items = symbols.value.getSignatures(request.fileName, new Position(request.position.lineNumber, request.position.column));
+    const fileName = symbols.project.file(request.fullFilePath);
+    const items = symbols.value.getSignatures(fileName, new Position(request.position.lineNumber, request.position.column));
 
-    const response: SignaturesCompletedResponse = {
-      type: ResponseType.SignaturesCompleted,
-      fileName: request.fileName,
+    const response: SignaturesFetched = {
+      type: ResponseType.SignaturesFetched,
+      messageId: request.messageId,
+      errorMessage: nothing,
+      fullFilePath: request.fullFilePath,
       versionId: request.versionId,
       position: request.position,
-      signatures: map(items)
+      signatures: items
+    };
+    context.postResponse(response);
+  }
+
+  function handleError(error: any) {
+
+    console.log("Error occurred in symbol worker: getSignatures");
+    console.log(error);
+
+    const response: SignaturesFetched = {
+      type: ResponseType.SignaturesFetched,
+      messageId: request.messageId,
+      errorMessage: nothing,
+      fullFilePath: request.fullFilePath,
+      versionId: request.versionId,
+      position: request.position,
+      signatures: nothing
     };
     context.postResponse(response);
   }
@@ -36,7 +46,6 @@ export async function getSignatures(request: GetSignaturesRequest, context: Symb
   try {
     geValue();
   } catch (error: any) {
-    console.log("Error occurred in symbol worker: getSignatures");
-    console.log(error);
+    handleError(error)
   }
 }

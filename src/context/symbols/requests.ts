@@ -1,4 +1,6 @@
-import {Position} from "monaco-editor";
+import {Range, Position} from "../position";
+import {timestamp} from "../../infrastructure/timestamp";
+import {Nothing} from "../../infrastructure/nothing";
 
 export enum RequestType {
   CreateSymbols,
@@ -6,25 +8,33 @@ export enum RequestType {
   GetCompletionItems
 }
 
-export type CreateSymbolsRequest = {
+export type CreateSymbols = {
   readonly type: RequestType.CreateSymbols;
+  readonly messageId: string | Nothing;
   readonly versionId: number;
-  readonly folder: string[];
-  readonly fileName: string,
+  readonly fullFilePath: string;
+  readonly code: string;
 }
 
-export type GetSignaturesRequest = {
+export type GetSignatures = {
   readonly type: RequestType.GetSignatures;
-  readonly fileName: string,
+  readonly messageId: string;
+  readonly fullFilePath: string,
   readonly versionId: number;
   readonly position: Position;
 }
 
-export type GetCompletionItemsRequest = {
+export type GetCompletionItems = {
   readonly type: RequestType.GetCompletionItems;
-  readonly fileName: string,
+  readonly messageId: string;
+  readonly fullFilePath: string,
   readonly versionId: number;
   readonly position: Position;
 }
 
-export type Request = CreateSymbolsRequest | GetSignaturesRequest | GetCompletionItemsRequest;
+export type Request = CreateSymbols | GetSignatures | GetCompletionItems;
+
+export function newMessageId() {
+  const random = Math.round(Math.random() * 1000000)
+  return timestamp() + "-" + random;
+}

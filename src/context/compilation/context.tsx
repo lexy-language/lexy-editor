@@ -2,11 +2,11 @@ import React, {useState} from "react";
 import {nothing, Nothing} from "../../infrastructure/nothing";
 import {
   Response,
-  CompilationCompletedResponse,
-  RunFunctionCompletedResponse,
+  CompilationCompleted,
+  RunFunctionCompleted,
   ResponseType,
-  CompilationSuccessResponse,
-  RunScenariosResponse
+  CompilationSuccess,
+  RunScenarios, CompilationFailed
 } from "./response";
 import {Request, StartCompilationRequest, RunFunctionRequest, RequestType} from "./requests";
 import createContext from "../createContext";
@@ -17,22 +17,23 @@ import {ExecuteFunctionState} from "./executeFunctionState";
 import {ExecutionLoggingState} from "./executionLoggingState";
 import {TreeNodeState} from "../treeNodeState";
 import {ParametersModel} from "./resultsModel";
-import {Loading, loading} from "../loading";
-import {useProjectContext} from "../project/context";
+import {isLoading, Loading, loading} from "../loading";
+import {ProjectContextState, useProjectContext} from "../project/context";
 import {HandleRunScenariosCompleted} from "./handleRunScenariosCompleted";
 import {SpecificationsLogModel} from "./specificationsLogModel";
 import {useOperationStateStorage} from "../../api/operationStorage";
 import {timestamp} from "../../infrastructure/timestamp";
+import {LogModel} from "../project/logModel";
 
 export const operationKey = "compilation-worker";
 
 export interface CompilationContextState {
   startCompilation(folder: string[], filename: string, code: string): Promise<void>;
-  compilationCompleted: CompilationCompletedResponse | Nothing;
-  runScenariosCompleted: RunScenariosResponse | Nothing,
+  compilationCompleted: CompilationCompleted | Nothing;
+  runScenariosCompleted: RunScenarios | Nothing,
 
   runFunction(folder: string[], filename: string, functionName: string, parameters: ParametersModel): void;
-  runFunctionCompleted: RunFunctionCompletedResponse | Nothing;
+  runFunctionCompleted: RunFunctionCompleted | Nothing;
 
   executeFunction: ExecuteFunctionState;
   setExecuteFunction: React.Dispatch<React.SetStateAction<ExecuteFunctionState>>;
@@ -52,9 +53,9 @@ export const [useCompilationContext, Provider] = createContext<CompilationContex
 export const CompilationContextProvider = ({children}: ComponentProps) => {
 
   const [worker, setWorker] = useState<Worker | Nothing>();
-  const [compilationCompleted, setCompilationCompleted] = useState<CompilationCompletedResponse | Nothing>(nothing);
-  const [runFunctionCompleted, setRunFunctionCompleted] = useState<RunFunctionCompletedResponse | Nothing>(nothing);
-  const [runScenariosCompleted, setRunScenariosCompleted] = useState<RunScenariosResponse | Nothing>(nothing);
+  const [compilationCompleted, setCompilationCompleted] = useState<CompilationCompleted | Nothing>(nothing);
+  const [runFunctionCompleted, setRunFunctionCompleted] = useState<RunFunctionCompleted | Nothing>(nothing);
+  const [runScenariosCompleted, setRunScenariosCompleted] = useState<RunScenarios | Nothing>(nothing);
 
   const [executeFunction, setExecuteFunction] = useState<ExecuteFunctionState>(new ExecuteFunctionState());
   const [executionLogging, setExecutionLogging] = useState<ExecutionLoggingState>(new ExecutionLoggingState());
@@ -62,16 +63,32 @@ export const CompilationContextProvider = ({children}: ComponentProps) => {
 
   const [testingLogging, setTestingLogging] = useState<(readonly SpecificationsLogModel[]) | Loading>([]);
 
-  const {setNodes, setCurrentNode} = useProjectContext();
+  const {setNodes, currentFileCode, setCurrentFileLogging, setCurrentNode}: ProjectContextState = useProjectContext();
   const {updateOperationState} = useOperationStateStorage();
+
+  function addCompilationFailedLogging(response: CompilationFailed) {
+    setCurrentFileLogging(state => {
+      const logItem: LogModel = {
+        fileName: !currentFileCode || isLoading(currentFileCode) || !currentFileCode.name ? "" : currentFileCode.name,
+        lineNumber: 1,
+        characterNumber: 1,
+        sortIndex: "_",
+        isError: true,
+        message: "Compilation failed: " + response.lastError
+      };
+      return isLoading(state) ? [logItem] : [logItem, ...state];
+    });
+  }
 
   function handleResponse(response: MessageEvent<Response>) {
     if (response.data.type === ResponseType.CompilationCompleted) {
-      setCompilationCompleted(response.data as CompilationSuccessResponse);
+      setCompilationCompleted(response.data as CompilationSuccess);
+    } else if (response.data.type === ResponseType.CompilationFailed) {
+      addCompilationFailedLogging(response.data as CompilationFailed);
     } else if (response.data.type === ResponseType.RunScenariosCompleted) {
-      setRunScenariosCompleted(response.data as RunScenariosResponse);
+      setRunScenariosCompleted(response.data as RunScenarios);
     } else if (response.data.type === ResponseType.RunFunctionCompleted) {
-      setRunFunctionCompleted(response.data as RunFunctionCompletedResponse);
+      setRunFunctionCompleted(response.data as RunFunctionCompleted);
     } else {
       console.log(`Error: Unknown message: ${JSON.stringify(response.data)}`);
     }

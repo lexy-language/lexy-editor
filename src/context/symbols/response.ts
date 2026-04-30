@@ -1,35 +1,42 @@
-import {languages, Position} from "monaco-editor";
-import DocumentSymbol = languages.DocumentSymbol;
-import CompletionList = languages.CompletionList;
-import SignatureHelp = languages.SignatureHelp;
+import {SuggestionsResult} from "lexy/dist/parser/symbols/SuggestionsResult";
+import {Signatures} from "lexy/dist/language/symbols/signatures";
+import {Position} from "../position";
+import {Nothing} from "../../infrastructure/nothing";
+import {SuggestionModel} from "./model";
 
 export enum ResponseType {
-  SymbolsCompleted,
-  SignaturesCompleted,
-  CompletionItemsCompleted,
+  SymbolsCreated,
+  SignaturesFetched,
+  CompletionItemsFetched,
 }
 
-export type SymbolsCompletedResponse = {
-  readonly type: ResponseType.SymbolsCompleted;
-  readonly fileName: string;
+export type SymbolsCreated = {
+  readonly type: ResponseType.SymbolsCreated;
+  readonly messageId: string;
+  readonly errorMessage: string | Nothing;
+  readonly fullFilePath: string;
   readonly versionId: number;
-  readonly symbols: DocumentSymbol[];
+  readonly symbols: any[];
 }
 
-export type SignaturesCompletedResponse = {
-  readonly type: ResponseType.SignaturesCompleted;
-  readonly fileName: string;
-  readonly versionId: number;
-  readonly position: Position;
-  readonly signatures: SignatureHelp;
-}
-
-export type CompletionItemsCompletedResponse = {
-  readonly type: ResponseType.CompletionItemsCompleted;
-  readonly fileName: string;
+export type SignaturesFetched = {
+  readonly type: ResponseType.SignaturesFetched;
+  readonly messageId: string;
+  readonly errorMessage: string | Nothing;
+  readonly fullFilePath: string;
   readonly versionId: number;
   readonly position: Position;
-  readonly items: CompletionList;
+  readonly signatures: Signatures | Nothing;
 }
 
-export type Response = SymbolsCompletedResponse | SignaturesCompletedResponse | CompletionItemsCompletedResponse;
+export type CompletionItemsFetched = {
+  readonly type: ResponseType.CompletionItemsFetched;
+  readonly messageId: string;
+  readonly errorMessage: string | Nothing;
+  readonly fullFilePath: string;
+  readonly versionId: number;
+  readonly position: Position;
+  readonly items: SuggestionModel[];
+}
+
+export type Response = SymbolsCreated | SignaturesFetched | CompletionItemsFetched;

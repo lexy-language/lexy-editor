@@ -5,11 +5,11 @@ import {Request, RequestType, RunFunctionRequest, StartCompilationRequest} from 
 import {startCompilation} from "./startCompilation";
 import {executeFunction} from "./executeFunction";
 
-export interface CompilationContext {
+export interface CompilationWorkerContext {
   postResponse(response: Response): void;
 }
 
-class CompilationWorker implements CompilationContext {
+class CompilationWorker implements CompilationWorkerContext {
 
   public postResponse(response: Response) {
     self.postMessage(response);
@@ -30,4 +30,4 @@ class CompilationWorker implements CompilationContext {
 const compilationWorker = new CompilationWorker();
 
 const self = globalThis as unknown as DedicatedWorkerGlobalScope;
-self.onmessage = compilationWorker.processWorkerRequest;
+self.onmessage = compilationWorker.processWorkerRequest.bind(compilationWorker);

@@ -1,6 +1,6 @@
 import React, {useEffect} from "react";
 import {nothing} from "../../infrastructure/nothing";
-import {CompilationFailedResponse, ResponseType} from "./response";
+import {CompilationFailed, ResponseType} from "./response";
 import {LogModel} from "../project/logModel";
 import {isLoading} from "../loading";
 import {where} from "lexy/dist/infrastructure/arrayFunctions";
@@ -24,6 +24,7 @@ export function HandleCompilationComplete({children}: ComponentProps) {
   }
 
   useEffect(() => {
+
     console.log('Handle CompilationCompleted:', compilationCompleted);
 
     function newLogModel(isError: boolean, fileName: string, message: string): LogModel {
@@ -47,7 +48,7 @@ export function HandleCompilationComplete({children}: ComponentProps) {
       return errors;
     }
 
-    function setError(error: CompilationFailedResponse) {
+    function setError(error: CompilationFailed) {
       setCurrentFileLogging([newLogModel(true, "parsing", "Parsing error occurred:" + error.lastError)]);
       emptyCurrentFileState();
     }
@@ -55,7 +56,7 @@ export function HandleCompilationComplete({children}: ComponentProps) {
     if (!compilationCompleted) return;
 
     if (compilationCompleted.type === ResponseType.CompilationFailed) {
-      setError(compilationCompleted as CompilationFailedResponse);
+      setError(compilationCompleted as CompilationFailed);
       return;
     }
 

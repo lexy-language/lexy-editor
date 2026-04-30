@@ -1,7 +1,7 @@
 import React, {useEffect, useRef, useState} from 'react';
 import MonacoEditor from '@monaco-editor/react';
 import {CircularProgress} from "@mui/material";
-import {useProjectContext} from "../../context/project/context";
+import {ProjectContextState, useProjectContext} from "../../context/project/context";
 import {useMonaco} from "@monaco-editor/react"
 import {isLoading} from "../../context/loading";
 import {editor} from "monaco-editor";
@@ -10,10 +10,8 @@ import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
 import {firstOrDefault, where} from "lexy/dist/infrastructure/arrayFunctions";
 import IStandaloneEditorConstructionOptions = editor.IStandaloneEditorConstructionOptions;
 import {useEditorContext} from "../../context/editor/context";
-import {SignaturesCompletedResponse, SymbolsCompletedResponse} from "../../context/symbols/response";
-import {nothing, Nothing} from "../../infrastructure/nothing";
-import IEditorAction = editor.IEditorAction;
-import {useSymbolsContext} from "../../context/symbols/context";
+import {SymbolContextState, useSymbolsContext} from "../../context/symbols/context";
+import {lexyConfig, lexyLanguage} from "./lexyLanguage";
 
 const space = ' '.charCodeAt(0);
 const languageId = 'lexy';
@@ -27,27 +25,29 @@ export default function SourceEditor() {
     currentFileCode,
     setCurrentFileCode,
     currentFileLogging
-  } = useProjectContext();
+  }: ProjectContextState = useProjectContext();
   const [editorMounted, setEditorMounted] = useState(false);
   const {
-    symbolsCompleted,
-    signaturesCompleted,
-    completionItemsCompleted,
     editorProviders
-  } = useSymbolsContext();
+  }: SymbolContextState = useSymbolsContext();
 
   function initializeMonaco(){
-    if (!monaco) return;
+    if (!monaco || !editorProviders) return;
+
     monaco.languages.register({id: languageId});
     monaco.languages.registerCompletionItemProvider(languageId, editorProviders.completionItemProvider);
     monaco.languages.registerSignatureHelpProvider(languageId, editorProviders.signatureHelpProvider);
-    monaco.languages.registerDocumentSymbolProvider(languageId, editorProviders.documentSymbolProvider);
+    monaco.languages.setLanguageConfiguration(languageId, lexyConfig);
+    monaco.languages.registerTokensProviderFactory(languageId, {
+      create: () => lexyLanguage
+    });
+
+    //monaco.languages.registerDocumentSymbolProvider(languageId, editorProviders.documentSymbolProvider);
+
     //monaco.languages.registerDefinitionProvider(languageId, editorProviders.definitionProvider);
     /* not yet working, using YAML for now
-    monaco.languages.registerTokensProviderFactory(languageId, {
-      create: () => language
-    });
-    monaco.languages.setLanguageConfiguration(languageId, conf); */
+
+    */
   }
 
   function showEditorPosition() {
@@ -85,8 +85,8 @@ export default function SourceEditor() {
   function handleEditorChange(value: string | undefined, second: any) {
 
     const reason = firstOrDefault<{metadata: {source: string}}>(second.detailedReasons)?.metadata?.source;
+
     if (reason === "setValue") return;
-    console.log("handleEditorChange: " + JSON.stringify(second));
     if (!value) return;
     if (!currentFileCode || isLoading(currentFileCode)) return;
     if (currentFileCode.code === value) return;
@@ -148,25 +148,12 @@ export default function SourceEditor() {
     monaco.editor.setModelMarkers(model, "owner", markers);
   }
 
-  editorRef.current?.getSupportedActions().forEach((value: IEditorAction) => {
-    console.log(value);
-  });
-
-  function trigger(handlerId: string) {
-    return function () {
-      editorRef.current?.trigger('anything', handlerId, {});
-    }
-  }
-
-  useEffect(initializeMonaco, [monaco]);
+  useEffect(initializeMonaco, [monaco, editorProviders]);
   useEffect(showEditorPosition, [editorPosition]);
   useEffect(showCode, [currentFileCode]);
   useEffect(showMarkers, [currentFileLogging, monaco, currentFileCode]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(initializeEditorContent, [editorMounted]);
-  useEffect(trigger("'editor.action.triggerSuggest'"),[symbolsCompleted]);
-  useEffect(trigger("'editor.action.triggerSuggest'"),[signaturesCompleted]);
-  useEffect(trigger("'editor.action.triggerSuggest'"),[completionItemsCompleted]);
 
   if (!currentFileCode) {
     return <Box>No file selected</Box>;
@@ -185,7 +172,7 @@ export default function SourceEditor() {
     },
     wordWrap: "on"
   };
-  const language = currentFileCode?.identifier.endsWith("lexy") ? "yaml" : undefined;
+  const language = currentFileCode?.identifier.endsWith("md") ? "yaml" : languageId;
 
   return <MonacoEditor language={language} theme={"lexy-theme"}
                        onChange={handleEditorChange} onMount={handleEditorDidMount}

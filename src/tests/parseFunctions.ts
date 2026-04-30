@@ -3,7 +3,6 @@ import type {IParserLogger} from "lexy/dist/parser/logging/parserLogger";
 import {ComponentNodeList} from "lexy/dist/language/componentNodeList";
 import {LexyParser} from "lexy/dist/parser/lexyParser";
 import {Tokenizer} from "lexy/dist/parser/tokens/tokenizer";
-import {ExpressionFactory} from "lexy/dist/language/expressions/expressionFactory";
 import {asTable, Table} from "lexy/dist/language/tables/table";
 import {asScenario, Scenario} from "lexy/dist/language/scenarios/scenario";
 import {asEnumDefinition, EnumDefinition} from "lexy/dist/language/enums/enumDefinition";
@@ -11,17 +10,16 @@ import {ComponentNode} from "lexy/dist/language/componentNode";
 import {asFunction, Function} from "lexy/dist/language/functions/function";
 import {ILibraries, Libraries} from "lexy/dist/functionLibraries/libraries";
 import {DummyLogger} from "../infrastructure/loggers";
-import {NodeFileSystem} from "./nodeFileSystem";
 import {Assert} from "lexy";
+import {NodeFileSystem} from "./nodeFileSystem";
 
 export function createParser(libraries: ILibraries) {
 
   const logger = new DummyLogger();
-  const expressionFactory = new ExpressionFactory();
   const fileSystem = new NodeFileSystem();
   const tokenizer = new Tokenizer();
 
-  return new LexyParser(logger, tokenizer, fileSystem, expressionFactory, libraries);
+  return new LexyParser(logger, tokenizer, fileSystem, libraries);
 }
 
 export async function parseNodes(code: string, libraries: ILibraries | null = null): Promise<{nodes: ComponentNodeList, logger: IParserLogger}> {

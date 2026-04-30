@@ -1,9 +1,16 @@
+import type {IFileSystem} from "lexy";
+import type {ISourceCodeDocument} from "lexy/dist/parser/documents/ISourceCodeDocument";
+import type {ISourceCodeDocuments} from "lexy/dist/parser/documents/ISourceCodeDocuments";
+import type {IFile} from "lexy/dist/infrastructure/file";
+
 import path from "path";
 import fs from "fs";
-import {IFileSystem} from "lexy";
 import {any} from "../infrastructure/arrayFunctions";
+import {FileSourceDocument} from "lexy/dist/parser/documents/fileSourceDocument";
+import {FileSourceDocuments} from "lexy/dist/parser/documents/fileSourceDocuments";
 
 export class NodeFileSystem implements IFileSystem {
+
   combine(fullPath: string, fileName: string): string {
     return path.join(fullPath, fileName);
   }
@@ -13,6 +20,16 @@ export class NodeFileSystem implements IFileSystem {
       fs.readFile(fileName, 'utf8', (error, value: string) => {
         if (error) return reject(error);
         resolve(value != null ? value.split('\n') : []);
+      })
+    });
+  }
+
+  async writeAllLines(fileName: string, lines: readonly string[]): Promise<void> {
+    let data = lines.join("\n");
+    return new Promise<void>((resolve, reject) => {
+      fs.writeFile(fileName, data, (error) => {
+        if (error) return reject(error);
+        resolve();
       })
     });
   }
@@ -51,13 +68,13 @@ export class NodeFileSystem implements IFileSystem {
     return path.resolve(fileName);
   }
 
-
   async getDirectories(folder: string): Promise<string[]> {
     return new Promise<string[]>((resolve, reject) => {
       fs.readdir(folder, {withFileTypes: true}, (err, data) => {
         if (err) return reject(err);
-        resolve(data.filter(dirent => dirent.isDirectory())
-          .map(dirent => dirent.name));
+        let directories = data.filter(dirent => dirent.isDirectory())
+          .map(dirent => dirent.name);
+        resolve(directories);
       });
     });
   }
@@ -84,6 +101,14 @@ export class NodeFileSystem implements IFileSystem {
     const result: string[] = [];
     this.addFolder(this.currentFolder(), result);
     return result.join("\n");
+  }
+
+  async createFileSourceDocument(file: IFile): Promise<ISourceCodeDocument> {
+    return new FileSourceDocument(file);
+  }
+
+  async createFileSourceDocuments(files: readonly IFile[]): Promise<ISourceCodeDocuments> {
+    return FileSourceDocuments.create(this, files);
   }
 
   private addFolder(folder: string, result: any[]) {

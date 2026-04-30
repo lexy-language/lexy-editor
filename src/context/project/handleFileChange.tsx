@@ -33,6 +33,16 @@ export function HandleFileChange({children}: ComponentProps) {
 
   useEffect(() => {
 
+    if (!currentFileCode || isLoading(currentFileCode)) return;
+
+    if (currentFileCode.source === "editor") {
+      storeCodeFile(currentFileCode.identifier, currentFileCode.code, currentFileCode.versionId, true)
+        .catch(error => console.log(error));
+    }
+  }, [currentFileCode])
+
+  useEffect(() => {
+
     if (!currentFileCode || isLoading(currentFileCode)) {
       setCurrentFileLogging([]);
       emptyCurrentFileState();
@@ -44,14 +54,8 @@ export function HandleFileChange({children}: ComponentProps) {
 
     const currentFolder = currentFileCode.identifier.split("|");
     currentFolder.splice(currentFolder.length - 1, 1);
-    if (currentFileCode.source === "editor") {
-      storeCodeFile(currentFileCode.identifier, currentFileCode.code, true)
-        .then(() => {
-          startCompilation(currentFolder, currentFileCode.name, currentFileCode.code);
-        });
-    } else {
-      startCompilation(currentFolder, currentFileCode.name, currentFileCode.code);
-    }
+
+    startCompilation(currentFolder, currentFileCode.name, currentFileCode.code);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debounceValue]);

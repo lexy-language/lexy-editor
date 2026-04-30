@@ -11,7 +11,7 @@ export enum ResponseType {
   RunScenariosCompleted
 }
 
-export type CompilationSuccessResponse = {
+export type CompilationSuccess = {
   readonly type: ResponseType.CompilationCompleted;
   readonly error: false;
   readonly logging: readonly LogModel[];
@@ -19,18 +19,18 @@ export type CompilationSuccessResponse = {
   readonly elapsed: number;
 }
 
-export type CompilationFailedResponse = {
+export type CompilationFailed = {
   readonly type: ResponseType.CompilationFailed;
   readonly error: true;
   readonly lastError: string;
 }
 
-export type RunScenariosResponse = {
+export type RunScenarios = {
   readonly type: ResponseType.RunScenariosCompleted;
   readonly result: readonly SpecificationsLogModel[],
 };
 
-export type RunFunctionSuccessResponse = {
+export type RunFunctionSuccess = {
   readonly type: ResponseType.RunFunctionCompleted;
   readonly error: false;
   readonly logging: readonly ExecutionLogModel[];
@@ -38,13 +38,13 @@ export type RunFunctionSuccessResponse = {
   readonly elapsed: number;
 }
 
-export type RunFunctionFailedResponse = {
+export type RunFunctionFailed = {
   readonly type: ResponseType.RunFunctionCompleted;
   readonly error: true;
   readonly lastError: string;
 }
 
-export type CompilationCompletedResponse = CompilationSuccessResponse | CompilationFailedResponse;
-export type RunFunctionCompletedResponse = RunFunctionSuccessResponse | RunFunctionFailedResponse;
+export type CompilationCompleted = CompilationSuccess | CompilationFailed;
+export type RunFunctionCompleted = RunFunctionSuccess | RunFunctionFailed;
 
-export type Response = CompilationCompletedResponse | RunScenariosResponse | RunFunctionCompletedResponse;
+export type Response = CompilationCompleted | RunScenarios | RunFunctionCompleted;

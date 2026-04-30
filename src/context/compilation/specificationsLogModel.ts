@@ -18,7 +18,7 @@ function mapSpecificationsLogModel(result: SpecificationsLogEntry): Specificatio
     nodeName: result.node ? result.node.name : nothing,
     characterNumber: result.reference ? result.reference.column : nothing,
     lineNumber: result.reference ? result.reference.lineNumber : nothing,
-    fileName: result.reference ? result.reference.fileName : nothing,
+    fileName: result.reference ? result.reference.file.name : nothing,
     isError: result.isError,
     message: result.message,
     errors: result.errors,

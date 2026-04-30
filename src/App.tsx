@@ -10,6 +10,7 @@ import {Contexts} from "./context/Contexts";
 import LoadingPage from "./pages/LoadingPage";
 import {hideResizeObserverLoopErrors} from "./pages/main/HideResizeObserverLoopErrors";
 import OnlyDesktopModal from "./editor/onlyDesktopModal/OnlyDesktopModal";
+import { loader } from "@monaco-editor/react";
 
 const EditorPage = lazy(() => import('./pages/editor/EditorPage'));
 
