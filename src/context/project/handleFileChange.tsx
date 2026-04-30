@@ -39,7 +39,7 @@ export function HandleFileChange({children}: ComponentProps) {
       storeCodeFile(currentFileCode.identifier, currentFileCode.code, currentFileCode.versionId, true)
         .catch(error => console.log(error));
     }
-  }, [currentFileCode])
+  }, [currentFileCode, storeCodeFile])
 
   useEffect(() => {
 
@@ -57,7 +57,6 @@ export function HandleFileChange({children}: ComponentProps) {
 
     startCompilation(currentFolder, currentFileCode.name, currentFileCode.code);
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debounceValue]);
 
   useEffect(() => {
@@ -88,7 +87,6 @@ export function HandleFileChange({children}: ComponentProps) {
         }
       });
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentProject.name, currentFile]);
 
   return <>{children}</>;

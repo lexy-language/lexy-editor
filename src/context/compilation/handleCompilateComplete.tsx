@@ -65,7 +65,6 @@ export function HandleCompilationComplete({children}: ComponentProps) {
     setCurrentFileLogging(errorOrSuccessful(logging, elapsed));
     setNodes(nodes);
     setCurrentNode(nothing);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [compilationCompleted]);
 
   return <>{children}</>;

@@ -1,7 +1,5 @@
 //adapted from use use-indexeddb (https://github.com/hc-oss/use-indexeddb/commit/f6e5deed3f3c1010c4b314d72b25b5a4f454f07f)
 
-import {log} from "util";
-
 const DEBUG_LOG = false;
 
 export interface IndexedDBColumn {

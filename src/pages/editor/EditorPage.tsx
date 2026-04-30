@@ -136,7 +136,6 @@ function EditorPage() {
     if (showView && layout.mainContainer !== MainContainer.View) {
       setLayout(layout => layout.setMainContainer(MainContainer.View));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastShowView]);
 
   return (

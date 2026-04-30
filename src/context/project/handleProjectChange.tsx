@@ -69,7 +69,6 @@ export function HandleProjectChange({children}: ComponentProps) {
     }
 
     loadProject();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentProject.name]);
 
   return <>{children}</>;
