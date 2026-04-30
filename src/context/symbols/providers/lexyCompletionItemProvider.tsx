@@ -2,13 +2,12 @@ import {languages, editor, CancellationToken, Position, IRange} from "monaco-edi
 import CompletionItemProvider = languages.CompletionItemProvider;
 import React from "react";
 import CompletionItem = languages.CompletionItem;
-import CompletionItemKind = languages.CompletionItemKind;
-import {SymbolKind} from "lexy/dist/language/symbols/symbolKind";
 import {Assert} from "lexy";
 import {GetCompletionItems, newMessageId, RequestType} from "../requests";
 import {CompletionItemsFetched} from "../response";
 import {SymbolWorkerClient} from "../worker";
 import {SuggestionModel} from "../model";
+import {mapKind} from "./mapKind"
 
 export default class LexyCompletionItemProvider implements CompletionItemProvider {
 
@@ -51,58 +50,11 @@ export default class LexyCompletionItemProvider implements CompletionItemProvide
     }
   }
 
-  private static mapKind(kind: SymbolKind): languages.CompletionItemKind {
-    switch (kind) {
-      case SymbolKind.Scenario:
-        return CompletionItemKind.Class;
-      case SymbolKind.Keyword:
-        return CompletionItemKind.Keyword;
-      case SymbolKind.Type:
-        return CompletionItemKind.Class;
-      case SymbolKind.ParameterVariable:
-        return CompletionItemKind.Variable;
-      case SymbolKind.ValueType:
-        return CompletionItemKind.Class;
-      case SymbolKind.ResultVariable:
-        return CompletionItemKind.Variable;
-      case SymbolKind.Operator:
-        return CompletionItemKind.Operator;
-      case SymbolKind.Function:
-        return CompletionItemKind.Function;
-      case SymbolKind.Enum:
-        return CompletionItemKind.Enum;
-      case SymbolKind.EnumMember:
-        return CompletionItemKind.EnumMember;
-      case SymbolKind.Constant:
-        return CompletionItemKind.Constant;
-      case SymbolKind.Variable:
-        return CompletionItemKind.Variable;
-      case SymbolKind.SystemFunction:
-        return CompletionItemKind.Function;
-      case SymbolKind.GeneratedType:
-        return CompletionItemKind.Class;
-      case SymbolKind.Table:
-        return CompletionItemKind.Class;
-      case SymbolKind.TableFunction:
-        return CompletionItemKind.Function;
-      case SymbolKind.ObjectVariable:
-        return CompletionItemKind.Variable;
-      case SymbolKind.Comments:
-        return CompletionItemKind.Keyword;
-      case SymbolKind.LibraryFunction:
-        return CompletionItemKind.Function;
-      case SymbolKind.TableColumn:
-        return CompletionItemKind.Variable;
-      default:
-        return CompletionItemKind.Keyword;
-    }
-  }
-
   private static mapValue(value: SuggestionModel, range: IRange): CompletionItem {
     return {
       label: value.name,
       detail: value.description ? value.description : undefined,
-      kind: LexyCompletionItemProvider.mapKind(value.kind),
+      kind: mapKind(value.kind),
       insertText: value.name,
       range: range
     };
